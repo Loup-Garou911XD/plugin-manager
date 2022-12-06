@@ -63,8 +63,9 @@ def override(cls: ClassType) -> Callable[[MethodType], MethodType]:
 
     return decorator
 
+
 class CommonUtilities:
-     
+
     def sync_confirmation(self):
         ConfirmWindow(text="WARNING:\nreplays with same name in mods folder\n will be overwritten",
                       action=self.sync, cancel_is_selected=True)
@@ -81,27 +82,30 @@ class CommonUtilities:
                 copy(external_dir+sep+i, internal_dir+sep+i)
         Print("Synced all replays", color=pink)
 
-    def export(self,selected_replay):
+    def export(self, selected_replay):
         if selected_replay is None:
             Print("Select a replay", color=red)
             return
         copy(internal_dir+selected_replay, external_dir+selected_replay)
         Print(selected_replay[0:-4]+" exported", top=True, color=pink)
 
-    def importx(self,selected_replay):
+    def importx(self, selected_replay):
         if selected_replay is None:
             Print("Select a replay", color=red)
             return
         copy(external_dir+selected_replay, internal_dir+selected_replay)
         Print(selected_replay[0:-4]+" imported", top=True, color=green)
-            
-CommonUtils=CommonUtilities()
+
+
+CommonUtils = CommonUtilities()
+
 
 class MyTabId(Enum):
-        INTERNAL = "internal"
-        EXTERNAL = "external" 
-        SHARE_REPLAYS="share_replay"
-             
+    INTERNAL = "internal"
+    EXTERNAL = "external"
+    SHARE_REPLAYS = "share_replay"
+
+
 class Help(PopupWindow):
     def __init__(self):
         uiscale = ba.app.ui.uiscale
@@ -123,43 +127,40 @@ class Help(PopupWindow):
 
 
 class ShareTabUi(WatchWindow):
-    def __init__(self,root_widget=None):        
+    def __init__(self, root_widget=None):
         self.tab_id = MyTabId.INTERNAL
-        self.selected_replay = None      
-   
+        self.selected_replay = None
+
         if root_widget is None:
             self.root = ba.Window(ba.containerwidget(
-            size=(900, 670), on_outside_click_call=self.close, transition="in_right")).get_root_widget()
-            
-        else:   
-            self.root=root_widget
-            ba.textwidget(parent=self.root,size=(500,500),position=(500,300),text="EEE|EEEEEEEELLELELELELEEKKDK")
-              
-        self.draw_ui() 
-        #ba.containerwidget(edit=self.root, cancel_button=self.close_button)        
-               
-        
-        
-    def on_select_text(self, widget, name):       
+                size=(900, 670), on_outside_click_call=self.close, transition="in_right")).get_root_widget()
+
+        else:
+            self.root = root_widget
+            ba.textwidget(parent=self.root, size=(500, 500), position=(
+                500, 300), text="EEE|EEEEEEEELLELELELELEEKKDK")
+
+        self.draw_ui()
+        #ba.containerwidget(edit=self.root, cancel_button=self.close_button)
+
+    def on_select_text(self, widget, name):
         existing_widgets = self.scroll2.get_children()
         for i in existing_widgets:
             ba.textwidget(edit=i, color=(1, 1, 1))
         ba.textwidget(edit=widget, color=(1, 1, 0))
         self.selected_replay = name
-        
-       
-  
 
     def on_tab_select(self, tab_id):
-        self.selected_replay=None
+        self.selected_replay = None
         self.tab_id = tab_id
         if tab_id == MyTabId.INTERNAL:
             dir_list = listdir(internal_dir)
-            ba.buttonwidget(edit=self.share_button, label="EXPORT", icon=ba.gettexture("upButton"),on_activate_call=self.share) 
+            ba.buttonwidget(edit=self.share_button, label="EXPORT",
+                            icon=ba.gettexture("upButton"), on_activate_call=self.share)
         else:
             dir_list = listdir(external_dir)
             ba.buttonwidget(edit=self.share_button, label="IMPORT",
-                            icon=ba.gettexture("downButton"),on_activate_call=self.share)
+                            icon=ba.gettexture("downButton"), on_activate_call=self.share)
         self.tab_row.update_appearance(tab_id)
         dir_list = sorted(dir_list)
         existing_widgets = self.scroll2.get_children()
@@ -181,13 +182,13 @@ class ShareTabUi(WatchWindow):
                 corner_scale=1.3,
                 click_activate=True,)
             ba.textwidget(edit=i, on_activate_call=ba.Call(self.on_select_text, i, a))
-            
+
     def share(self):
         if self.tab_id == MyTabId.INTERNAL:
             CommonUtils.export(self.selected_replay)
         else:
             CommonUtils.importx(self.selected_replay)
-                        
+
     def draw_ui(self):
         self._height = (
             578
@@ -200,18 +201,18 @@ class ShareTabUi(WatchWindow):
         c_height = self._scroll_height - 20
         sub_scroll_height = c_height - 63
         sub_scroll_width = (
-                680 if uiscale is ba.UIScale.SMALL else 640
-            )
+            680 if uiscale is ba.UIScale.SMALL else 640
+        )
         v = c_height - 30
-        v -= sub_scroll_height + 23   
-        smlh = 190 if uiscale is ba.UIScale.SMALL else 225    
-           
+        v -= sub_scroll_height + 23
+        smlh = 190 if uiscale is ba.UIScale.SMALL else 225
+
         scroll = ba.scrollwidget(
-                parent=self.root,
-                position=(smlh, v),
-                size=(sub_scroll_width, sub_scroll_height),
-            )   
-        
+            parent=self.root,
+            position=(smlh, v),
+            size=(sub_scroll_width, sub_scroll_height),
+        )
+
         self.scroll2 = ba.columnwidget(parent=scroll, size=(
             500, 900))
 
@@ -246,39 +247,38 @@ class ShareTabUi(WatchWindow):
         tabdefs = [(MyTabId.INTERNAL, 'INTERNAL'), (MyTabId.EXTERNAL, "EXTERNAL")]
         self.tab_row = TabRow(self.root, tabdefs, pos=(150, 500-5),
                               size=(500, 300), on_select_call=self.on_tab_select)
-                              
+
         b_width = 90 if uiscale is ba.UIScale.SMALL else 178
         b_height = (
-                80
-                if uiscale is ba.UIScale.SMALL
-                else 142
-                if uiscale is ba.UIScale.MEDIUM
-                else 190
-            )
-        
+            80
+            if uiscale is ba.UIScale.SMALL
+            else 142
+            if uiscale is ba.UIScale.MEDIUM
+            else 190
+        )
+
         btnh = 40 if uiscale is ba.UIScale.SMALL else 40
         btnv = (
-                c_height
-                - (
-                    48
-                    if uiscale is ba.UIScale.SMALL
-                    else 45
-                    if uiscale is ba.UIScale.MEDIUM
-                    else 40
-                )
-                - b_height
-            )
-        
-        
-        b_space_extra = (
-                40
+            c_height
+            - (
+                48
                 if uiscale is ba.UIScale.SMALL
-                else -2
+                else 45
                 if uiscale is ba.UIScale.MEDIUM
-                else -5
+                else 40
             )
+            - b_height
+        )
+
+        b_space_extra = (
+            40
+            if uiscale is ba.UIScale.SMALL
+            else -2
+            if uiscale is ba.UIScale.MEDIUM
+            else -5
+        )
         btnv -= b_height + b_space_extra
-        
+
         self.share_button = ba.buttonwidget(
             parent=self.root,
             size=(b_width, b_height),
@@ -288,10 +288,10 @@ class ShareTabUi(WatchWindow):
             label="EXPORT",
             text_scale=2,
             icon=ba.gettexture("upButton"),
-            on_activate_call=ba.Call(CommonUtils.export,self.selected_replay))
+            on_activate_call=ba.Call(CommonUtils.export, self.selected_replay))
 
-        btnv -=b_height + b_space_extra
-        
+        btnv -= b_height + b_space_extra
+
         sync_button = ba.buttonwidget(
             parent=self.root,
             size=(b_width, b_height),
@@ -302,13 +302,12 @@ class ShareTabUi(WatchWindow):
             text_scale=2,
             icon=ba.gettexture("ouyaYButton"),
             on_activate_call=CommonUtils.sync_confirmation)
-        
-        self.on_tab_select(MyTabId.INTERNAL)             
-            
+
+        self.on_tab_select(MyTabId.INTERNAL)
+
     def close(self):
         ba.playsound(ba.getsound('swish'))
-        ba.containerwidget(edit=self.root, transition="out_right",)    
-    
+        ba.containerwidget(edit=self.root, transition="out_right",)
 
 
 # ++++++++++++++++for keyboard navigation++++++++++++++++
@@ -316,48 +315,45 @@ class ShareTabUi(WatchWindow):
         #ba.widget(edit=self.enable_button, up_widget=decrease_button, down_widget=self.lower_text,left_widget=save_button, right_widget=save_button)
 
 # ----------------------------------------------------------------------------------------------------
-                
+
 class ShareTab(WatchWindow):
-    
-                        
+
     @override(WatchWindow)
     def __init__(self,
-        transition: str | None = 'in_right',
-        origin_widget: ba.Widget | None = None,
-        oldmethod=None):           
-        self.my_tab_container=None             
-        self._old___init__(transition,origin_widget)     
-        
-        
-        self._tab_row.tabs[self.TabID.MY_REPLAYS].button.delete()#deleting old tab button
-        
+                 transition: str | None = 'in_right',
+                 origin_widget: ba.Widget | None = None,
+                 oldmethod=None):
+        self.my_tab_container = None
+        self._old___init__(transition, origin_widget)
+
+        self._tab_row.tabs[self.TabID.MY_REPLAYS].button.delete()  # deleting old tab button
+
         tabdefs = [(self.TabID.MY_REPLAYS,
-                ba.Lstr(resource=self._r + '.myReplaysText'),),
-            (MyTabId.SHARE_REPLAYS,"Share Replays"),]
-        
+                    ba.Lstr(resource=self._r + '.myReplaysText'),),
+                   (MyTabId.SHARE_REPLAYS, "Share Replays"),]
+
         uiscale = ba.app.ui.uiscale
         x_inset = 100 if uiscale is ba.UIScale.SMALL else 0
         tab_buffer_h = 750 + 2 * x_inset
         self._tab_row = TabRow(
             self._root_widget,
             tabdefs,
-            pos=((tab_buffer_h /1.5)* 0.5, self._height - 130),
+            pos=((tab_buffer_h / 1.5) * 0.5, self._height - 130),
             size=((self._width - tab_buffer_h)*2, 50),
             on_select_call=self._set_tab)
-        
+
         self._tab_row.update_appearance(self.TabID.MY_REPLAYS)
-        
+
     @override(WatchWindow)
-    def _set_tab(self, tab_id,oldfunc=None):
-        self._old__set_tab(tab_id)        
+    def _set_tab(self, tab_id, oldfunc=None):
+        self._old__set_tab(tab_id)
         if self.my_tab_container:
-                self.my_tab_container.delete()     
+            self.my_tab_container.delete()
         if tab_id == MyTabId.SHARE_REPLAYS:
-            
-            
+
             scroll_left = (self._width - self._scroll_width) * 0.5
             scroll_bottom = self._height - self._scroll_height - 79 - 48
-         
+
             c_width = self._scroll_width
             c_height = self._scroll_height - 20
             sub_scroll_height = c_height - 63
@@ -368,24 +364,23 @@ class ShareTab(WatchWindow):
             self.my_tab_container = ba.containerwidget(
                 parent=self._root_widget,
                 position=(scroll_left,
-                    scroll_bottom + (self._scroll_height - c_height) * 0.5,),
+                          scroll_bottom + (self._scroll_height - c_height) * 0.5,),
                 size=(c_width, c_height),
                 background=False,
                 selection_loops_to_parent=True,
-            ) 
-           
+            )
+
             ShareTabUi(self.my_tab_container)
-            
-    
+
+
 # ba_meta export plugin
 
 class Loup(ba.Plugin):
     def on_app_running(self):
-      WatchWindow.__init__ = ShareTab.__init__
- 
+        WatchWindow.__init__ = ShareTab.__init__
+
     def has_settings_ui(self):
         return True
 
     def show_settings_ui(self, button):
         ShareTabUi()
-
