@@ -18,7 +18,6 @@ if __name__ == "__main__":
         print("Usage: python3 script.py version_number")
         sys.exit(1)
 
-    version = sys.argv[1].replace("refs/tags/", "")
-    version = version.replace("v", "", 1)
+    version = sys.argv[1].replace("v", "", 1)
     changelog = get_version_changelog(version)
     print(changelog)

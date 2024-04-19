@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: |
-          output=$(python3 test/get_changes.py "${{ github.ref }}")
+          output=$(python3 test/get_changes.py "${{ github.ref_name }}")
           echo "::set-output name=changelog::$output"
         id: set_changelog
       - uses: ncipollo/release-action@v1
