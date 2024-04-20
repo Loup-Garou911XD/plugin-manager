@@ -33,6 +33,7 @@ import logging
 
 
 PLUGIN_MANAGER_VERSION = "1.0.12"
+PLUGIN_MANAGER_VERSION = "1.0.13"
 REPOSITORY_URL = "https://github.com/bombsquad-community/plugin-manager"
 # Current tag can be changed to "staging" or any other branch in
 # plugin manager repo for testing purpose.
@@ -386,8 +387,7 @@ class StartupTasks:
                 if new_supported_plugins_count == 1:
                     notification_text = f"{new_supported_plugins_count} new plugin ({new_supported_plugins}) is available!"
                 else:
-                    notification_text = (f"{new_supported_plugins_count} new plugins " +
-                                         f"({new_supported_plugins + (', etc' if new_supported_plugins_count > 3 else '')}) are available!")
+                    notification_text = new_supported_plugins + ('' if new_supported_plugins_count <= 3 else ' and +' + str(new_supported_plugins_count-3) ) + " new plugins"
                 bui.screenmessage(notification_text, color=(0, 1, 0))
 
         if existing_num_of_plugins != new_num_of_plugins:
