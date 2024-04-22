@@ -9,8 +9,7 @@ def get_version_changelog(version: str):
         pattern = rf"### {version} \(\d\d-\d\d-\d{{4}}\)\n(.*?)(?=### \d+\.\d+\.\d+|\Z)"
         matches = re.findall(pattern, content, re.DOTALL)
         if matches:
-            matches = matches[0].strip()
-            return matches
+            return matches[0].strip()
         else:
             return f"Changelog entry for version {version} not found."
 
@@ -22,7 +21,4 @@ if __name__ == "__main__":
 
     version = sys.argv[1].replace("v", "", 1)
     changelog = get_version_changelog(version)
-    special_characters = ['"', "'", "-","\n"]
-    for char in special_characters:
-        changelog = changelog.replace(char, "\\" + char)
     print(changelog)
