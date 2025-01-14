@@ -183,7 +183,7 @@ class DNSBlockWorkaround:
         urllib.request.install_opener(opener)
 
     def _resolve_using_google_dns(hostname):
-        response = urllib.request.urlopen(f"https://dns.google/resolve?name={hostname}")
+        response = urllib.request.urlopen(f"https: //dns.google/resolve?name={hostname}")
         response = response.read()
         response = json.loads(response)
         resolved_host = response["Answer"][0]["data"]
@@ -353,7 +353,8 @@ class StartupTasks:
                                                                  new_supported_plugins[0:show_max_names])
                                                       ))
                 if new_supported_plugins_count == 1:
-                    notification_text = f"{new_supported_plugins_count} new plugin ({new_supported_plugins}) is available!"
+                    notification_text = f"{new_supported_plugins_count} new plugin ({
+                                                                                    new_supported_plugins}) is available!"
                 else:
                     notification_text = new_supported_plugins + \
                         ('' if new_supported_plugins_count <= show_max_names else ' and +' +
@@ -412,7 +413,8 @@ class Category:
                 self.get_plugins(),
             )
         except KeyError:
-            raise CategoryMetadataParseError(f"Failed to parse JSON; missing required fields.")
+            raise CategoryMetadataParseError(f"Failed to parse JSON
+            missing required fields.")
         else:
             return True
 
