@@ -42,6 +42,7 @@ class QuakeBallFactory(object):
     category: Game Classes
 
     """
+
     _STORENAME = babase.storagename()
 
     @classmethod
@@ -61,31 +62,57 @@ class QuakeBallFactory(object):
         self.ball_material = bs.Material()
 
         self.ball_material.add_actions(
-            conditions=((('we_are_younger_than', 5), 'or', ('they_are_younger_than', 50)),
-                        'and', ('they_have_material', shared.object_material)),
-            actions=(('modify_node_collision', 'collide', False)))
+            conditions=(
+                (
+                    ('we_are_younger_than', 5),
+                    'or',
+                    ('they_are_younger_than', 50),
+                ),
+                'and',
+                ('they_have_material', shared.object_material),
+            ),
+            actions=(('modify_node_collision', 'collide', False)),
+        )
 
         self.ball_material.add_actions(
             conditions=('they_have_material', shared.pickup_material),
-            actions=(('modify_part_collision', 'use_node_collide', False)))
+            actions=(('modify_part_collision', 'use_node_collide', False)),
+        )
 
         self.ball_material.add_actions(
-            actions=('modify_part_collision', 'friction', 0))
+            actions=('modify_part_collision', 'friction', 0)
+        )
 
         self.ball_material.add_actions(
             conditions=('they_have_material', shared.player_material),
-            actions=(('modify_part_collision', 'physical', False),
-                     ('message', 'our_node', 'at_connect', TouchedToSpaz())))
+            actions=(
+                ('modify_part_collision', 'physical', False),
+                ('message', 'our_node', 'at_connect', TouchedToSpaz()),
+            ),
+        )
 
         self.ball_material.add_actions(
-            conditions=(('they_dont_have_material', shared.player_material), 'and',
-                        ('they_have_material', shared.object_material)),
-            actions=('message', 'our_node', 'at_connect', TouchedToAnything()))
+            conditions=(
+                ('they_dont_have_material', shared.player_material),
+                'and',
+                ('they_have_material', shared.object_material),
+            ),
+            actions=('message', 'our_node', 'at_connect', TouchedToAnything()),
+        )
 
         self.ball_material.add_actions(
-            conditions=(('they_dont_have_material', shared.player_material), 'and',
-                        ('they_have_material', shared.footing_material)),
-            actions=('message', 'our_node', 'at_connect', TouchedToFootingMaterial()))
+            conditions=(
+                ('they_dont_have_material', shared.player_material),
+                'and',
+                ('they_have_material', shared.footing_material),
+            ),
+            actions=(
+                'message',
+                'our_node',
+                'at_connect',
+                TouchedToFootingMaterial(),
+            ),
+        )
 
     def give(self, spaz):
         spaz.punch_callback = self.shot
@@ -97,29 +124,31 @@ class QuakeBallFactory(object):
             self.last_shot = time
             p1 = spaz.node.position_center
             p2 = spaz.node.position_forward
-            direction = [p1[0]-p2[0], p2[1]-p1[1], p1[2]-p2[2]]
+            direction = [p1[0] - p2[0], p2[1] - p1[1], p1[2] - p2[2]]
             direction[1] = 0.0
 
-            mag = 10.0/babase.Vec3(*direction).length()
+            mag = 10.0 / babase.Vec3(*direction).length()
             vel = [v * mag for v in direction]
             QuakeBall(
                 position=spaz.node.position,
-                velocity=(vel[0]*2, vel[1]*2, vel[2]*2),
+                velocity=(vel[0] * 2, vel[1] * 2, vel[2] * 2),
                 owner=spaz._player,
                 source_player=spaz._player,
-                color=spaz.node.color).autoretain()
+                color=spaz.node.color,
+            ).autoretain()
 
 
 class QuakeBall(bs.Actor):
 
-    def __init__(self,
-                 position=(0, 5, 0),
-                 velocity=(0, 2, 0),
-                 source_player=None,
-                 owner=None,
-                 color=(random.random(), random.random(), random.random()),
-                 light_radius=0
-                 ):
+    def __init__(
+        self,
+        position=(0, 5, 0),
+        velocity=(0, 2, 0),
+        source_player=None,
+        owner=None,
+        color=(random.random(), random.random(), random.random()),
+        light_radius=0,
+    ):
         super().__init__()
 
         shared = SharedObjects.get()
@@ -128,27 +157,37 @@ class QuakeBall(bs.Actor):
         self.source_player = source_player
         self.owner = owner
 
-        self.node = bs.newnode('prop', delegate=self, attrs={
-            'position': position,
-            'velocity': velocity,
-            'mesh': bs.getmesh('impactBomb'),
-            'body': 'sphere',
-            'color_texture': bs.gettexture('bunnyColor'),
-            'mesh_scale': 0.2,
-            'is_area_of_interest': True,
-            'body_scale': 0.8,
-            'materials': [shared.object_material,
-                          b_shared.ball_material]})
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'position': position,
+                'velocity': velocity,
+                'mesh': bs.getmesh('impactBomb'),
+                'body': 'sphere',
+                'color_texture': bs.gettexture('bunnyColor'),
+                'mesh_scale': 0.2,
+                'is_area_of_interest': True,
+                'body_scale': 0.8,
+                'materials': [shared.object_material, b_shared.ball_material],
+            },
+        )
 
-        self.light_node = bs.newnode('light', attrs={
-            'position': position,
-            'color': color,
-            'radius': 0.1+light_radius,
-            'volume_intensity_scale': 15.0})
+        self.light_node = bs.newnode(
+            'light',
+            attrs={
+                'position': position,
+                'color': color,
+                'radius': 0.1 + light_radius,
+                'volume_intensity_scale': 15.0,
+            },
+        )
 
         self.node.connectattr('position', self.light_node, 'position')
         self.emit_time = bs.Timer(0.015, bs.WeakCall(self.emit), repeat=True)
-        self.life_time = bs.Timer(5.0, bs.WeakCall(self.handlemessage, bs.DieMessage()))
+        self.life_time = bs.Timer(
+            5.0, bs.WeakCall(self.handlemessage, bs.DieMessage())
+        )
 
     def emit(self):
         bs.emitfx(
@@ -157,7 +196,8 @@ class QuakeBall(bs.Actor):
             count=10,
             scale=0.4,
             spread=0.01,
-            chunk_type='spark')
+            chunk_type='spark',
+        )
 
     def handlemessage(self, m):
         if isinstance(m, TouchedToAnything):
@@ -171,25 +211,37 @@ class QuakeBall(bs.Actor):
                     bs.HitMessage(
                         pos=t,
                         velocity=v,
-                        magnitude=babase.Vec3(*v).length()*40,
-                        velocity_magnitude=babase.Vec3(*v).length()*40,
+                        magnitude=babase.Vec3(*v).length() * 40,
+                        velocity_magnitude=babase.Vec3(*v).length() * 40,
                         radius=0,
                         srcnode=self.node,
                         source_player=self.source_player,
-                        force_direction=hitdir))
+                        force_direction=hitdir,
+                    )
+                )
 
             self.node.handlemessage(bs.DieMessage())
 
         elif isinstance(m, bs.DieMessage):
             if self.node.exists():
                 velocity = self.node.velocity
-                explosion = bs.newnode('explosion', attrs={
-                    'position': self.node.position,
-                    'velocity': (velocity[0], max(-1.0, velocity[1]), velocity[2]),
-                    'radius': 1,
-                    'big': False})
+                explosion = bs.newnode(
+                    'explosion',
+                    attrs={
+                        'position': self.node.position,
+                        'velocity': (
+                            velocity[0],
+                            max(-1.0, velocity[1]),
+                            velocity[2],
+                        ),
+                        'radius': 1,
+                        'big': False,
+                    },
+                )
 
-                bs.getsound(random.choice(['impactHard', 'impactHard2', 'impactHard3'])).play(),
+                bs.getsound(
+                    random.choice(['impactHard', 'impactHard2', 'impactHard3'])
+                ).play(),
                 position = self.node.position
 
                 self.emit_time = None
@@ -200,15 +252,31 @@ class QuakeBall(bs.Actor):
             self.handlemessage(bs.DieMessage())
 
         elif isinstance(m, bs.HitMessage):
-            self.node.handlemessage('impulse', m.pos[0], m.pos[1], m.pos[2],
-                                    m.velocity[0], m.velocity[1], m.velocity[2],
-                                    1.0*m.magnitude, 1.0*m.velocity_magnitude, m.radius, 0,
-                                    m.force_direction[0], m.force_direction[1], m.force_direction[2])
+            self.node.handlemessage(
+                'impulse',
+                m.pos[0],
+                m.pos[1],
+                m.pos[2],
+                m.velocity[0],
+                m.velocity[1],
+                m.velocity[2],
+                1.0 * m.magnitude,
+                1.0 * m.velocity_magnitude,
+                m.radius,
+                0,
+                m.force_direction[0],
+                m.force_direction[1],
+                m.force_direction[2],
+            )
 
         elif isinstance(m, TouchedToSpaz):
-            node = bs.getcollision()    .opposingnode
-            if node is not None and node.exists() and node != self.owner \
-                    and node.getdelegate(object)._player.team != self.owner.team:
+            node = bs.getcollision().opposingnode
+            if (
+                node is not None
+                and node.exists()
+                and node != self.owner
+                and node.getdelegate(object)._player.team != self.owner.team
+            ):
                 node.handlemessage(bs.FreezeMessage())
                 v = self.node.velocity
                 t = self.node.position
@@ -223,7 +291,9 @@ class QuakeBall(bs.Actor):
                         radius=0,
                         srcnode=self.node,
                         source_player=self.source_player,
-                        force_direction=hitdir))
+                        force_direction=hitdir,
+                    )
+                )
 
             self.node.handlemessage(bs.DieMessage())
 
@@ -234,8 +304,7 @@ class QuakeBall(bs.Actor):
             super().handlemessage(m)
 
 
-class Player(bs.Player['Team']):
-    ...
+class Player(bs.Player['Team']): ...
 
 
 class Team(bs.Team[Player]):
@@ -243,6 +312,7 @@ class Team(bs.Team[Player]):
 
     def __init__(self) -> None:
         self.score = 0
+
 
 # ba_meta export bascenev1.GameActivity
 
@@ -301,12 +371,8 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
                 default=1.0,
             ),
             bs.IntChoiceSetting(
-                'Graphics',
-                choices=[
-                    ('Normal', 1),
-                    ('High', 2)
-                ],
-                default=1),
+                'Graphics', choices=[('Normal', 1), ('High', 2)], default=1
+            ),
             bs.BoolSetting('Fast Movespeed', default=True),
             bs.BoolSetting('Enable Jump', default=False),
             bs.BoolSetting('Enable Pickup', default=False),
@@ -321,7 +387,8 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
                     ('Egg', 4),
                     ('Random', 5),
                 ],
-                default=1),
+                default=1,
+            ),
             bs.BoolSetting('Obstacles Bounces Shots', default=False),
             bs.IntSetting(
                 'Obstacle Count',
@@ -369,7 +436,9 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
         self.setup_standard_time_limit(self._time_limit)
 
         self.drop_shield()
-        self.drop_shield_timer = bs.Timer(8.001, bs.WeakCall(self.drop_shield), repeat=True)
+        self.drop_shield_timer = bs.Timer(
+            8.001, bs.WeakCall(self.drop_shield), repeat=True
+        )
 
         shared = SharedObjects.get()
         if self.settings['Obstacles']:
@@ -377,45 +446,86 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
             map = bs.getactivity()._map.getname()
             for i in range(count):
                 if map == 'Football Stadium':
-                    radius = (random.uniform(-10, 1),
-                              6,
-                              random.uniform(-4.5, 4.5)) \
-                        if i > count/2 else (random.uniform(10, 1), 6, random.uniform(-4.5, 4.5))
+                    radius = (
+                        (random.uniform(-10, 1), 6, random.uniform(-4.5, 4.5))
+                        if i > count / 2
+                        else (
+                            random.uniform(10, 1),
+                            6,
+                            random.uniform(-4.5, 4.5),
+                        )
+                    )
                 else:
-                    radius = (random.uniform(-10, 1),
-                              6,
-                              random.uniform(-8, 8)) \
-                        if i > count/2 else (random.uniform(10, 1), 6, random.uniform(-8, 8))
+                    radius = (
+                        (random.uniform(-10, 1), 6, random.uniform(-8, 8))
+                        if i > count / 2
+                        else (random.uniform(10, 1), 6, random.uniform(-8, 8))
+                    )
 
                 Obstacle(
                     position=radius,
                     graphics=self.settings['Graphics'],
                     random_color=self.settings['Random Obstacle Color'],
                     rebound=self.settings['Obstacles Bounces Shots'],
-                    shape=int(self.settings['Obstacles Shape'])).autoretain()
+                    shape=int(self.settings['Obstacles Shape']),
+                ).autoretain()
 
         if self.settings['Graphics'] == 2:
-            bs.getactivity().globalsnode.tint = (bs.getactivity(
-            ).globalsnode.tint[0]-0.6, bs.getactivity().globalsnode.tint[1]-0.6, bs.getactivity().globalsnode.tint[2]-0.6)
-            light = bs.newnode('light', attrs={
-                'position': (9, 10, 0) if map == 'Football Stadium' else (6, 7, -2)
-                if not map == 'Rampage' else (6, 11, -2) if not map == 'The Pad' else (6, 8.5, -2),
-                'color': (0.4, 0.4, 0.45),
-                'radius': 1,
-                'intensity': 6,
-                'volume_intensity_scale': 10.0})
+            bs.getactivity().globalsnode.tint = (
+                bs.getactivity().globalsnode.tint[0] - 0.6,
+                bs.getactivity().globalsnode.tint[1] - 0.6,
+                bs.getactivity().globalsnode.tint[2] - 0.6,
+            )
+            light = bs.newnode(
+                'light',
+                attrs={
+                    'position': (
+                        (9, 10, 0)
+                        if map == 'Football Stadium'
+                        else (
+                            (6, 7, -2)
+                            if not map == 'Rampage'
+                            else (
+                                (6, 11, -2)
+                                if not map == 'The Pad'
+                                else (6, 8.5, -2)
+                            )
+                        )
+                    ),
+                    'color': (0.4, 0.4, 0.45),
+                    'radius': 1,
+                    'intensity': 6,
+                    'volume_intensity_scale': 10.0,
+                },
+            )
 
-            light2 = bs.newnode('light', attrs={
-                'position': (-9, 10, 0) if map == 'Football Stadium' else (-6, 7, -2)
-                if not map == 'Rampage' else (-6, 11, -2) if not map == 'The Pad' else (-6, 8.5, -2),
-                'color': (0.4, 0.4, 0.45),
-                'radius': 1,
-                'intensity': 6,
-                'volume_intensity_scale': 10.0})
+            light2 = bs.newnode(
+                'light',
+                attrs={
+                    'position': (
+                        (-9, 10, 0)
+                        if map == 'Football Stadium'
+                        else (
+                            (-6, 7, -2)
+                            if not map == 'Rampage'
+                            else (
+                                (-6, 11, -2)
+                                if not map == 'The Pad'
+                                else (-6, 8.5, -2)
+                            )
+                        )
+                    ),
+                    'color': (0.4, 0.4, 0.45),
+                    'radius': 1,
+                    'intensity': 6,
+                    'volume_intensity_scale': 10.0,
+                },
+            )
 
         if len(self.teams) > 0:
-            self._score_to_win = self.settings['Kills to Win Per Player'] * \
-                max(1, max(len(t.players) for t in self.teams))
+            self._score_to_win = self.settings['Kills to Win Per Player'] * max(
+                1, max(len(t.players) for t in self.teams)
+            )
         else:
             self._score_to_win = self.settings['Kills to Win Per Player']
         self._update_scoreboard()
@@ -423,16 +533,21 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
     def drop_shield(self):
         p = Powerup(
             poweruptype='shield',
-            position=(random.uniform(-10, 10), 6, random.uniform(-5, 5))).autoretain()
+            position=(random.uniform(-10, 10), 6, random.uniform(-5, 5)),
+        ).autoretain()
 
         bs.getsound('dingSmall').play()
 
-        p_light = bs.newnode('light', attrs={
-            'position': (0, 0, 0),
-            'color': (0.3, 0.0, 0.4),
-            'radius': 0.3,
-            'intensity': 2,
-            'volume_intensity_scale': 10.0})
+        p_light = bs.newnode(
+            'light',
+            attrs={
+                'position': (0, 0, 0),
+                'color': (0.3, 0.0, 0.4),
+                'radius': 0.3,
+                'intensity': 2,
+                'volume_intensity_scale': 10.0,
+            },
+        )
 
         p.node.connectattr('position', p_light, 'position')
 
@@ -465,16 +580,21 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
             enable_pickup=self.settings['Enable Pickup'],
             enable_bomb=self.settings['Enable Bomb'],
             enable_run=True,
-            enable_fly=False)
+            enable_fly=False,
+        )
 
         if self.settings['Fast Movespeed']:
             spaz.node.hockey = True
-        spaz.spaz_light = bs.newnode('light', attrs={
-            'position': (0, 0, 0),
-            'color': spaz.node.color,
-            'radius': 0.12,
-            'intensity': 1,
-            'volume_intensity_scale': 10.0})
+        spaz.spaz_light = bs.newnode(
+            'light',
+            attrs={
+                'position': (0, 0, 0),
+                'color': spaz.node.color,
+                'radius': 0.12,
+                'intensity': 1,
+                'volume_intensity_scale': 10.0,
+            },
+        )
 
         spaz.node.connectattr('position', spaz.spaz_light, 'position')
 
@@ -552,12 +672,14 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
 
 class Obstacle(bs.Actor):
 
-    def __init__(self,
-                 position: tuple(float, float, float),
-                 graphics: bool,
-                 random_color: bool,
-                 rebound: bool,
-                 shape: int) -> None:
+    def __init__(
+        self,
+        position: tuple(float, float, float),
+        graphics: bool,
+        random_color: bool,
+        rebound: bool,
+        shape: int,
+    ) -> None:
         super().__init__()
 
         shared = SharedObjects.get()
@@ -574,35 +696,61 @@ class Obstacle(bs.Actor):
             mesh = 'egg'
             body = 'capsule'
         elif shape == 5:
-            pair = random.choice([
-                {'mesh': 'tnt', 'body': 'crate'},
-                {'mesh': 'bomb', 'body': 'sphere'},
-                {'mesh': 'puckModel', 'body': 'puck'},
-                {'mesh': 'egg', 'body': 'capsule'}
-            ])
+            pair = random.choice(
+                [
+                    {'mesh': 'tnt', 'body': 'crate'},
+                    {'mesh': 'bomb', 'body': 'sphere'},
+                    {'mesh': 'puckModel', 'body': 'puck'},
+                    {'mesh': 'egg', 'body': 'capsule'},
+                ]
+            )
             mesh = pair['mesh']
             body = pair['body']
 
-        self.node = bs.newnode('prop', delegate=self, attrs={
-            'position': position,
-            'mesh': bs.getmesh(mesh),
-            'body': body,
-            'body_scale': 1.3,
-            'mesh_scale': 1.3,
-            'reflection': 'powerup',
-            'reflection_scale': [0.7],
-            'color_texture': bs.gettexture('bunnyColor'),
-            'materials': [shared.footing_material if rebound else shared.object_material,
-                          shared.footing_material]})
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'position': position,
+                'mesh': bs.getmesh(mesh),
+                'body': body,
+                'body_scale': 1.3,
+                'mesh_scale': 1.3,
+                'reflection': 'powerup',
+                'reflection_scale': [0.7],
+                'color_texture': bs.gettexture('bunnyColor'),
+                'materials': [
+                    (
+                        shared.footing_material
+                        if rebound
+                        else shared.object_material
+                    ),
+                    shared.footing_material,
+                ],
+            },
+        )
 
         if graphics == 2:
-            self.light_node = bs.newnode('light', attrs={
-                'position': (0, 0, 0),
-                'color': ((0.8, 0.2, 0.2) if i < count/2 else (0.2, 0.2, 0.8))
-                if not random_color else ((random.uniform(0, 1.1), random.uniform(0, 1.1), random.uniform(0, 1.1))),
-                'radius': 0.2,
-                'intensity': 1,
-                'volume_intensity_scale': 10.0})
+            self.light_node = bs.newnode(
+                'light',
+                attrs={
+                    'position': (0, 0, 0),
+                    'color': (
+                        ((0.8, 0.2, 0.2) if i < count / 2 else (0.2, 0.2, 0.8))
+                        if not random_color
+                        else (
+                            (
+                                random.uniform(0, 1.1),
+                                random.uniform(0, 1.1),
+                                random.uniform(0, 1.1),
+                            )
+                        )
+                    ),
+                    'radius': 0.2,
+                    'intensity': 1,
+                    'volume_intensity_scale': 10.0,
+                },
+            )
 
             self.node.connectattr('position', self.light_node, 'position')
 
@@ -618,7 +766,19 @@ class Obstacle(bs.Actor):
                 self.handlemessage(bs.DieMessage())
 
         elif isinstance(m, bs.HitMessage):
-            self.node.handlemessage('impulse', m.pos[0], m.pos[1], m.pos[2],
-                                    m.velocity[0], m.velocity[1], m.velocity[2],
-                                    m.magnitude, m.velocity_magnitude, m.radius, 0,
-                                    m.velocity[0], m.velocity[1], m.velocity[2])
+            self.node.handlemessage(
+                'impulse',
+                m.pos[0],
+                m.pos[1],
+                m.pos[2],
+                m.velocity[0],
+                m.velocity[1],
+                m.velocity[2],
+                m.magnitude,
+                m.velocity_magnitude,
+                m.radius,
+                0,
+                m.velocity[0],
+                m.velocity[1],
+                m.velocity[2],
+            )

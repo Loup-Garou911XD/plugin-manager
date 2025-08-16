@@ -32,7 +32,7 @@ class NewBlast(bomb.Blast):
             blast_type=blast_type,
             source_player=source_player,
             hit_type=hit_type,
-            hit_subtype=hit_subtype
+            hit_subtype=hit_subtype,
         )
         scorch_radius = self.radius
         if self.blast_type == 'tnt':

@@ -1,7 +1,7 @@
 # Porting to api 8 made easier by baport.(https://github.com/bombsquad-community/baport)
 """
-                             Plugin by LoupGarou a.k.a Loup/Soup   
-                                 Discord →ʟօʊքɢǟʀօʊ#3063 
+                             Plugin by LoupGarou a.k.a Loup/Soup
+                                 Discord →ʟօʊքɢǟʀօʊ#3063
 Share replays easily with your friends or have a backup
 
 Exported replays are stored in replays folder which is inside mods folder
@@ -16,8 +16,18 @@ Use this code for your experiments or plugin but please dont rename this plugin 
 # ba_meta require api 9
 from __future__ import annotations
 from typing import TYPE_CHECKING, cast
+
 if TYPE_CHECKING:
-    from typing import Any, Sequence, Callable, List, Dict, Tuple, Optional, Union
+    from typing import (
+        Any,
+        Sequence,
+        Callable,
+        List,
+        Dict,
+        Tuple,
+        Optional,
+        Union,
+    )
 
 from os import listdir, mkdir, path, sep, remove
 from shutil import copy, copytree
@@ -34,8 +44,10 @@ from bauiv1lib.popup import PopupWindow
 
 
 title = "SHARE REPLAY"
-internal_dir = _babase.get_replays_dir()+sep
-external_dir = path.join(_babase.env()["python_directory_user"], "replays"+sep)
+internal_dir = _babase.get_replays_dir() + sep
+external_dir = path.join(
+    _babase.env()["python_directory_user"], "replays" + sep
+)
 uiscale = bui.app.ui_v1.uiscale
 
 # colors
@@ -85,19 +97,22 @@ def override(cls: ClassType) -> Callable[[MethodType], MethodType]:
 class CommonUtilities:
 
     def sync_confirmation(self):
-        ConfirmWindow(text="WARNING:\nreplays with same name in mods folder\n will be overwritten",
-                      action=self.sync, cancel_is_selected=True)
+        ConfirmWindow(
+            text="WARNING:\nreplays with same name in mods folder\n will be overwritten",
+            action=self.sync,
+            cancel_is_selected=True,
+        )
 
     def sync(self):
         internal_list = listdir(internal_dir)
         external_list = listdir(external_dir)
         for i in internal_list:
-            copy(internal_dir+sep+i, external_dir+sep+i)
+            copy(internal_dir + sep + i, external_dir + sep + i)
         for i in external_list:
             if i in internal_list:
                 pass
             else:
-                copy(external_dir+sep+i, internal_dir+sep+i)
+                copy(external_dir + sep + i, internal_dir + sep + i)
         Print("Synced all replays", color=pink)
 
     def _copy(self, selected_replay, tab_id):
@@ -105,11 +120,11 @@ class CommonUtilities:
             Print("Select a replay", color=red)
             return
         elif tab_id == MyTabId.INTERNAL:
-            copy(internal_dir+selected_replay, external_dir+selected_replay)
-            Print(selected_replay[0:-4]+" exported", color=pink)
+            copy(internal_dir + selected_replay, external_dir + selected_replay)
+            Print(selected_replay[0:-4] + " exported", color=pink)
         else:
-            copy(external_dir+selected_replay, internal_dir+selected_replay)
-            Print(selected_replay[0:-4]+" imported", color=green)
+            copy(external_dir + selected_replay, internal_dir + selected_replay)
+            Print(selected_replay[0:-4] + " imported", color=green)
 
     def delete_replay(self, selected_replay, tab_id, cls_inst):
         if selected_replay is None:
@@ -118,13 +133,17 @@ class CommonUtilities:
 
         def do_it():
             if tab_id == MyTabId.INTERNAL:
-                remove(internal_dir+selected_replay)
+                remove(internal_dir + selected_replay)
             elif tab_id == MyTabId.EXTERNAL:
-                remove(external_dir+selected_replay)
+                remove(external_dir + selected_replay)
             cls_inst.on_tab_select(tab_id)  # updating the tab
-            Print(selected_replay[0:-4]+" was deleted", color=red)
-        ConfirmWindow(text=f"Delete \"{selected_replay.split('.')[0]}\" \nfrom {'internal directory' if tab_id == MyTabId.INTERNAL else 'external directory'}?",
-                      action=do_it, cancel_is_selected=True)
+            Print(selected_replay[0:-4] + " was deleted", color=red)
+
+        ConfirmWindow(
+            text=f"Delete \"{selected_replay.split('.')[0]}\" \nfrom {'internal directory' if tab_id == MyTabId.INTERNAL else 'external directory'}?",
+            action=do_it,
+            cancel_is_selected=True,
+        )
 
 
 CommonUtils = CommonUtilities()
@@ -140,16 +159,31 @@ class Help(PopupWindow):
     def __init__(self):
         self.width = 1200
         self.height = 250
-        self.root_widget = bui.Window(bui.containerwidget(
-            size=(self.width, self.height), on_outside_click_call=self.close, transition="in_right")).get_root_widget()
+        self.root_widget = bui.Window(
+            bui.containerwidget(
+                size=(self.width, self.height),
+                on_outside_click_call=self.close,
+                transition="in_right",
+            )
+        ).get_root_widget()
 
-        bui.containerwidget(edit=self.root_widget, on_outside_click_call=self.close)
-        bui.textwidget(parent=self.root_widget, position=(0, self.height * 0.7), corner_scale=1.2, color=green,
-                       text=f"»Replays are exported to\n     {external_dir}\n»Copy replays to the above folder to be able to import them into the game\n»I would love to hear from you,meet me on discord\n                                -LoupGarou(author)")
+        bui.containerwidget(
+            edit=self.root_widget, on_outside_click_call=self.close
+        )
+        bui.textwidget(
+            parent=self.root_widget,
+            position=(0, self.height * 0.7),
+            corner_scale=1.2,
+            color=green,
+            text=f"»Replays are exported to\n     {external_dir}\n»Copy replays to the above folder to be able to import them into the game\n»I would love to hear from you,meet me on discord\n                                -LoupGarou(author)",
+        )
 
     def close(self):
         bui.getsound('swish').play()
-        bui.containerwidget(edit=self.root_widget, transition="out_right",)
+        bui.containerwidget(
+            edit=self.root_widget,
+            transition="out_right",
+        )
 
 
 class ShareTabUi(WatchWindow):
@@ -158,8 +192,13 @@ class ShareTabUi(WatchWindow):
         self.selected_replay = None
 
         if root_widget is None:
-            self.root = bui.Window(bui.containerwidget(
-                size=(1000, 600), on_outside_click_call=self.close, transition="in_right")).get_root_widget()
+            self.root = bui.Window(
+                bui.containerwidget(
+                    size=(1000, 600),
+                    on_outside_click_call=self.close,
+                    transition="in_right",
+                )
+            ).get_root_widget()
 
         else:
             self.root = root_widget
@@ -197,15 +236,18 @@ class ShareTabUi(WatchWindow):
             a = i
             i = bui.textwidget(
                 parent=self.scroll2,
-                size=(self._my_replays_scroll_width/t_scale, 30),
+                size=(self._my_replays_scroll_width / t_scale, 30),
                 text=i.split(".")[0],
                 position=(20, height),
                 selectable=True,
                 max_chars=40,
                 corner_scale=t_scale,
                 click_activate=True,
-                always_highlight=True,)
-            bui.textwidget(edit=i, on_activate_call=babase.Call(self.on_select_text, i, a))
+                always_highlight=True,
+            )
+            bui.textwidget(
+                edit=i, on_activate_call=babase.Call(self.on_select_text, i, a)
+            )
 
     def draw_ui(self):
         self._r = 'watchWindow'
@@ -215,9 +257,8 @@ class ShareTabUi(WatchWindow):
         self._height = (
             578
             if uiscale is babase.UIScale.SMALL
-            else 670
-            if uiscale is babase.UIScale.MEDIUM
-            else 800)
+            else 670 if uiscale is babase.UIScale.MEDIUM else 800
+        )
         self._scroll_width = self._width - scroll_buffer_h
         self._scroll_height = self._height - 180
         #
@@ -233,25 +274,25 @@ class ShareTabUi(WatchWindow):
         b_height = (
             107
             if uiscale is babase.UIScale.SMALL
-            else 142
-            if uiscale is babase.UIScale.MEDIUM
-            else 190
+            else 142 if uiscale is babase.UIScale.MEDIUM else 190
         )
         b_space_extra = (
             0
             if uiscale is babase.UIScale.SMALL
-            else -2
-            if uiscale is babase.UIScale.MEDIUM
-            else -5
+            else -2 if uiscale is babase.UIScale.MEDIUM else -5
         )
 
         b_color = (0.6, 0.53, 0.63)
         b_textcolor = (0.75, 0.7, 0.8)
-        btnv = (c_height - (48
+        btnv = (
+            c_height
+            - (
+                48
                 if uiscale is babase.UIScale.SMALL
-                else 45
-                if uiscale is babase.UIScale.MEDIUM
-                else 40) - b_height)
+                else 45 if uiscale is babase.UIScale.MEDIUM else 40
+            )
+            - b_height
+        )
         btnh = 40 if uiscale is babase.UIScale.SMALL else 40
         smlh = 190 if uiscale is babase.UIScale.SMALL else 225
         tscl = 1.0 if uiscale is babase.UIScale.SMALL else 1.2
@@ -267,16 +308,25 @@ class ShareTabUi(WatchWindow):
             size=(sub_scroll_width, sub_scroll_height),
         )
 
-        self.scroll2 = bui.columnwidget(parent=scroll,
-                                        size=(sub_scroll_width, sub_scroll_height))
+        self.scroll2 = bui.columnwidget(
+            parent=scroll, size=(sub_scroll_width, sub_scroll_height)
+        )
 
-        tabdefs = [(MyTabId.INTERNAL, 'INTERNAL'), (MyTabId.EXTERNAL, "EXTERNAL")]
-        self.tab_row = TabRow(self.root, tabdefs, pos=(stab_h, sub_scroll_height),
-                              size=(stab_width, stab_height), on_select_call=self.on_tab_select)
+        tabdefs = [
+            (MyTabId.INTERNAL, 'INTERNAL'),
+            (MyTabId.EXTERNAL, "EXTERNAL"),
+        ]
+        self.tab_row = TabRow(
+            self.root,
+            tabdefs,
+            pos=(stab_h, sub_scroll_height),
+            size=(stab_width, stab_height),
+            on_select_call=self.on_tab_select,
+        )
 
         helpbtn_space = 20
-        helpbtn_v = stab_h+stab_width+helpbtn_space+120
-        helpbtn_h = sub_scroll_height+helpbtn_space
+        helpbtn_v = stab_h + stab_width + helpbtn_space + 120
+        helpbtn_h = sub_scroll_height + helpbtn_space
 
         bui.buttonwidget(
             parent=self.root,
@@ -287,9 +337,12 @@ class ShareTabUi(WatchWindow):
             text_scale=1.5,
             color=b_color,
             textcolor=b_textcolor,
-            on_activate_call=Help)
+            on_activate_call=Help,
+        )
 
-        def call_copy(): return CommonUtils._copy(self.selected_replay, self.tab_id)
+        def call_copy():
+            return CommonUtils._copy(self.selected_replay, self.tab_id)
+
         self.share_button = bui.buttonwidget(
             parent=self.root,
             size=(b_width, b_height),
@@ -299,7 +352,8 @@ class ShareTabUi(WatchWindow):
             text_scale=tscl,
             color=b_color,
             textcolor=b_textcolor,
-            on_activate_call=call_copy)
+            on_activate_call=call_copy,
+        )
 
         btnv -= b_height + b_space_extra
         sync_button = bui.buttonwidget(
@@ -311,10 +365,16 @@ class ShareTabUi(WatchWindow):
             text_scale=tscl,
             color=b_color,
             textcolor=b_textcolor,
-            on_activate_call=CommonUtils.sync_confirmation)
+            on_activate_call=CommonUtils.sync_confirmation,
+        )
 
         btnv -= b_height + b_space_extra
-        def call_delete(): return CommonUtils.delete_replay(self.selected_replay, self.tab_id, self)
+
+        def call_delete():
+            return CommonUtils.delete_replay(
+                self.selected_replay, self.tab_id, self
+            )
+
         delete_replay_button = bui.buttonwidget(
             parent=self.root,
             size=(b_width, b_height),
@@ -324,36 +384,49 @@ class ShareTabUi(WatchWindow):
             text_scale=tscl,
             color=b_color,
             textcolor=b_textcolor,
-            on_activate_call=call_delete)
+            on_activate_call=call_delete,
+        )
 
         self.on_tab_select(MyTabId.INTERNAL)
 
     def close(self):
         bui.getsound('swish').play()
-        bui.containerwidget(edit=self.root, transition="out_right",)
+        bui.containerwidget(
+            edit=self.root,
+            transition="out_right",
+        )
 
 
 # ++++++++++++++++for keyboard navigation++++++++++++++++
 
-        # bui.widget(edit=self.enable_button, up_widget=decrease_button, down_widget=self.lower_text,left_widget=save_button, right_widget=save_button)
+# bui.widget(edit=self.enable_button, up_widget=decrease_button, down_widget=self.lower_text,left_widget=save_button, right_widget=save_button)
 
 # ----------------------------------------------------------------------------------------------------
+
 
 class ShareTab(WatchWindow):
 
     @override(WatchWindow)
-    def __init__(self,
-                 transition: str | None = 'in_right',
-                 origin_widget: bui.Widget | None = None,
-                 oldmethod=None):
+    def __init__(
+        self,
+        transition: str | None = 'in_right',
+        origin_widget: bui.Widget | None = None,
+        oldmethod=None,
+    ):
         self.my_tab_container = None
         self._old___init__(transition, origin_widget)
 
-        self._tab_row.tabs[self.TabID.MY_REPLAYS].button.delete()  # deleting old tab button
+        self._tab_row.tabs[
+            self.TabID.MY_REPLAYS
+        ].button.delete()  # deleting old tab button
 
-        tabdefs = [(self.TabID.MY_REPLAYS,
-                    babase.Lstr(resource=self._r + '.myReplaysText'),),
-                   (MyTabId.SHARE_REPLAYS, "Share Replays"),]
+        tabdefs = [
+            (
+                self.TabID.MY_REPLAYS,
+                babase.Lstr(resource=self._r + '.myReplaysText'),
+            ),
+            (MyTabId.SHARE_REPLAYS, "Share Replays"),
+        ]
 
         uiscale = bui.app.ui_v1.uiscale
         x_inset = 100 if uiscale is babase.UIScale.SMALL else 0
@@ -362,8 +435,9 @@ class ShareTab(WatchWindow):
             self._root_widget,
             tabdefs,
             pos=((tab_buffer_h / 1.5) * 0.5, self._height - 130),
-            size=((self._width - tab_buffer_h)*2, 50),
-            on_select_call=self._set_tab)
+            size=((self._width - tab_buffer_h) * 2, 50),
+            on_select_call=self._set_tab,
+        )
 
         self._tab_row.update_appearance(self.TabID.MY_REPLAYS)
 
@@ -386,8 +460,10 @@ class ShareTab(WatchWindow):
 
             self.my_tab_container = bui.containerwidget(
                 parent=self._root_widget,
-                position=(scroll_left,
-                          scroll_bottom + (self._scroll_height - c_height) * 0.5,),
+                position=(
+                    scroll_left,
+                    scroll_bottom + (self._scroll_height - c_height) * 0.5,
+                ),
                 size=(c_width, c_height),
                 background=False,
                 selection_loops_to_parent=True,
@@ -398,6 +474,7 @@ class ShareTab(WatchWindow):
 
 # ba_meta export babase.Plugin
 
+
 class Loup(babase.Plugin):
     def on_app_running(self):
         WatchWindow.__init__ = ShareTab.__init__
@@ -406,4 +483,7 @@ class Loup(babase.Plugin):
         return True
 
     def show_settings_ui(self, button):
-        Print("Open share replay tab in replay window to share your replays", color=blue)
+        Print(
+            "Open share replay tab in replay window to share your replays",
+            color=blue,
+        )

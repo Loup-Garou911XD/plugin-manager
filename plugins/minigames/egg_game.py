@@ -23,6 +23,7 @@ from bascenev1lib.gameutils import SharedObjects
 from bascenev1lib.actor.flag import Flag
 import math
 import random
+
 if TYPE_CHECKING:
     from typing import Any, Sequence, Dict, Type, List, Optional, Union
 
@@ -55,20 +56,22 @@ class Puck(bs.Actor):
         assert activity is not None
         assert isinstance(activity, EggGame)
         pmats = [shared.object_material, activity.puck_material]
-        self.node = bs.newnode('prop',
-                               delegate=self,
-                               attrs={
-                                   'mesh': self.egg_mesh,
-                                   'color_texture': self.eggtx[regg],
-                                   'body': 'capsule',
-                                   'reflection': 'soft',
-                                   'reflection_scale': [0.2],
-                                   'shadow_size': 0.5,
-                                   'body_scale': 0.7,
-                                   'is_area_of_interest': True,
-                                   'position': self._spawn_pos,
-                                   'materials': pmats
-                               })
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'mesh': self.egg_mesh,
+                'color_texture': self.eggtx[regg],
+                'body': 'capsule',
+                'reflection': 'soft',
+                'reflection_scale': [0.2],
+                'shadow_size': 0.5,
+                'body_scale': 0.7,
+                'is_area_of_interest': True,
+                'position': self._spawn_pos,
+                'materials': pmats,
+            },
+        )
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.2: 0.7, 0.26: 0.6})
 
     def handlemessage(self, msg: Any) -> Any:
@@ -88,11 +91,21 @@ class Puck(bs.Actor):
             assert self.node
             assert msg.force_direction is not None
             self.node.handlemessage(
-                'impulse', msg.pos[0], msg.pos[1], msg.pos[2], msg.velocity[0],
-                msg.velocity[1], msg.velocity[2], 1.0 * msg.magnitude,
-                1.0 * msg.velocity_magnitude, msg.radius, 0,
-                msg.force_direction[0], msg.force_direction[1],
-                msg.force_direction[2])
+                'impulse',
+                msg.pos[0],
+                msg.pos[1],
+                msg.pos[2],
+                msg.velocity[0],
+                msg.velocity[1],
+                msg.velocity[2],
+                1.0 * msg.magnitude,
+                1.0 * msg.velocity_magnitude,
+                msg.radius,
+                0,
+                msg.force_direction[0],
+                msg.force_direction[1],
+                msg.force_direction[2],
+            )
 
             # If this hit came from a player, log them as the last to touch us.
             s_player = msg.get_source_player(Player)
@@ -179,15 +192,16 @@ class EggGame(bs.TeamGameActivity[Player, Team]):
             conditions=('they_have_material', shared.player_material),
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True)
-
-            ))
-        self.puck_material.add_actions(actions=(('modify_part_collision',
-                                                 'friction', 0.5)))
-        self.puck_material.add_actions(conditions=('they_have_material',
-                                                   shared.pickup_material),
-                                       actions=('modify_part_collision',
-                                                'collide', True))
+                ('modify_part_collision', 'physical', True),
+            ),
+        )
+        self.puck_material.add_actions(
+            actions=(('modify_part_collision', 'friction', 0.5))
+        )
+        self.puck_material.add_actions(
+            conditions=('they_have_material', shared.pickup_material),
+            actions=('modify_part_collision', 'collide', True),
+        )
         self.puck_material.add_actions(
             conditions=(
                 ('we_are_younger_than', 100),
@@ -204,15 +218,20 @@ class EggGame(bs.TeamGameActivity[Player, Team]):
         # Keep track of which player last touched the puck
         self.puck_material.add_actions(
             conditions=('they_have_material', shared.player_material),
-            actions=(('call', 'at_connect',
-                      self._handle_puck_player_collide), ))
+            actions=(('call', 'at_connect', self._handle_puck_player_collide),),
+        )
 
         # We want the puck to kill powerups; not get stopped by them
         self.puck_material.add_actions(
-            conditions=('they_have_material',
-                        PowerupBoxFactory.get().powerup_material),
-            actions=(('modify_part_collision', 'physical', False),
-                     ('message', 'their_node', 'at_connect', bs.DieMessage())))
+            conditions=(
+                'they_have_material',
+                PowerupBoxFactory.get().powerup_material,
+            ),
+            actions=(
+                ('modify_part_collision', 'physical', False),
+                ('message', 'their_node', 'at_connect', bs.DieMessage()),
+            ),
+        )
         # self.puck_material.add_actions(
         #     conditions=('they_have_material',shared.footing_material)
         #     actions=(('modify_part_collision', 'collide',
@@ -222,16 +241,22 @@ class EggGame(bs.TeamGameActivity[Player, Team]):
         self._score_region_material = bs.Material()
         self._score_region_material.add_actions(
             conditions=('they_have_material', self.puck_material),
-            actions=(('modify_part_collision', 'collide',
-                      True), ('modify_part_collision', 'physical', False),
-                     ('call', 'at_connect', self._handle_score)))
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', False),
+                ('call', 'at_connect', self._handle_score),
+            ),
+        )
         self.main_ground_material = bs.Material()
 
         self.main_ground_material.add_actions(
             conditions=('they_have_material', self.puck_material),
-            actions=(('modify_part_collision', 'collide',
-                      True), ('modify_part_collision', 'physical', False),
-                     ('call', 'at_connect', self._handle_egg_collision)))
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', False),
+                ('call', 'at_connect', self._handle_egg_collision),
+            ),
+        )
 
         self._puck_spawn_pos: Optional[Sequence[float]] = None
         self._score_regions: Optional[List[bs.NodeActor]] = None
@@ -290,16 +315,31 @@ class EggGame(bs.TeamGameActivity[Player, Team]):
         #                    })))
         self._score_regions.append(
             bs.NodeActor(
-                bs.newnode('region',
-                           attrs={
-                               'position': (-9.21, defs.boxes['goal2'][0:3][1], defs.boxes['goal2'][0:3][2]),
-                               'scale': defs.boxes['goal2'][6:9],
-                               'type': 'box',
-                               'materials': (self._fake_wall_material, )
-                           })))
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': (
+                            -9.21,
+                            defs.boxes['goal2'][0:3][1],
+                            defs.boxes['goal2'][0:3][2],
+                        ),
+                        'scale': defs.boxes['goal2'][6:9],
+                        'type': 'box',
+                        'materials': (self._fake_wall_material,),
+                    },
+                )
+            )
+        )
         pos = (0, 0.1, -5)
-        self.main_ground = bs.newnode('region', attrs={'position': pos, 'scale': (
-            25, 0.001, 22), 'type': 'box', 'materials': [self.main_ground_material]})
+        self.main_ground = bs.newnode(
+            'region',
+            attrs={
+                'position': pos,
+                'scale': (25, 0.001, 22),
+                'type': 'box',
+                'materials': [self.main_ground_material],
+            },
+        )
         self._update_scoreboard()
         self._chant_sound.play()
 
@@ -310,9 +350,9 @@ class EggGame(bs.TeamGameActivity[Player, Team]):
         collision = bs.getcollision()
         try:
             puck = collision.sourcenode.getdelegate(Puck, True)
-            player = collision.opposingnode.getdelegate(PlayerSpaz,
-                                                        True).getplayer(
-                                                            Player, True)
+            player = collision.opposingnode.getdelegate(
+                PlayerSpaz, True
+            ).getplayer(Player, True)
         except bs.NotFoundError:
             return
 
@@ -327,36 +367,40 @@ class EggGame(bs.TeamGameActivity[Player, Team]):
         pos = no.position
         egg = no.getdelegate(Puck)
         source_player = egg.last_players_to_touch
-        if source_player == None or pos[0] < -8 or not source_player.node.exists():
+        if (
+            source_player == None
+            or pos[0] < -8
+            or not source_player.node.exists()
+        ):
             return
 
         try:
             col = source_player.team.color
-            self.flagg = Flag(touchable=False, position=pos, color=col).autoretain()
+            self.flagg = Flag(
+                touchable=False, position=pos, color=col
+            ).autoretain()
             self.flagg.is_area_of_interest = True
             player_pos = source_player.node.position
 
-            distance = math.sqrt(pow(player_pos[0]-pos[0], 2) + pow(player_pos[2]-pos[2], 2))
+            distance = math.sqrt(
+                pow(player_pos[0] - pos[0], 2) + pow(player_pos[2] - pos[2], 2)
+            )
 
-            dis_mark = bs.newnode('text',
-
-                                  attrs={
-                                      'text': str(round(distance, 2))+"m",
-                                      'in_world': True,
-                                      'scale': 0.02,
-                                      'h_align': 'center',
-                                      'position': (pos[0], 1.6, pos[2]),
-                                      'color': col
-                                  })
-            bs.animate(dis_mark, 'scale', {
-                0.0: 0, 0.5: 0.01
-            })
+            dis_mark = bs.newnode(
+                'text',
+                attrs={
+                    'text': str(round(distance, 2)) + "m",
+                    'in_world': True,
+                    'scale': 0.02,
+                    'h_align': 'center',
+                    'position': (pos[0], 1.6, pos[2]),
+                    'color': col,
+                },
+            )
+            bs.animate(dis_mark, 'scale', {0.0: 0, 0.5: 0.01})
             if distance > self.HIGHEST:
                 self.HIGHEST = distance
-                self.stats.player_scored(
-                    source_player,
-                    10,
-                    big_message=False)
+                self.stats.player_scored(source_player, 10, big_message=False)
 
             no.delete()
             bs.timer(2, self._spawn_puck)
@@ -369,8 +413,7 @@ class EggGame(bs.TeamGameActivity[Player, Team]):
 
         zoo = random.randrange(-4, 5)
         pos = (-11.204887390136719, 0.2998693287372589, zoo)
-        spaz = self.spawn_player_spaz(
-            player, position=pos, angle=90)
+        spaz = self.spawn_player_spaz(player, position=pos, angle=90)
         assert spaz.node
 
         # Prevent controlling of characters before the start of the race.
@@ -406,12 +449,15 @@ class EggGame(bs.TeamGameActivity[Player, Team]):
 
                 # If we've got the player from the scoring team that last
                 # touched us, give them points.
-                if (scoring_team.id in self._puck.last_players_to_touch
-                        and self._puck.last_players_to_touch[scoring_team.id]):
+                if (
+                    scoring_team.id in self._puck.last_players_to_touch
+                    and self._puck.last_players_to_touch[scoring_team.id]
+                ):
                     self.stats.player_scored(
                         self._puck.last_players_to_touch[scoring_team.id],
                         20,
-                        big_message=True)
+                        big_message=True,
+                    )
 
                 # End game if we won.
                 if team.score >= self._score_to_win:

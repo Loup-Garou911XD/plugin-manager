@@ -28,18 +28,22 @@ class Floater(bs.Actor):
         self.source_player = None
         self.floaterMaterial = bs.Material()
         self.floaterMaterial.add_actions(
-            conditions=('they_have_material',
-                        shared.player_material),
-            actions=(('modify_node_collision', 'collide', True),
-                     ('modify_part_collision', 'physical', True)))
+            conditions=('they_have_material', shared.player_material),
+            actions=(
+                ('modify_node_collision', 'collide', True),
+                ('modify_part_collision', 'physical', True),
+            ),
+        )
         self.floaterMaterial.add_actions(
-            conditions=(('they_have_material',
-                         shared.object_material), 'or',
-                        ('they_have_material',
-                         shared.footing_material), 'or',
-                        ('they_have_material',
-                        self.floaterMaterial)),
-            actions=('modify_part_collision', 'physical', False))
+            conditions=(
+                ('they_have_material', shared.object_material),
+                'or',
+                ('they_have_material', shared.footing_material),
+                'or',
+                ('they_have_material', self.floaterMaterial),
+            ),
+            actions=('modify_part_collision', 'physical', False),
+        )
 
         self.pos = bounds
         self.px = "random.uniform(self.pos[0],self.pos[3])"
@@ -52,63 +56,52 @@ class Floater(bs.Actor):
             owner=None,
             attrs={
                 'position': (eval(self.px), eval(self.py), eval(self.pz)),
-                'mesh':
-                bs.getmesh('landMine'),
-                'light_mesh':
-                bs.getmesh('landMine'),
-                'body':
-                'landMine',
-                'body_scale':
-                3,
-                'mesh_scale':
-                3.1,
-                'shadow_size':
-                0.25,
-                'density':
-                999999,
-                'gravity_scale':
-                0.0,
-                'color_texture':
-                bs.gettexture('achievementFlawlessVictory'),
-                'reflection':
-                'soft',
+                'mesh': bs.getmesh('landMine'),
+                'light_mesh': bs.getmesh('landMine'),
+                'body': 'landMine',
+                'body_scale': 3,
+                'mesh_scale': 3.1,
+                'shadow_size': 0.25,
+                'density': 999999,
+                'gravity_scale': 0.0,
+                'color_texture': bs.gettexture('achievementFlawlessVictory'),
+                'reflection': 'soft',
                 'reflection_scale': [0.25],
-                'materials':
-                [shared.footing_material, self.floaterMaterial]
-            })
+                'materials': [shared.footing_material, self.floaterMaterial],
+            },
+        )
         self.node2 = bs.newnode(
             'prop',
             owner=self.node,
             attrs={
                 'position': (0, 0, 0),
-                'body':
-                'sphere',
-                'mesh':
-                None,
-                'color_texture':
-                None,
-                'body_scale':
-                1.0,
-                'reflection':
-                'powerup',
-                'density':
-                999999,
+                'body': 'sphere',
+                'mesh': None,
+                'color_texture': None,
+                'body_scale': 1.0,
+                'reflection': 'powerup',
+                'density': 999999,
                 'reflection_scale': [1.0],
-                'mesh_scale':
-                1.0,
-                'gravity_scale':
-                0,
-                'shadow_size':
-                0.1,
-                'is_area_of_interest':
-                True,
-                'materials':
-                [shared.object_material, self.floaterMaterial]
-            })
+                'mesh_scale': 1.0,
+                'gravity_scale': 0,
+                'shadow_size': 0.1,
+                'is_area_of_interest': True,
+                'materials': [shared.object_material, self.floaterMaterial],
+            },
+        )
         self.node.connectattr('position', self.node2, 'position')
 
-    def pop(self): PopupText(text="Ported by \ue048Freaku", scale=1.3, position=(
-        self.node.position[0], self.node.position[1]-1, self.node.position[2]), color=(0, 1, 1)).autoretain()
+    def pop(self):
+        PopupText(
+            text="Ported by \ue048Freaku",
+            scale=1.3,
+            position=(
+                self.node.position[0],
+                self.node.position[1] - 1,
+                self.node.position[2],
+            ),
+            color=(0, 1, 1),
+        ).autoretain()
 
     def checkCanControl(self):
         if not self.node.exists():
@@ -176,7 +169,9 @@ class Floater(bs.Actor):
             self.dis()
 
     def distance(self, x1, y1, z1, x2, y2, z2):
-        d = math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2) + math.pow(z2 - z1, 2))
+        d = math.sqrt(
+            math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2) + math.pow(z2 - z1, 2)
+        )
         return d
 
     def drop(self):
@@ -184,8 +179,14 @@ class Floater(bs.Actor):
             np = self.node.position
         except:
             np = (0, 0, 0)
-        self.b = Bomb(bomb_type=random.choice(['normal', 'ice', 'sticky', 'impact', 'land_mine', 'tnt']),
-                      source_player=self.source_player, position=(np[0], np[1] - 1, np[2]), velocity=(0, -1, 0)).autoretain()
+        self.b = Bomb(
+            bomb_type=random.choice(
+                ['normal', 'ice', 'sticky', 'impact', 'land_mine', 'tnt']
+            ),
+            source_player=self.source_player,
+            position=(np[0], np[1] - 1, np[2]),
+            velocity=(0, -1, 0),
+        ).autoretain()
         if self.b.bomb_type in ['impact', 'land_mine']:
             self.b.arm()
 
@@ -196,8 +197,14 @@ class Floater(bs.Actor):
         if self.node.exists() and not self.controlled:
             pn = self.node.position
             dist = self.distance(pn[0], pn[1], pn[2], px, py, pz)
-            self.node.velocity = ((px - pn[0]) / dist, (py - pn[1]) / dist, (pz - pn[2]) / dist)
-            bs.timer(dist-1, bs.WeakCall(self.move))  # suppress_format_warning=True)
+            self.node.velocity = (
+                (px - pn[0]) / dist,
+                (py - pn[1]) / dist,
+                (pz - pn[2]) / dist,
+            )
+            bs.timer(
+                dist - 1, bs.WeakCall(self.move)
+            )  # suppress_format_warning=True)
 
     def handlemessage(self, msg):
         if isinstance(msg, bs.DieMessage):
@@ -215,24 +222,36 @@ def assignFloInputs(clientID: int):
     with activity.context:
         if not hasattr(activity, 'flo') or not activity.flo.node.exists():
             try:
-                activity.flo = Floater(activity.map.get_def_bound_box('map_bounds'))
+                activity.flo = Floater(
+                    activity.map.get_def_bound_box('map_bounds')
+                )
             except:
                 return  # Perhaps using in main-menu/score-screen
         floater = activity.flo
         if floater.controlled:
-            bs.broadcastmessage('Floater is already being controlled',
-                                color=(1, 0, 0), transient=True, clients=[clientID])
+            bs.broadcastmessage(
+                'Floater is already being controlled',
+                color=(1, 0, 0),
+                transient=True,
+                clients=[clientID],
+            )
             return
-        bs.broadcastmessage('You Gained Control Over The Floater!\n Press Bomb to Throw Bombs and Punch to leave!', clients=[
-                            clientID], transient=True, color=(0, 1, 1))
+        bs.broadcastmessage(
+            'You Gained Control Over The Floater!\n Press Bomb to Throw Bombs and Punch to leave!',
+            clients=[clientID],
+            transient=True,
+            color=(0, 1, 1),
+        )
 
         for i in activity.players:
             if i.sessionplayer.inputdevice.client_id == clientID:
+
                 def dis(i, floater):
                     i.actor.node.invincible = False
                     i.resetinput()
                     i.actor.connect_controls_to_player()
                     floater.dis()
+
                 ps = i.actor.node.position
                 i.actor.node.invincible = True
                 floater.node.position = (ps[0], ps[1] + 1.0, ps[2])
@@ -249,7 +268,9 @@ def assignFloInputs(clientID: int):
                 i.assigninput(babase.InputType.JUMP_PRESS, floater.down)
                 i.assigninput(babase.InputType.JUMP_RELEASE, floater.downR)
                 i.assigninput(babase.InputType.BOMB_PRESS, floater.drop)
-                i.assigninput(babase.InputType.PUNCH_PRESS, babase.Call(dis, i, floater))
+                i.assigninput(
+                    babase.InputType.PUNCH_PRESS, babase.Call(dis, i, floater)
+                )
                 i.assigninput(babase.InputType.UP_DOWN, floater.updown)
                 i.assigninput(babase.InputType.LEFT_RIGHT, floater.leftright)
 

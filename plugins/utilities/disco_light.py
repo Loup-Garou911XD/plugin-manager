@@ -66,11 +66,17 @@ class DiscoLight:
     # Create and animate colorful spotlight.
     def partyLight(self, switch=True):
         from bascenev1._nodeactor import NodeActor
+
         x_spread = 10
         y_spread = 5
-        positions = [[-x_spread, -y_spread], [0, -y_spread], [0, y_spread],
-                     [x_spread, -y_spread], [x_spread, y_spread],
-                     [-x_spread, y_spread]]
+        positions = [
+            [-x_spread, -y_spread],
+            [0, -y_spread],
+            [0, y_spread],
+            [x_spread, -y_spread],
+            [x_spread, y_spread],
+            [-x_spread, y_spread],
+        ]
         times = [0, 2700, 1000, 1800, 500, 1400]
 
         # Store this on the current activity, so we only have one at a time.
@@ -81,88 +87,135 @@ class DiscoLight:
             g = random.choice([0.5, 1])
             b = random.choice([0.5, 1])
             light = NodeActor(
-                bs.newnode('light',
-                           attrs={
-                               'position': (
-                                   positions[i][0], 0, positions[i][1]),
-                               'radius': 1.0,
-                               'lights_volumes': False,
-                               'height_attenuated': False,
-                               'color': (r, g, b)
-                           }))
+                bs.newnode(
+                    'light',
+                    attrs={
+                        'position': (positions[i][0], 0, positions[i][1]),
+                        'radius': 1.0,
+                        'lights_volumes': False,
+                        'height_attenuated': False,
+                        'color': (r, g, b),
+                    },
+                )
+            )
             sval = 1.87
             iscale = 1.3
-            tcombine = bs.newnode('combine',
-                                  owner=light.node,
-                                  attrs={
-                                      'size': 3,
-                                      'input0': positions[i][0],
-                                      'input1': 0,
-                                      'input2': positions[i][1]
-                                  })
+            tcombine = bs.newnode(
+                'combine',
+                owner=light.node,
+                attrs={
+                    'size': 3,
+                    'input0': positions[i][0],
+                    'input1': 0,
+                    'input2': positions[i][1],
+                },
+            )
             assert light.node
             tcombine.connectattr('output', light.node, 'position')
             xval = positions[i][0]
             yval = positions[i][1]
             spd = 1.0 + random.random()
             spd2 = 1.0 + random.random()
-            animate(tcombine,
-                    'input0', {
-                        0.0: xval + 0,
-                        0.069 * spd: xval + 10.0,
-                        0.143 * spd: xval - 10.0,
-                        0.201 * spd: xval + 0
-                    },
-                    loop=True)
-            animate(tcombine,
-                    'input2', {
-                        0.0: yval + 0,
-                        0.15 * spd2: yval + 10.0,
-                        0.287 * spd2: yval - 10.0,
-                        0.398 * spd2: yval + 0
-                    },
-                    loop=True)
-            animate(light.node,
-                    'intensity', {
-                        0.0: 0,
-                        0.02 * sval: 0,
-                        0.05 * sval: 0.8 * iscale,
-                        0.08 * sval: 0,
-                        0.1 * sval: 0
-                    },
-                    loop=True,
-                    offset=times[i])
+            animate(
+                tcombine,
+                'input0',
+                {
+                    0.0: xval + 0,
+                    0.069 * spd: xval + 10.0,
+                    0.143 * spd: xval - 10.0,
+                    0.201 * spd: xval + 0,
+                },
+                loop=True,
+            )
+            animate(
+                tcombine,
+                'input2',
+                {
+                    0.0: yval + 0,
+                    0.15 * spd2: yval + 10.0,
+                    0.287 * spd2: yval - 10.0,
+                    0.398 * spd2: yval + 0,
+                },
+                loop=True,
+            )
+            animate(
+                light.node,
+                'intensity',
+                {
+                    0.0: 0,
+                    0.02 * sval: 0,
+                    0.05 * sval: 0.8 * iscale,
+                    0.08 * sval: 0,
+                    0.1 * sval: 0,
+                },
+                loop=True,
+                offset=times[i],
+            )
             if not switch:
-                bs.timer(0.1,
-                         light.node.delete)
+                bs.timer(0.1, light.node.delete)
             activity.camera_flash_data.append(light)  # type: ignore
 
     # Create RGB tint.
     def rainbow(self, activity) -> None:
         """Create RGB tint."""
 
-        cnode = bs.newnode('combine',
-                           attrs={
-                               'input0': self.globalnodes[0],
-                               'input1': self.globalnodes[1],
-                               'input2': self.globalnodes[2],
-                               'size': 3
-                           })
+        cnode = bs.newnode(
+            'combine',
+            attrs={
+                'input0': self.globalnodes[0],
+                'input1': self.globalnodes[1],
+                'input2': self.globalnodes[2],
+                'size': 3,
+            },
+        )
 
-        _gameutils.animate(cnode, 'input0',
-                           {0.0: 1.0, 1.0: 1.0, 2.0: 1.0, 3.0: 1.0,
-                            4.0: 0.2, 5.0: 0.1, 6.0: 0.5,
-                            7.0: 1.0}, loop=True)
+        _gameutils.animate(
+            cnode,
+            'input0',
+            {
+                0.0: 1.0,
+                1.0: 1.0,
+                2.0: 1.0,
+                3.0: 1.0,
+                4.0: 0.2,
+                5.0: 0.1,
+                6.0: 0.5,
+                7.0: 1.0,
+            },
+            loop=True,
+        )
 
-        _gameutils.animate(cnode, 'input1',
-                           {0.0: 0.2, 1.0: 0.2, 2.0: 0.5, 3.0: 1.0,
-                            4.0: 1.0, 5.0: 0.1, 6.0: 0.3,
-                            7.0: 0.2}, loop=True)
+        _gameutils.animate(
+            cnode,
+            'input1',
+            {
+                0.0: 0.2,
+                1.0: 0.2,
+                2.0: 0.5,
+                3.0: 1.0,
+                4.0: 1.0,
+                5.0: 0.1,
+                6.0: 0.3,
+                7.0: 0.2,
+            },
+            loop=True,
+        )
 
-        _gameutils.animate(cnode, 'input2',
-                           {0.0: 0.2, 1.0: 0.2, 2.0: 0.0, 3.0: 0.0,
-                            4.0: 0.2, 5.0: 1.0, 6.0: 1.0,
-                            7.0: 0.2}, loop=True)
+        _gameutils.animate(
+            cnode,
+            'input2',
+            {
+                0.0: 0.2,
+                1.0: 0.2,
+                2.0: 0.0,
+                3.0: 0.0,
+                4.0: 0.2,
+                5.0: 1.0,
+                6.0: 1.0,
+                7.0: 0.2,
+            },
+            loop=True,
+        )
 
         cnode.connectattr('output', activity.globalsnode, 'tint')
 
@@ -173,13 +226,15 @@ class DiscoLight:
         # map_name = activity.map.getname()
         tint = self.globalnodes
 
-        cnode = bs.newnode('combine',
-                           attrs={
-                               'input0': c_existing[0],
-                               'input1': c_existing[1],
-                               'input2': c_existing[2],
-                               'size': 3
-                           })
+        cnode = bs.newnode(
+            'combine',
+            attrs={
+                'input0': c_existing[0],
+                'input1': c_existing[1],
+                'input2': c_existing[2],
+                'size': 3,
+            },
+        )
 
         _gameutils.animate(cnode, 'input0', {0: c_existing[0], 1.0: tint[0]})
         _gameutils.animate(cnode, 'input1', {0: c_existing[1], 1.0: tint[1]})

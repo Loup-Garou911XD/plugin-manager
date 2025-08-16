@@ -212,7 +212,9 @@ def get_modules() -> None:
                 content = f.read()
                 assert hashlib.md5(content).hexdigest() == details["md5"]
             try:
-                shutil.unpack_archive(package_filename, install_path, format='gztar')
+                shutil.unpack_archive(
+                    package_filename, install_path, format='gztar'
+                )
                 extracted_package_files = Path(f"{install_path}/{folder_name}")
                 for root, dirs, files in os.walk(extracted_package_files):
                     for dir in dirs:
@@ -237,7 +239,11 @@ def get_modules() -> None:
                     # ! Remember to update accordingly
                     shutil.rmtree(Path(f"{install_path}/lxml-5.3.0.dist-info"))
                 except:
-                    shutil.rmtree(Path(f"{install_path}/charset_normalizer-3.4.1.dist-info"))  # !
+                    shutil.rmtree(
+                        Path(
+                            f"{install_path}/charset_normalizer-3.4.1.dist-info"
+                        )
+                    )  # !
             remove(package_path)
         else:
             return
@@ -286,7 +292,9 @@ def get_gateway_addr():
 '''
         # Replace the function
         lines[224:229] = new_function
-        lines[21] = "import socket\nimport re\nfrom urllib.parse import urlparse"
+        lines[21] = (
+            "import socket\nimport re\nfrom urllib.parse import urlparse"
+        )
 
     with open(Path(f"{install_path}/natpmp/__init__.py"), "w") as f:
         f.writelines(lines)
@@ -347,10 +355,12 @@ def add_port_mapping():
 
             if devices == []:
                 babase.screenmessage(
-                    "Please enable upnp service on your router", (1.00, 0.15, 0.15)
+                    "Please enable upnp service on your router",
+                    (1.00, 0.15, 0.15),
                 )
                 babase.pushcall(
-                    babase.Call(play_sound, "shieldDown"), from_other_thread=True
+                    babase.Call(play_sound, "shieldDown"),
+                    from_other_thread=True,
                 )
                 return
             try:
@@ -371,14 +381,19 @@ def add_port_mapping():
                                     NewExternalPort=BS_PORT,
                                     NewProtocol="UDP",
                                 )
-                                if result["NewEnabled"] and not accessible_online:
+                                if (
+                                    result["NewEnabled"]
+                                    and not accessible_online
+                                ):
                                     if babase.do_once():
                                         babase.screenmessage(
                                             "Oops seems like your network doesn't support upnp",
                                             (1.0, 0.15, 0.15),
                                         )
                                         babase.pushcall(
-                                            babase.Call(play_sound, "shieldDown"),
+                                            babase.Call(
+                                                play_sound, "shieldDown"
+                                            ),
                                             from_other_thread=True,
                                         )
                                     return
@@ -403,7 +418,10 @@ def add_port_mapping():
                 babase.screenmessage(
                     "You will need to manualy port forward at the router :("
                 )
-                babase.pushcall(babase.Call(play_sound, "error"), from_other_thread=True,)
+                babase.pushcall(
+                    babase.Call(play_sound, "error"),
+                    from_other_thread=True,
+                )
     except ModuleNotFoundError:
         pass
 
@@ -418,6 +436,7 @@ class Joinable(babase.Plugin):
         else:
             try:
                 import upnpclient
+
                 add_port_mapping()
             except ImportError:
                 try:

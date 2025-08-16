@@ -26,7 +26,9 @@ from typing import Optional
 CONTROLS_CENTER = (0, 0)
 CONTROLS_SCALE = 1
 
-BASE_STUNTS_DIRECTORY = os.path.join(_babase.env()["python_directory_user"], "CustomStunts")
+BASE_STUNTS_DIRECTORY = os.path.join(
+    _babase.env()["python_directory_user"], "CustomStunts"
+)
 PLAYERS_STUNT_INFO = {}
 
 STUNT_CACHE = {}
@@ -38,55 +40,83 @@ class ControlsUI:
 
     def on_jump_press(activity):
         activity._jump_image.node.color = list(
-            channel * 2 for channel in activity._jump_image.node.color[:3]) + [1]
+            channel * 2 for channel in activity._jump_image.node.color[:3]
+        ) + [1]
 
     def on_jump_release(activity):
         activity._jump_image.node.color = list(
-            channel * 0.5 for channel in activity._jump_image.node.color[:3]) + [1]
+            channel * 0.5 for channel in activity._jump_image.node.color[:3]
+        ) + [1]
 
     def on_pickup_press(activity):
         activity._pickup_image.node.color = list(
-            channel * 2 for channel in activity._pickup_image.node.color[:3]) + [1]
+            channel * 2 for channel in activity._pickup_image.node.color[:3]
+        ) + [1]
 
     def on_pickup_release(activity):
         activity._pickup_image.node.color = list(
-            channel * 0.5 for channel in activity._pickup_image.node.color[:3]) + [1]
+            channel * 0.5 for channel in activity._pickup_image.node.color[:3]
+        ) + [1]
 
     def on_punch_press(activity):
         activity._punch_image.node.color = list(
-            channel * 2 for channel in activity._punch_image.node.color[:3]) + [1]
+            channel * 2 for channel in activity._punch_image.node.color[:3]
+        ) + [1]
 
     def on_punch_release(activity):
         activity._punch_image.node.color = list(
-            channel * 0.5 for channel in activity._punch_image.node.color[:3]) + [1]
+            channel * 0.5 for channel in activity._punch_image.node.color[:3]
+        ) + [1]
 
     def on_bomb_press(activity):
         activity._bomb_image.node.color = list(
-            channel * 2 for channel in activity._bomb_image.node.color[:3]) + [1]
+            channel * 2 for channel in activity._bomb_image.node.color[:3]
+        ) + [1]
 
     def on_bomb_release(activity):
         activity._bomb_image.node.color = list(
-            channel * 0.5 for channel in activity._bomb_image.node.color[:3]) + [1]
+            channel * 0.5 for channel in activity._bomb_image.node.color[:3]
+        ) + [1]
 
     def on_move_ud(activity, value):
-        activity.set_stick_image_position(activity.stick_image_position_x, value)
+        activity.set_stick_image_position(
+            activity.stick_image_position_x, value
+        )
 
     def on_move_lr(activity, value):
-        activity.set_stick_image_position(value, activity.stick_image_position_y)
+        activity.set_stick_image_position(
+            value, activity.stick_image_position_y
+        )
 
     def display(activity):
-        activity._jump_image.node.color = list(activity._jump_image.node.color[:3]) + [1]
-        activity._pickup_image.node.color = list(activity._pickup_image.node.color[:3]) + [1]
-        activity._punch_image.node.color = list(activity._punch_image.node.color[:3]) + [1]
-        activity._bomb_image.node.color = list(activity._bomb_image.node.color[:3]) + [1]
+        activity._jump_image.node.color = list(
+            activity._jump_image.node.color[:3]
+        ) + [1]
+        activity._pickup_image.node.color = list(
+            activity._pickup_image.node.color[:3]
+        ) + [1]
+        activity._punch_image.node.color = list(
+            activity._punch_image.node.color[:3]
+        ) + [1]
+        activity._bomb_image.node.color = list(
+            activity._bomb_image.node.color[:3]
+        ) + [1]
         activity._stick_base_image.opacity = 1.0
         activity._stick_nub_image.opacity = 1.0
 
     def hide(activity):
-        activity._jump_image.node.color = list(activity._jump_image.node.color[:3]) + [0]
-        activity._pickup_image.node.color = list(activity._pickup_image.node.color[:3]) + [0]
-        activity._punch_image.node.color = list(activity._punch_image.node.color[:3]) + [0]
-        activity._bomb_image.node.color = list(activity._bomb_image.node.color[:3]) + [0]
+        activity._jump_image.node.color = list(
+            activity._jump_image.node.color[:3]
+        ) + [0]
+        activity._pickup_image.node.color = list(
+            activity._pickup_image.node.color[:3]
+        ) + [0]
+        activity._punch_image.node.color = list(
+            activity._punch_image.node.color[:3]
+        ) + [0]
+        activity._bomb_image.node.color = list(
+            activity._bomb_image.node.color[:3]
+        ) + [0]
         activity._stick_base_image.opacity = 0.0
         activity._stick_nub_image.opacity = 0.0
 
@@ -101,7 +131,7 @@ CONTROLS_UI_MAP = {
     "BOMB_PRESS": ControlsUI.on_bomb_press,
     "BOMB_RELEASE": ControlsUI.on_bomb_release,
     "UP_DOWN": ControlsUI.on_move_ud,
-    "LEFT_RIGHT": ControlsUI.on_move_lr
+    "LEFT_RIGHT": ControlsUI.on_move_lr,
 }
 
 
@@ -149,13 +179,15 @@ class NewPlayerSpaz(bascenev1lib.actor.playerspaz.PlayerSpaz):
 
     def _handle_action(self, action, value: Optional[float] = None) -> None:
         if self.source_player.sessionplayer in PLAYERS_STUNT_INFO:
-            PLAYERS_STUNT_INFO[self.source_player.sessionplayer].append({
-                "time": bs.time() - self.source_player.recording_start_time,
-                "move": {
-                    "action": action,
-                    "value": value,
+            PLAYERS_STUNT_INFO[self.source_player.sessionplayer].append(
+                {
+                    "time": bs.time() - self.source_player.recording_start_time,
+                    "move": {
+                        "action": action,
+                        "value": value,
+                    },
                 }
-            })
+            )
         elif self.source_player.in_replay:
             ui_activation = CONTROLS_UI_MAP.get(action)
             if ui_activation:
@@ -276,17 +308,21 @@ def replay(player, stunt_name):
             if value is None:
                 bs.timer(
                     move["time"],
-                    babase.Call(player.actor.move_map[move["move"]["action"]])
+                    babase.Call(player.actor.move_map[move["move"]["action"]]),
                 )
             else:
                 bs.timer(
                     move["time"],
-                    babase.Call(player.actor.move_map[move["move"]
-                                ["action"]], move["move"]["value"])
+                    babase.Call(
+                        player.actor.move_map[move["move"]["action"]],
+                        move["move"]["value"],
+                    ),
                 )
         last_move_time = move["time"]
         time_to_hide_controls = last_move_time + 1
-        bs.timer(time_to_hide_controls, babase.Call(handle_player_replay_end, player))
+        bs.timer(
+            time_to_hide_controls, babase.Call(handle_player_replay_end, player)
+        )
 
 
 def spawn_mirror_spaz(player):
@@ -295,10 +331,18 @@ def spawn_mirror_spaz(player):
         bot = spaz.Spaz(
             color=player.color,
             highlight=player.highlight,
-            character=player.character
+            character=player.character,
         ).autoretain()
-        bot.handlemessage(bs.StandMessage(
-            (player.actor.node.position[0], player.actor.node.position[1], player.actor.node.position[2]+1), 93))
+        bot.handlemessage(
+            bs.StandMessage(
+                (
+                    player.actor.node.position[0],
+                    player.actor.node.position[1],
+                    player.actor.node.position[2] + 1,
+                ),
+                93,
+            )
+        )
         bot.node.name = player.actor.node.name
         bot.node.name_color = player.actor.node.name_color
         player.actor.mirror_spaz.append(bot)
@@ -328,29 +372,38 @@ def ghost(player, stunt_name):
             if value is None:
                 bs.timer(
                     move["time"],
-                    babase.Call(bot.move_map[move["move"]["action"]])
+                    babase.Call(bot.move_map[move["move"]["action"]]),
                 )
                 ui_activation = CONTROLS_UI_MAP.get(move["move"]["action"])
                 if ui_activation:
                     bs.timer(
                         move["time"],
-                        babase.Call(ui_activation, player.actor._activity())
+                        babase.Call(ui_activation, player.actor._activity()),
                     )
             else:
                 bs.timer(
                     move["time"],
-                    babase.Call(bot.move_map[move["move"]["action"]], move["move"]["value"])
+                    babase.Call(
+                        bot.move_map[move["move"]["action"]],
+                        move["move"]["value"],
+                    ),
                 )
                 ui_activation = CONTROLS_UI_MAP.get(move["move"]["action"])
 
                 if ui_activation:
                     bs.timer(
                         move["time"],
-                        babase.Call(ui_activation, player.actor._activity(), move["move"]["value"])
+                        babase.Call(
+                            ui_activation,
+                            player.actor._activity(),
+                            move["move"]["value"],
+                        ),
                     )
         last_move_time = move["time"]
         time_to_hide_controls = last_move_time + 1
-        bs.timer(time_to_hide_controls, babase.Call(handle_player_replay_end, player))
+        bs.timer(
+            time_to_hide_controls, babase.Call(handle_player_replay_end, player)
+        )
         bs.timer(time_to_hide_controls, babase.Call(bot.node.delete))
 
 
@@ -361,15 +414,25 @@ def give_ghost_power(spaz):
     ghost = bs.Material()
     # smoothy hecks
     ghost.add_actions(
-        conditions=(('they_have_material', factory.spaz_material), 'or',
-                    ('they_have_material', shared.player_material), 'or',
-                    ('they_have_material', shared.attack_material), 'or',
-                    ('they_have_material', shared.pickup_material), 'or',
-                    ('they_have_material',  PowerupBoxFactory.get().powerup_accept_material)),
+        conditions=(
+            ('they_have_material', factory.spaz_material),
+            'or',
+            ('they_have_material', shared.player_material),
+            'or',
+            ('they_have_material', shared.attack_material),
+            'or',
+            ('they_have_material', shared.pickup_material),
+            'or',
+            (
+                'they_have_material',
+                PowerupBoxFactory.get().powerup_accept_material,
+            ),
+        ),
         actions=(
-                ('modify_part_collision', 'collide', False),
-                ('modify_part_collision', 'physical', False)
-        ))
+            ('modify_part_collision', 'collide', False),
+            ('modify_part_collision', 'physical', False),
+        ),
+    )
     mats = list(spaz.node.materials)
     roller = list(spaz.node.roller_materials)
     ext = list(spaz.node.extras_material)
@@ -407,9 +470,11 @@ def new_chatmessage(msg):
 
     if command == "start":
         capture(player)
-        bs.chatmessage("Recording started for {}.".format(
-            player.getname(),
-        ))
+        bs.chatmessage(
+            "Recording started for {}.".format(
+                player.getname(),
+            )
+        )
         return original_chatmessage(msg)
 
     stunt_name = " ".join(msg_splits[1:])
@@ -419,20 +484,24 @@ def new_chatmessage(msg):
             bui.screenmessage("Enter name of stunt eg : *save bombjump")
             return original_chatmessage(msg)
         save(player, stunt_name)
-        bs.chatmessage('Recording "{}" by {} saved.'.format(
-            stunt_name,
-            player.getname(),
-        ))
+        bs.chatmessage(
+            'Recording "{}" by {} saved.'.format(
+                stunt_name,
+                player.getname(),
+            )
+        )
     elif command == "stunt":
         if len(msg_splits) < 2:
             bui.screenmessage("Enter name of stunt eg : *stunt bombjump")
             return original_chatmessage(msg)
         if player is not None and player.actor is not None:
             replay(player, stunt_name)
-            bs.chatmessage('Replaying "{}" on {}.'.format(
-                stunt_name,
-                player.getname(),
-            ))
+            bs.chatmessage(
+                'Replaying "{}" on {}.'.format(
+                    stunt_name,
+                    player.getname(),
+                )
+            )
         else:
             bui.screenmessage("Player not found")
     elif command == "learn":
@@ -441,10 +510,12 @@ def new_chatmessage(msg):
             return original_chatmessage(msg)
         if player is not None and player.actor is not None:
             ghost(player, stunt_name)
-            bs.chatmessage('Replaying "{}" on {}.'.format(
-                stunt_name,
-                player.getname(),
-            ))
+            bs.chatmessage(
+                'Replaying "{}" on {}.'.format(
+                    stunt_name,
+                    player.getname(),
+                )
+            )
         else:
             bui.screenmessage("Player not found")
     elif command == "mirror":
@@ -468,7 +539,7 @@ def set_stick_image_position(self, x: float, y: float) -> None:
     assert self._scale is not None
     p = [
         self._stick_nub_position[0] + x * offs * 0.6,
-        self._stick_nub_position[1] + y * offs * 0.6
+        self._stick_nub_position[1] + y * offs * 0.6,
     ]
     c = list(self._stick_nub_image_color)
     if abs(x) > 0.1 or abs(y) > 0.1:
@@ -492,25 +563,25 @@ def on_begin(self, *args, **kwargs) -> None:
         bs.gettexture('buttonJump'),
         position=(385, 160),
         scale=(50, 50),
-        color=[0.1, 0.45, 0.1, 0]
+        color=[0.1, 0.45, 0.1, 0],
     )
     self._pickup_image = Image(
         bs.gettexture('buttonPickUp'),
         position=(385, 240),
         scale=(50, 50),
-        color=[0, 0.35, 0, 0]
+        color=[0, 0.35, 0, 0],
     )
     self._punch_image = Image(
         bs.gettexture('buttonPunch'),
         position=(345, 200),
         scale=(50, 50),
-        color=[0.45, 0.45, 0, 0]
+        color=[0.45, 0.45, 0, 0],
     )
     self._bomb_image = Image(
         bs.gettexture('buttonBomb'),
         position=(425, 200),
         scale=(50, 50),
-        color=[0.45, 0.1, 0.1, 0]
+        color=[0.45, 0.1, 0.1, 0],
     )
     self.stick_image_position_x = self.stick_image_position_y = 0.0
     self._stick_base_position = p = (-328, 200)
@@ -522,22 +593,26 @@ def on_begin(self, *args, **kwargs) -> None:
             'absolute_scale': True,
             'vr_depth': -40,
             'position': p,
-            'scale': (220.0*0.6,  220.0*0.6),
-            'color': c2
-        })
+            'scale': (220.0 * 0.6, 220.0 * 0.6),
+            'color': c2,
+        },
+    )
     self._stick_nub_position = p = (-328, 200)
     self._stick_nub_image_color = c3 = (0.4, 0.4, 0.4, 1.0)
-    self._stick_nub_image = bs.newnode('image',
-                                       attrs={
-                                           'texture': bs.gettexture('nub'),
-                                           'absolute_scale': True,
-                                           'position': p,
-                                           'scale': (110*0.6, 110*0.66),
-                                           'color': c3
-                                       })
+    self._stick_nub_image = bs.newnode(
+        'image',
+        attrs={
+            'texture': bs.gettexture('nub'),
+            'absolute_scale': True,
+            'position': p,
+            'scale': (110 * 0.6, 110 * 0.66),
+            'color': c3,
+        },
+    )
     self._stick_base_image.opacity = 0.0
     self._stick_nub_image.opacity = 0.0
     return original_on_begin(self, *args, **kwargs)
+
 
 # ba_meta export babase.Plugin
 
@@ -545,13 +620,16 @@ def on_begin(self, *args, **kwargs) -> None:
 class byHeySmoothy(babase.Plugin):
     def on_app_running(self):
         bs._activity.Activity.on_begin = on_begin
-        bs._activity.Activity.set_stick_image_position = set_stick_image_position
+        bs._activity.Activity.set_stick_image_position = (
+            set_stick_image_position
+        )
         bs.chatmessage = new_chatmessage
         bascenev1lib.actor.playerspaz.PlayerSpaz = NewPlayerSpaz
         bascenev1lib.actor.spaz.Spaz = NewSpaz
 
 
 #  lets define a sample elimination game that can use super power of this plugin
+
 
 # ba_meta export bascenev1.GameActivity
 class BroEliminaition(EliminationGame):

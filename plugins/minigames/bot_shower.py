@@ -9,9 +9,15 @@ import bascenev1 as bs
 import random
 from bascenev1lib.actor.onscreentimer import OnScreenTimer
 from bascenev1lib.actor.spazbot import (
-    SpazBot, SpazBotSet,
-    BomberBot, BrawlerBot, BouncyBot,
-    ChargerBot, TriggerBot, ExplodeyBot)
+    SpazBot,
+    SpazBotSet,
+    BomberBot,
+    BrawlerBot,
+    BouncyBot,
+    ChargerBot,
+    TriggerBot,
+    ExplodeyBot,
+)
 
 if TYPE_CHECKING:
     from typing import Any, List, Type, Optional
@@ -92,8 +98,9 @@ class BotShowerGame(bs.TeamGameActivity[Player, Team]):
                 self._bot_type.remove(BouncyBot)
 
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
 
     def on_begin(self) -> None:
         super().on_begin()
@@ -111,16 +118,17 @@ class BotShowerGame(bs.TeamGameActivity[Player, Team]):
     def spawn_player(self, player: Player) -> None:
         spaz = self.spawn_player_spaz(player)
         spaz.connect_controls_to_player(
-            enable_punch=False,
-            enable_bomb=False,
-            enable_pickup=False)
+            enable_punch=False, enable_bomb=False, enable_pickup=False
+        )
         return spaz
 
     def on_player_join(self, player: Player) -> None:
         if self.has_begun():
             bui.screenmessage(
-                babase.Lstr(resource='playerDelayedJoinText',
-                            subs=[('${PLAYER}', player.getname(full=True))]),
+                babase.Lstr(
+                    resource='playerDelayedJoinText',
+                    subs=[('${PLAYER}', player.getname(full=True))],
+                ),
                 color=(1, 1, 0),
             )
 
@@ -144,8 +152,14 @@ class BotShowerGame(bs.TeamGameActivity[Player, Team]):
 
     def _spawn_bot(self) -> None:
         assert self._bots is not None
-        self._bots.spawn_bot(random.choice(self._bot_type), pos=(
-            random.uniform(-11, 11), (9.8 if self.map.getname() == 'Football Stadium' else 5.0), random.uniform(-5, 5)))
+        self._bots.spawn_bot(
+            random.choice(self._bot_type),
+            pos=(
+                random.uniform(-11, 11),
+                (9.8 if self.map.getname() == 'Football Stadium' else 5.0),
+                random.uniform(-5, 5),
+            ),
+        )
 
     def _check_end_game(self) -> None:
         living_team_count = 0
@@ -185,8 +199,7 @@ class BotShowerGame(bs.TeamGameActivity[Player, Team]):
             longest_life = 0.0
             for player in team.players:
                 assert player.death_time is not None
-                longest_life = max(longest_life,
-                                   player.death_time - start_time)
+                longest_life = max(longest_life, player.death_time - start_time)
 
             results.set_team_score(team, int(1000.0 * longest_life))
 

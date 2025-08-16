@@ -43,19 +43,21 @@ class Puck(bs.Actor):
         assert activity is not None
         assert isinstance(activity, HockeyGame)
         pmats = [shared.object_material, activity.puck_material]
-        self.node = bs.newnode('prop',
-                               delegate=self,
-                               attrs={
-                                   'mesh': activity.puck_model,
-                                   'color_texture': activity.puck_tex,
-                                   'body': 'sphere',
-                                   'reflection': 'soft',
-                                   'reflection_scale': [0.2],
-                                   'shadow_size': 0.5,
-                                   'is_area_of_interest': True,
-                                   'position': self._spawn_pos,
-                                   'materials': pmats
-                               })
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'mesh': activity.puck_model,
+                'color_texture': activity.puck_tex,
+                'body': 'sphere',
+                'reflection': 'soft',
+                'reflection_scale': [0.2],
+                'shadow_size': 0.5,
+                'is_area_of_interest': True,
+                'position': self._spawn_pos,
+                'materials': pmats,
+            },
+        )
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.2: 1.3, 0.26: 1})
 
     def handlemessage(self, msg: Any) -> Any:
@@ -75,11 +77,21 @@ class Puck(bs.Actor):
             assert self.node
             assert msg.force_direction is not None
             self.node.handlemessage(
-                'impulse', msg.pos[0], msg.pos[1], msg.pos[2], msg.velocity[0],
-                msg.velocity[1], msg.velocity[2], 1.0 * msg.magnitude,
-                1.0 * msg.velocity_magnitude, msg.radius, 0,
-                msg.force_direction[0], msg.force_direction[1],
-                msg.force_direction[2])
+                'impulse',
+                msg.pos[0],
+                msg.pos[1],
+                msg.pos[2],
+                msg.velocity[0],
+                msg.velocity[1],
+                msg.velocity[2],
+                1.0 * msg.magnitude,
+                1.0 * msg.velocity_magnitude,
+                msg.radius,
+                0,
+                msg.force_direction[0],
+                msg.force_direction[1],
+                msg.force_direction[2],
+            )
 
             # If this hit came from a player, log them as the last to touch us.
             s_player = msg.get_source_player(Player)
@@ -166,12 +178,13 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
         self.puck_scored_tex = bs.gettexture('landMineLit')
         self._puck_sound = bs.getsound('metalHit')
         self.puck_material = bs.Material()
-        self.puck_material.add_actions(actions=(('modify_part_collision',
-                                                 'friction', 0.5)))
-        self.puck_material.add_actions(conditions=('they_have_material',
-                                                   shared.pickup_material),
-                                       actions=('modify_part_collision',
-                                                'collide', True))
+        self.puck_material.add_actions(
+            actions=(('modify_part_collision', 'friction', 0.5))
+        )
+        self.puck_material.add_actions(
+            conditions=('they_have_material', shared.pickup_material),
+            actions=('modify_part_collision', 'collide', True),
+        )
         self.puck_material.add_actions(
             conditions=(
                 ('we_are_younger_than', 100),
@@ -180,29 +193,37 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
             ),
             actions=('modify_node_collision', 'collide', False),
         )
-        self.puck_material.add_actions(conditions=('they_have_material',
-                                                   shared.footing_material),
-                                       actions=('impact_sound',
-                                                self._puck_sound, 0.2, 5))
+        self.puck_material.add_actions(
+            conditions=('they_have_material', shared.footing_material),
+            actions=('impact_sound', self._puck_sound, 0.2, 5),
+        )
 
         # Keep track of which player last touched the puck
         self.puck_material.add_actions(
             conditions=('they_have_material', shared.player_material),
-            actions=(('call', 'at_connect',
-                      self._handle_puck_player_collide), ))
+            actions=(('call', 'at_connect', self._handle_puck_player_collide),),
+        )
 
         # We want the puck to kill powerups; not get stopped by them
         self.puck_material.add_actions(
-            conditions=('they_have_material',
-                        PowerupBoxFactory.get().powerup_material),
-            actions=(('modify_part_collision', 'physical', False),
-                     ('message', 'their_node', 'at_connect', bs.DieMessage())))
+            conditions=(
+                'they_have_material',
+                PowerupBoxFactory.get().powerup_material,
+            ),
+            actions=(
+                ('modify_part_collision', 'physical', False),
+                ('message', 'their_node', 'at_connect', bs.DieMessage()),
+            ),
+        )
         self._score_region_material = bs.Material()
         self._score_region_material.add_actions(
             conditions=('they_have_material', self.puck_material),
-            actions=(('modify_part_collision', 'collide',
-                      True), ('modify_part_collision', 'physical', False),
-                     ('call', 'at_connect', self._handle_score)))
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', False),
+                ('call', 'at_connect', self._handle_score),
+            ),
+        )
         self._puck_spawn_pos: Optional[Sequence[float]] = None
         self._score_regions: Optional[List[bs.NodeActor]] = None
         self._puck: Optional[Puck] = None
@@ -232,22 +253,30 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
         self._score_regions = []
         self._score_regions.append(
             bs.NodeActor(
-                bs.newnode('region',
-                           attrs={
-                               'position': defs.boxes['goal1'][0:3],
-                               'scale': defs.boxes['goal1'][6:9],
-                               'type': 'box',
-                               'materials': [self._score_region_material]
-                           })))
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': defs.boxes['goal1'][0:3],
+                        'scale': defs.boxes['goal1'][6:9],
+                        'type': 'box',
+                        'materials': [self._score_region_material],
+                    },
+                )
+            )
+        )
         self._score_regions.append(
             bs.NodeActor(
-                bs.newnode('region',
-                           attrs={
-                               'position': defs.boxes['goal2'][0:3],
-                               'scale': defs.boxes['goal2'][6:9],
-                               'type': 'box',
-                               'materials': [self._score_region_material]
-                           })))
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': defs.boxes['goal2'][0:3],
+                        'scale': defs.boxes['goal2'][6:9],
+                        'type': 'box',
+                        'materials': [self._score_region_material],
+                    },
+                )
+            )
+        )
         self._update_scoreboard()
         self._chant_sound.play()
 
@@ -258,9 +287,9 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
         collision = bs.getcollision()
         try:
             puck = collision.sourcenode.getdelegate(Puck, True)
-            player = collision.opposingnode.getdelegate(PlayerSpaz,
-                                                        True).getplayer(
-                                                            Player, True)
+            player = collision.opposingnode.getdelegate(
+                PlayerSpaz, True
+            ).getplayer(Player, True)
         except bs.NotFoundError:
             return
 
@@ -298,12 +327,15 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
 
                 # If we've got the player from the scoring team that last
                 # touched us, give them points.
-                if (scoring_team.id in self._puck.last_players_to_touch
-                        and self._puck.last_players_to_touch[scoring_team.id]):
+                if (
+                    scoring_team.id in self._puck.last_players_to_touch
+                    and self._puck.last_players_to_touch[scoring_team.id]
+                ):
                     self.stats.player_scored(
                         self._puck.last_players_to_touch[scoring_team.id],
                         20,
-                        big_message=True)
+                        big_message=True,
+                    )
 
                 # End game if we won.
                 if team.score >= self._score_to_win:
@@ -319,12 +351,14 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
         # Kill the puck (it'll respawn itself shortly).
         bs.timer(1.0, self._kill_puck)
 
-        light = bs.newnode('light',
-                           attrs={
-                               'position': bs.getcollision().position,
-                               'height_attenuated': False,
-                               'color': (1, 0, 0)
-                           })
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': bs.getcollision().position,
+                'height_attenuated': False,
+                'color': (1, 0, 0),
+            },
+        )
         bs.animate(light, 'intensity', {0: 0, 0.5: 1, 1.0: 0}, loop=True)
         bs.timer(1.0, light.delete)
 
@@ -358,12 +392,14 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
             super().handlemessage(msg)
 
     def _flash_puck_spawn(self) -> None:
-        light = bs.newnode('light',
-                           attrs={
-                               'position': self._puck_spawn_pos,
-                               'height_attenuated': False,
-                               'color': (1, 0, 0)
-                           })
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': self._puck_spawn_pos,
+                'height_attenuated': False,
+                'color': (1, 0, 0),
+            },
+        )
         bs.animate(light, 'intensity', {0.0: 0, 0.25: 1, 0.5: 0}, loop=True)
         bs.timer(1.0, light.delete)
 

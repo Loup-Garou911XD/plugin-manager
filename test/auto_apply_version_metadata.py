@@ -79,11 +79,15 @@ class PluginVersionMetadata:
                 self._content = fin.read()
 
         versions = self.json["plugins"][self.plugin_name]["versions"]
-        sorted_versions = dict(sorted(
-            tuple(versions.items()),
-            key=lambda version: get_comparable_version_tuple_from_string(version[0]),
-            reverse=True,
-        ))
+        sorted_versions = dict(
+            sorted(
+                tuple(versions.items()),
+                key=lambda version: get_comparable_version_tuple_from_string(
+                    version[0]
+                ),
+                reverse=True,
+            )
+        )
         self.json["plugins"][self.plugin_name]["versions"] = sorted_versions
         return self
 
@@ -97,11 +101,17 @@ class CategoryVersionMetadata:
                 self.category_metadata = json.load(fin)
             except json.JSONDecodeError as err:
                 print(f"Error decoding JSON: {err}")
-                raise ValueError(f"Invalid JSON in {self.category_metadata_file}")
+                raise ValueError(
+                    f"Invalid JSON in {self.category_metadata_file}"
+                )
 
     def get_plugins_having_null_version_values(self):
-        for plugin_name, plugin_metadata in self.category_metadata["plugins"].items():
-            for version_name, version_metadata in plugin_metadata["versions"].items():
+        for plugin_name, plugin_metadata in self.category_metadata[
+            "plugins"
+        ].items():
+            for version_name, version_metadata in plugin_metadata[
+                "versions"
+            ].items():
                 if version_metadata is None:
                     plugin_path = f"{os.path.join(self.category_metadata_base, f'{plugin_name}.py')}"
                     yield PluginVersionMetadata(
@@ -111,9 +121,12 @@ class CategoryVersionMetadata:
                     )
 
     def get_plugins_having_diff_last_md5sum_version_values(self):
-        for plugin_name, plugin_metadata in self.category_metadata["plugins"].items():
+        for plugin_name, plugin_metadata in self.category_metadata[
+            "plugins"
+        ].items():
             latest_version_name, latest_version_metadata = tuple(
-                plugin_metadata["versions"].items())[0]
+                plugin_metadata["versions"].items()
+            )[0]
 
             plugin_path = f"{os.path.join(self.category_metadata_base, f'{plugin_name}.py')}"
             plugin_version_metadata = PluginVersionMetadata(
@@ -121,15 +134,22 @@ class CategoryVersionMetadata:
                 latest_version_name,
                 plugin_path,
             )
-            if plugin_version_metadata.calculate_md5sum() != latest_version_metadata["md5sum"]:
+            if (
+                plugin_version_metadata.calculate_md5sum()
+                != latest_version_metadata["md5sum"]
+            ):
                 yield plugin_version_metadata
 
     def apply_version_metadata_to_null_version_values(self, commit_sha):
         null_versioned_plugins = self.get_plugins_having_null_version_values()
-        return self.apply_metadata_to_plugins(commit_sha, null_versioned_plugins)
+        return self.apply_metadata_to_plugins(
+            commit_sha, null_versioned_plugins
+        )
 
     def apply_version_metadata_to_last_version_values(self, commit_sha):
-        diff_md5sum_plugins = self.get_plugins_having_diff_last_md5sum_version_values()
+        diff_md5sum_plugins = (
+            self.get_plugins_having_diff_last_md5sum_version_values()
+        )
         return self.apply_metadata_to_plugins(commit_sha, diff_md5sum_plugins)
 
     def apply_metadata_to_plugins(self, commit_sha, plugins):
@@ -138,12 +158,12 @@ class CategoryVersionMetadata:
         for plugin in plugins:
             category_json = (
                 plugin.set_json(category_json)
-                      .set_api_version()
-                      .set_commit_sha(commit_sha)
-                      .set_released_on(today)
-                      .set_md5sum()
-                      .sort_versions()
-                      .json
+                .set_api_version()
+                .set_commit_sha(commit_sha)
+                .set_released_on(today)
+                .set_md5sum()
+                .sort_versions()
+                .json
             )
         return category_json
 
@@ -178,7 +198,8 @@ class PluginManagerVersionMetadata:
     def apply_version_metadata_to_null_version_value(self, commit_sha):
         today = datetime.date.today().strftime("%d-%m-%Y")
         latest_version_name, latest_version_metadata = tuple(
-            self.json["versions"].items())[0]
+            self.json["versions"].items()
+        )[0]
 
         if self.json["versions"][latest_version_name] is None:
             self.json["versions"][latest_version_name] = {}
@@ -202,19 +223,27 @@ class PluginManagerVersionMetadata:
 
 def auto_apply_version_metadata(last_commit_sha):
     plugin_manager = PluginManagerVersionMetadata()
-    metadata = plugin_manager.apply_version_metadata_to_null_version_value(last_commit_sha)
+    metadata = plugin_manager.apply_version_metadata_to_null_version_value(
+        last_commit_sha
+    )
     plugin_manager.save(metadata)
 
     utilities = CategoryVersionMetadata(os.path.join("plugins", "utilities"))
-    category_json = utilities.apply_version_metadata_to_null_version_values(last_commit_sha)
+    category_json = utilities.apply_version_metadata_to_null_version_values(
+        last_commit_sha
+    )
     utilities.save(category_json)
 
     maps = CategoryVersionMetadata(os.path.join("plugins", "maps"))
-    category_json = maps.apply_version_metadata_to_null_version_values(last_commit_sha)
+    category_json = maps.apply_version_metadata_to_null_version_values(
+        last_commit_sha
+    )
     maps.save(category_json)
 
     minigames = CategoryVersionMetadata(os.path.join("plugins", "minigames"))
-    category_json = minigames.apply_version_metadata_to_null_version_values(last_commit_sha)
+    category_json = minigames.apply_version_metadata_to_null_version_values(
+        last_commit_sha
+    )
     minigames.save(category_json)
 
 

@@ -1,7 +1,7 @@
 """
 
-    DondgeTheBall minigame by EmperoR#4098
-    
+DondgeTheBall minigame by EmperoR#4098
+
 """
 
 # Feel free to edit.
@@ -27,7 +27,8 @@ if TYPE_CHECKING:
 
 # Type of ball in this game
 class BallType(Enum):
-    """ Types of ball """
+    """Types of ball"""
+
     EASY = 0
     # Decrease the next ball shooting speed(not ball speed).
     # Ball color is yellow.
@@ -51,15 +52,16 @@ ball_type_dict: dict[BallType, int] = {
 
 
 class Ball(bs.Actor):
-    """ Shooting Ball """
+    """Shooting Ball"""
 
-    def __init__(self,
-                 position: Sequence[float],
-                 velocity: Sequence[float],
-                 texture: babase.Texture,
-                 body_scale: float = 1.0,
-                 gravity_scale: float = 1.0,
-                 ) -> NoReturn:
+    def __init__(
+        self,
+        position: Sequence[float],
+        velocity: Sequence[float],
+        texture: babase.Texture,
+        body_scale: float = 1.0,
+        gravity_scale: float = 1.0,
+    ) -> NoReturn:
 
         super().__init__()
 
@@ -110,12 +112,13 @@ class Ball(bs.Actor):
 
 
 class Box(bs.Actor):
-    """ A box that spawn midle of map as a decoration perpose """
+    """A box that spawn midle of map as a decoration perpose"""
 
-    def __init__(self,
-                 position: Sequence[float],
-                 velocity: Sequence[float],
-                 ) -> NoReturn:
+    def __init__(
+        self,
+        position: Sequence[float],
+        velocity: Sequence[float],
+    ) -> NoReturn:
 
         super().__init__()
 
@@ -169,7 +172,7 @@ class Box(bs.Actor):
                 'radius': 0.2,
                 'intensity': 0.8,
                 'color': (0.0, 1.0, 0.0),
-            }
+            },
         )
         self.node.connectattr("position", self.light, "position")
         # Drawing circle and circleOutline in radius of 3,
@@ -242,7 +245,9 @@ class Box(bs.Actor):
             # to finding difference between player and box.
             # we just need to subtract player pos and ball pos.
             # Same logic as eric applied in Target Practice Gamemode.
-            difference = babase.Vec3(target_player.position) - babase.Vec3(self.node.position)
+            difference = babase.Vec3(target_player.position) - babase.Vec3(
+                self.node.position
+            )
 
             # discard Y position so ball shoot more straight.
             difference[1] = 0.0
@@ -266,10 +271,13 @@ class Box(bs.Actor):
 
             pos = self.node.position
 
-            if self.ball_type == BallType.MEDIUM or self.ball_type == BallType.HARD:
+            if (
+                self.ball_type == BallType.MEDIUM
+                or self.ball_type == BallType.HARD
+            ):
                 # Target head by increasing Y pos.
                 # How this work? cause ball gravity_scale is ......
-                pos = (pos[0], pos[1]+.25, pos[2])
+                pos = (pos[0], pos[1] + 0.25, pos[2])
 
             # ball is generating..
             ball = Ball(
@@ -293,14 +301,18 @@ class Box(bs.Actor):
                 self.node.position[0],  # ball spawn position X
                 self.node.position[1],  # Y
                 self.node.position[2],  # Z
-                0, 0, 0,  # velocity x,y,z
-                self.ball_mag,   # magnetude
+                0,
+                0,
+                0,  # velocity x,y,z
+                self.ball_mag,  # magnetude
                 0.000,  # magnetude velocity
                 0.000,  # radius
                 0.000,  # idk
-                difference[0] + self.player_facing_direction[0],  # force direction X
-                difference[1],                                            # force direction Y
-                difference[2] + self.player_facing_direction[1],  # force direction Z
+                difference[0]
+                + self.player_facing_direction[0],  # force direction X
+                difference[1],  # force direction Y
+                difference[2]
+                + self.player_facing_direction[1],  # force direction Z
             )
             # creating our timer and shoot the ball again.(and we create a loop)
             self.shoot_timer = bs.Timer(self.shoot_speed, self.start_shoot)
@@ -341,11 +353,12 @@ class Box(bs.Actor):
 
         bs.animate(
             self.node,
-            "mesh_scale", {
+            "mesh_scale",
+            {
                 0.00: 1.4,
                 0.05: 1.7,
                 0.10: 1.4,
-            }
+            },
         )
         # playing shoot sound.
         # self.shoot_sound, position = self.node.position.play();
@@ -361,11 +374,12 @@ class Box(bs.Actor):
                 'radius': 0.0,
                 'intensity': 1.0,
                 'color': (1.0, 0.0, 0.0),
-            }
+            },
         )
         bs.animate(
             light,
-            "radius", {
+            "radius",
+            {
                 0.05: 0.02,
                 0.10: 0.07,
                 0.15: 0.15,
@@ -374,7 +388,7 @@ class Box(bs.Actor):
                 0.30: 0.05,
                 0.35: 0.02,
                 0.40: 0.00,
-            }
+            },
         )
         # And a circle outline with ugly animation.
         circle_outline = bs.newnode(
@@ -391,7 +405,8 @@ class Box(bs.Actor):
         bs.animate_array(
             circle_outline,
             'size',
-            1, {
+            1,
+            {
                 0.05: [0.5],
                 0.10: [0.8],
                 0.15: [1.5],
@@ -400,7 +415,7 @@ class Box(bs.Actor):
                 0.30: [1.3],
                 0.35: [0.6],
                 0.40: [0.0],
-            }
+            },
         )
 
         # coonect it and...
@@ -412,7 +427,9 @@ class Box(bs.Actor):
         bs.timer(self.shoot_speed, light.delete)
         bs.timer(self.shoot_speed, circle_outline.delete)
 
-    def calculate_player_analog_stick(self, player: bs.Player, distance: float) -> NoReturn:
+    def calculate_player_analog_stick(
+        self, player: bs.Player, distance: float
+    ) -> NoReturn:
         # at first i was very confused how i can read the player analog stick \
         # then i saw TheMikirog#1984 autorun plugin code.
         # and i got it how analog stick values are works.
@@ -424,8 +441,12 @@ class Box(bs.Actor):
         # if player is too close and the player pushing his analog stick fully the ball shoot's too far away to player.
         # so, we need to reduce the value of "self.player_facing_direction" to fix this problem.
         if distance <= 3:
-            self.player_facing_direction[0] = 0.4 if self.player_facing_direction[0] > 0 else -0.4
-            self.player_facing_direction[1] = 0.4 if self.player_facing_direction[0] > 0 else -0.4
+            self.player_facing_direction[0] = (
+                0.4 if self.player_facing_direction[0] > 0 else -0.4
+            )
+            self.player_facing_direction[1] = (
+                0.4 if self.player_facing_direction[0] > 0 else -0.4
+            )
         # same problem to long distance but in reverse, the ball can't reach to the player,
         # its because player analog stick value is between 1 and -1,
         # and this value is low to shoot ball forward to Player if player is too far from the box.
@@ -471,6 +492,7 @@ class Player(bs.Player['Team']):
 class Team(bs.Team[Player]):
     """Our team type for this game."""
 
+
 # almost 80 % for game we done in box class.
 # now remain things, like name, seetings, scoring, cooldonw,
 # and main thing don't allow player to camp inside of box are going in this class.
@@ -491,7 +513,7 @@ class DodgeTheBall(bs.TeamGameActivity[Player, Team]):
             default=45,
             increment=5,
         ),
-        bs.BoolSetting('Epic Mode', default=False)
+        bs.BoolSetting('Epic Mode', default=False),
     ]
 
     # Don't allow joining after we start.
@@ -501,7 +523,8 @@ class DodgeTheBall(bs.TeamGameActivity[Player, Team]):
     def supports_session_type(cls, sessiontype: type[bs.Session]) -> bool:
         # We support team and ffa sessions.
         return issubclass(sessiontype, bs.FreeForAllSession) or issubclass(
-            sessiontype, bs.DualTeamSession,
+            sessiontype,
+            bs.DualTeamSession,
         )
 
     @classmethod
@@ -580,13 +603,15 @@ class DodgeTheBall(bs.TeamGameActivity[Player, Team]):
 
         return alive_players
 
-   # let's disallowed camping inside of box by doing a blast and increasing ball shoot speed.
+    # let's disallowed camping inside of box by doing a blast and increasing ball shoot speed.
     def check_player_pos(self):
 
         for player in self.get_alive_players():
 
             # same logic as applied for the ball
-            difference = babase.Vec3(player.position) - babase.Vec3(self.box.node.position)
+            difference = babase.Vec3(player.position) - babase.Vec3(
+                self.box.node.position
+            )
 
             distance = difference.length()
 
@@ -648,7 +673,9 @@ class DodgeTheBall(bs.TeamGameActivity[Player, Team]):
         # reconnect this player's controls.
         # without bomb, punch and pickup.
         spaz.connect_controls_to_player(
-            enable_punch=False, enable_bomb=False, enable_pickup=False,
+            enable_punch=False,
+            enable_bomb=False,
+            enable_pickup=False,
         )
 
         # storing all players for ScorinG.

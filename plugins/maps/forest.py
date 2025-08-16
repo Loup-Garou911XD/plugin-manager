@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     pass
 
 
-class ForestMapData():
+class ForestMapData:
     points = {}
     boxes = {}
 
@@ -69,7 +69,7 @@ class ForestMap(bs.Map):
             'tex': bs.gettexture('natureBackgroundColor'),
             'collision_mesh': bs.getcollisionmesh('natureBackgroundCollide'),
             'bgmesh': bs.getmesh('thePadBG'),
-            'bgtex': bs.gettexture('menuBG')
+            'bgtex': bs.gettexture('menuBG'),
         }
         return data
 
@@ -84,8 +84,8 @@ class ForestMap(bs.Map):
                 'mesh': self.preloaddata['mesh'],
                 'color_texture': self.preloaddata['tex'],
                 'collision_mesh': self.preloaddata['collision_mesh'],
-                'materials': [shared.footing_material]
-            }
+                'materials': [shared.footing_material],
+            },
         )
         self.background = bs.newnode(
             'terrain',
@@ -93,8 +93,8 @@ class ForestMap(bs.Map):
                 'mesh': self.preloaddata['bgmesh'],
                 'lighting': False,
                 # 'shadow': True,
-                'color_texture': self.preloaddata['bgtex']
-            }
+                'color_texture': self.preloaddata['bgtex'],
+            },
         )
 
         gnode = bs.getactivity().globalsnode
@@ -104,9 +104,9 @@ class ForestMap(bs.Map):
         gnode.vignette_outer = (0.76, 0.76, 0.76)
         gnode.vignette_inner = (0.95, 0.95, 0.99)
 
-    def is_point_near_edge(self,
-                           point: babase.Vec3,
-                           running: bool = False) -> bool:
+    def is_point_near_edge(
+        self, point: babase.Vec3, running: bool = False
+    ) -> bool:
         xpos = point.x
         zpos = point.z
         x_adj = xpos * 0.125

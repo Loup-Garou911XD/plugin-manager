@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class BombPickupMessage:
-    """ message says that someone pick up the dropped bomb """
+    """message says that someone pick up the dropped bomb"""
 
 
 # for bs.FreezeMessage
@@ -48,8 +48,15 @@ class Plugin(babase.Plugin):
 
                         # if we honding teammate or if we have a shield,  do hit.
                         for player in our_team_players:
-                            if player.actor.exists() and args[0]._player.actor.exists():
-                                if args[0]._player.actor.node.hold_node == player.actor.node or args[0]._player.actor.shield:
+                            if (
+                                player.actor.exists()
+                                and args[0]._player.actor.exists()
+                            ):
+                                if (
+                                    args[0]._player.actor.node.hold_node
+                                    == player.actor.node
+                                    or args[0]._player.actor.shield
+                                ):
                                     our_team_players.remove(player)
                                     break
 
@@ -71,8 +78,11 @@ class Plugin(babase.Plugin):
         return wrapper
 
     # replace original fuction to modified function
-    bascenev1lib.actor.playerspaz.PlayerSpaz.handlemessage = playerspaz_new_handlemessage(
-        bascenev1lib.actor.playerspaz.PlayerSpaz.handlemessage)
+    bascenev1lib.actor.playerspaz.PlayerSpaz.handlemessage = (
+        playerspaz_new_handlemessage(
+            bascenev1lib.actor.playerspaz.PlayerSpaz.handlemessage
+        )
+    )
 
     # let's add a message when bomb is pick by player
     def bombfact_new_init(func: function) -> function:
@@ -81,14 +91,24 @@ class Plugin(babase.Plugin):
             func(*args)  # original code
 
             args[0].bomb_material.add_actions(
-                conditions=('they_have_material', SharedObjects.get().pickup_material),
-                actions=('message', 'our_node', 'at_connect', BombPickupMessage()),
+                conditions=(
+                    'they_have_material',
+                    SharedObjects.get().pickup_material,
+                ),
+                actions=(
+                    'message',
+                    'our_node',
+                    'at_connect',
+                    BombPickupMessage(),
+                ),
             )
+
         return wrapper
 
     # you get the idea
     bascenev1lib.actor.bomb.BombFactory.__init__ = bombfact_new_init(
-        bascenev1lib.actor.bomb.BombFactory.__init__)
+        bascenev1lib.actor.bomb.BombFactory.__init__
+    )
 
     def bomb_new_handlemessage(func: function) -> function:
         def wrapper(*args, **kwargs):
@@ -107,4 +127,5 @@ class Plugin(babase.Plugin):
         return wrapper
 
     bascenev1lib.actor.bomb.Bomb.handlemessage = bomb_new_handlemessage(
-        bascenev1lib.actor.bomb.Bomb.handlemessage)
+        bascenev1lib.actor.bomb.Bomb.handlemessage
+    )

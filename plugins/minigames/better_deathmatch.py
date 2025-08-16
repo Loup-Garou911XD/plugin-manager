@@ -42,7 +42,8 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]
+    ) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
@@ -74,8 +75,6 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
                 default=1.0,
             ),
             bs.BoolSetting('Epic Mode', default=False),
-
-
             ## Add settings ##
             bs.BoolSetting('Enable Gloves', False),
             bs.BoolSetting('Enable Powerups', True),
@@ -94,14 +93,16 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
         # suiciding until you get a good drop)
         if issubclass(sessiontype, bs.FreeForAllSession):
             settings.append(
-                bs.BoolSetting('Allow Negative Scores', default=False))
+                bs.BoolSetting('Allow Negative Scores', default=False)
+            )
 
         return settings
 
     @classmethod
     def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.DualTeamSession)
-                or issubclass(sessiontype, bs.FreeForAllSession))
+        return issubclass(sessiontype, bs.DualTeamSession) or issubclass(
+            sessiontype, bs.FreeForAllSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: Type[bs.Session]) -> List[str]:
@@ -113,8 +114,7 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
         self._score_to_win: Optional[int] = None
         self._dingsound = bui.getsound('dingSmall')
 
-
-## Take applied settings ##
+        ## Take applied settings ##
         self._boxing_gloves = bool(settings['Enable Gloves'])
         self._enable_powerups = bool(settings['Enable Powerups'])
         self._night_mode = bool(settings['Night Mode'])
@@ -122,19 +122,20 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
         self._one_punch_kill = bool(settings['One Punch Kill'])
         self._shield_ = bool(settings['Spawn with Shield'])
         self._only_punch = bool(settings['Punching Only'])
-## Take applied settings ##
+        ## Take applied settings ##
 
         self._epic_mode = bool(settings['Epic Mode'])
-        self._kills_to_win_per_player = int(
-            settings['Kills to Win Per Player'])
+        self._kills_to_win_per_player = int(settings['Kills to Win Per Player'])
         self._time_limit = float(settings['Time Limit'])
         self._allow_negative_scores = bool(
-            settings.get('Allow Negative Scores', False))
+            settings.get('Allow Negative Scores', False)
+        )
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC if self._epic_mode else
-                              bs.MusicType.TO_THE_DEATH)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.TO_THE_DEATH
+        )
 
     def get_instance_description(self) -> Union[str, Sequence]:
         return 'Crush ${ARG1} of your enemies. byFREAK', self._score_to_win
@@ -146,9 +147,7 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
         if self.has_begun():
             self._update_scoreboard()
 
-
-## Run settings related: IcyFloor ##
-
+    ## Run settings related: IcyFloor ##
 
     def on_transition_in(self) -> None:
         super().on_transition_in()
@@ -157,29 +156,30 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
             activity.map.is_hockey = True
         else:
             return
-## Run settings related: IcyFloor ##
+
+    ## Run settings related: IcyFloor ##
 
     def on_begin(self) -> None:
         super().on_begin()
         self.setup_standard_time_limit(self._time_limit)
 
-
-## Run settings related: NightMode,Powerups ##
+        ## Run settings related: NightMode,Powerups ##
         if self._night_mode:
             bs.getactivity().globalsnode.tint = (0.5, 0.7, 1)
         else:
             pass
-# -# Tried return here, pfft. Took me 30mins to figure out why pwps spawning only on NightMode
-# -# Now its fixed :)
+        # -# Tried return here, pfft. Took me 30mins to figure out why pwps spawning only on NightMode
+        # -# Now its fixed :)
         if self._enable_powerups:
             self.setup_standard_powerup_drops()
         else:
             pass
-## Run settings related: NightMode,Powerups ##
+        ## Run settings related: NightMode,Powerups ##
 
         # Base kills needed to win on the size of the largest team.
-        self._score_to_win = (self._kills_to_win_per_player *
-                              max(1, max(len(t.players) for t in self.teams)))
+        self._score_to_win = self._kills_to_win_per_player * max(
+            1, max(len(t.players) for t in self.teams)
+        )
         self._update_scoreboard()
 
     def handlemessage(self, msg: Any) -> Any:
@@ -220,10 +220,11 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
 
                 # In FFA show scores since its hard to find on the scoreboard.
                 if isinstance(killer.actor, PlayerSpaz) and killer.actor:
-                    killer.actor.set_score_text(str(killer.team.score) + '/' +
-                                                str(self._score_to_win),
-                                                color=killer.team.color,
-                                                flash=True)
+                    killer.actor.set_score_text(
+                        str(killer.team.score) + '/' + str(self._score_to_win),
+                        color=killer.team.color,
+                        flash=True,
+                    )
 
             self._update_scoreboard()
 
@@ -238,9 +239,7 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
             return super().handlemessage(msg)
         return None
 
-
-## Run settings related: Spaz ##
-
+    ## Run settings related: Spaz ##
 
     def spawn_player(self, player: Player) -> bs.Actor:
         spaz = self.spawn_player_spaz(player)
@@ -251,15 +250,19 @@ class BetterDeathMatchGame(bs.TeamGameActivity[Player, Team]):
         if self._shield_:
             spaz.equip_shields()
         if self._only_punch:
-            spaz.connect_controls_to_player(enable_bomb=False, enable_pickup=False)
+            spaz.connect_controls_to_player(
+                enable_bomb=False, enable_pickup=False
+            )
 
         return spaz
-## Run settings related: Spaz ##
+
+    ## Run settings related: Spaz ##
 
     def _update_scoreboard(self) -> None:
         for team in self.teams:
-            self._scoreboard.set_team_value(team, team.score,
-                                            self._score_to_win)
+            self._scoreboard.set_team_value(
+                team, team.score, self._score_to_win
+            )
 
     def end_game(self) -> None:
         results = bs.GameResults()

@@ -20,8 +20,10 @@ lang = bs.app.lang.language
 
 if lang == 'Spanish':
     name = 'Bomba en mi Cabeza'
-    description = ('Siempre tendrás una bomba en la cabeza.\n'
-                   '¡Sobrevive tanto como puedas!')
+    description = (
+        'Siempre tendrás una bomba en la cabeza.\n'
+        '¡Sobrevive tanto como puedas!'
+    )
     description_ingame = '¡Sobrevive tanto como puedas!'
     # description_short = 'Elimina {} Jugadores para ganar'
     maxbomblimit = 'Límite Máximo de Bombas'
@@ -30,8 +32,10 @@ if lang == 'Spanish':
     mblfour = 'Cuatro'
 else:
     name = 'Bomb on my Head'
-    description = ('You\'ll always have a bomb on your head.\n'
-                   'Survive as long as you can!')
+    description = (
+        'You\'ll always have a bomb on your head.\n'
+        'Survive as long as you can!'
+    )
     description_ingame = 'Survive as long as you can!'
     # description_short = 'Kill {} Players to win'
     maxbomblimit = 'Max Bomb Limit'
@@ -61,9 +65,8 @@ class NewPlayerSpaz(PlayerSpaz):
     def start_bomb_checking(self) -> None:
         self.check_avalible_bombs()
         self._bomb_check_timer = bs.timer(
-            0.5,
-            bs.WeakCall(self.check_avalible_bombs),
-            repeat=True)
+            0.5, bs.WeakCall(self.check_avalible_bombs), repeat=True
+        )
 
     def drop_bomb(self) -> stdbomb.Bomb | None:
         lifespan = 3.0
@@ -85,11 +88,11 @@ class NewPlayerSpaz(PlayerSpaz):
             owner=self.node,
         ).autoretain()
 
-        bs.animate(bomb.node, 'mesh_scale', {
-            0.0: 0.0,
-            lifespan*0.1: 1.5,
-            lifespan*0.5: 1.0
-        })
+        bs.animate(
+            bomb.node,
+            'mesh_scale',
+            {0.0: 0.0, lifespan * 0.1: 1.5, lifespan * 0.5: 1.0},
+        )
 
         self.bomb_count -= 1
         bomb.node.add_death_action(
@@ -130,7 +133,7 @@ class BombOnMyHeadGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]
+        cls, sessiontype: type[bs.Session]
     ) -> list[babase.Setting]:
         settings = [
             bs.IntChoiceSetting(
@@ -211,10 +214,12 @@ class BombOnMyHeadGame(bs.TeamGameActivity[Player, Team]):
         light_color = _math.normalized_color(color)
         display_color = babase.safecolor(color, target_intensity=0.75)
 
-        spaz = NewPlayerSpaz(color=color,
-                             highlight=highlight,
-                             character=player.character,
-                             player=player)
+        spaz = NewPlayerSpaz(
+            color=color,
+            highlight=highlight,
+            character=player.character,
+            player=player,
+        )
 
         player.actor = spaz
         assert spaz.node
@@ -226,8 +231,9 @@ class BombOnMyHeadGame(bs.TeamGameActivity[Player, Team]):
         # Move to the stand position and add a flash of light.
         spaz.handlemessage(
             bs.StandMessage(
-                position,
-                angle if angle is not None else random.uniform(0, 360)))
+                position, angle if angle is not None else random.uniform(0, 360)
+            )
+        )
         self._spawn_sound.play(1, position=spaz.node.position)
         light = bs.newnode('light', attrs={'color': light_color})
         spaz.node.connectattr('position', light, 'position')

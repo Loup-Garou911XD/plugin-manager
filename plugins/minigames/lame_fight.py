@@ -11,7 +11,15 @@ from typing import TYPE_CHECKING
 import babase
 import bauiv1 as bui
 import bascenev1 as bs
-from bascenev1lib.actor.spazbot import SpazBotSet, ChargerBot, BrawlerBotProShielded, TriggerBotProShielded, ExplodeyBot, BomberBotProShielded, SpazBotDiedMessage
+from bascenev1lib.actor.spazbot import (
+    SpazBotSet,
+    ChargerBot,
+    BrawlerBotProShielded,
+    TriggerBotProShielded,
+    ExplodeyBot,
+    BomberBotProShielded,
+    SpazBotDiedMessage,
+)
 from bascenev1lib.actor.onscreentimer import OnScreenTimer
 
 if TYPE_CHECKING:
@@ -25,6 +33,7 @@ class Player(bs.Player['Team']):
 class Team(bs.Team[Player]):
     """Our team type for this game."""
 
+
 # ba_meta export bascenev1.GameActivity
 
 
@@ -32,9 +41,9 @@ class LameFightGame(bs.TeamGameActivity[Player, Team]):
     name = "Lame Fight"
     description = "Save World With Super Powers"
     slow_motion = True
-    scoreconfig = bs.ScoreConfig(label='Time',
-                                 scoretype=bs.ScoreType.MILLISECONDS,
-                                 lower_is_better=True)
+    scoreconfig = bs.ScoreConfig(
+        label='Time', scoretype=bs.ScoreType.MILLISECONDS, lower_is_better=True
+    )
     default_music = bs.MusicType.TO_THE_DEATH
 
     def __init__(self, settings: dict):
@@ -52,45 +61,125 @@ class LameFightGame(bs.TeamGameActivity[Player, Team]):
         bs.timer(4.0, self._timer.start)
 
         # Bots Hehe
-        bs.timer(1.0, lambda: self._bots.spawn_bot(ChargerBot, pos=(3, 3, -2), spawn_time=3.0))
-        bs.timer(1.0, lambda: self._bots.spawn_bot(ChargerBot, pos=(-3, 3, -2), spawn_time=3.0))
-        bs.timer(1.0, lambda: self._bots.spawn_bot(ChargerBot, pos=(5, 3, -2), spawn_time=3.0))
-        bs.timer(1.0, lambda: self._bots.spawn_bot(ChargerBot, pos=(-5, 3, -2), spawn_time=3.0))
-        bs.timer(1.0, lambda: self._bots.spawn_bot(ChargerBot, pos=(0, 3, 1), spawn_time=3.0))
-        bs.timer(1.0, lambda: self._bots.spawn_bot(ChargerBot, pos=(0, 3, -5), spawn_time=3.0))
-        bs.timer(9.0, lambda: self._bots.spawn_bot(
-            BomberBotProShielded, pos=(-7, 5, -7.5), spawn_time=3.0))
-        bs.timer(9.0, lambda: self._bots.spawn_bot(
-            BomberBotProShielded, pos=(7, 5, -7.5), spawn_time=3.0))
-        bs.timer(9.0, lambda: self._bots.spawn_bot(
-            BomberBotProShielded, pos=(7, 5, 1.5), spawn_time=3.0))
-        bs.timer(9.0, lambda: self._bots.spawn_bot(
-            BomberBotProShielded, pos=(-7, 5, 1.5), spawn_time=3.0))
-        bs.timer(12.0, lambda: self._bots.spawn_bot(
-            TriggerBotProShielded, pos=(-1, 7, -8), spawn_time=3.0))
-        bs.timer(12.0, lambda: self._bots.spawn_bot(
-            TriggerBotProShielded, pos=(1, 7, -8), spawn_time=3.0))
-        bs.timer(15.0, lambda: self._bots.spawn_bot(ExplodeyBot, pos=(0, 3, -5), spawn_time=3.0))
-        bs.timer(20.0, lambda: self._bots.spawn_bot(ExplodeyBot, pos=(0, 3, 1), spawn_time=3.0))
-        bs.timer(20.0, lambda: self._bots.spawn_bot(ExplodeyBot, pos=(-5, 3, -2), spawn_time=3.0))
-        bs.timer(20.0, lambda: self._bots.spawn_bot(ExplodeyBot, pos=(5, 3, -2), spawn_time=3.0))
+        bs.timer(
+            1.0,
+            lambda: self._bots.spawn_bot(
+                ChargerBot, pos=(3, 3, -2), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            1.0,
+            lambda: self._bots.spawn_bot(
+                ChargerBot, pos=(-3, 3, -2), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            1.0,
+            lambda: self._bots.spawn_bot(
+                ChargerBot, pos=(5, 3, -2), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            1.0,
+            lambda: self._bots.spawn_bot(
+                ChargerBot, pos=(-5, 3, -2), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            1.0,
+            lambda: self._bots.spawn_bot(
+                ChargerBot, pos=(0, 3, 1), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            1.0,
+            lambda: self._bots.spawn_bot(
+                ChargerBot, pos=(0, 3, -5), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            9.0,
+            lambda: self._bots.spawn_bot(
+                BomberBotProShielded, pos=(-7, 5, -7.5), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            9.0,
+            lambda: self._bots.spawn_bot(
+                BomberBotProShielded, pos=(7, 5, -7.5), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            9.0,
+            lambda: self._bots.spawn_bot(
+                BomberBotProShielded, pos=(7, 5, 1.5), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            9.0,
+            lambda: self._bots.spawn_bot(
+                BomberBotProShielded, pos=(-7, 5, 1.5), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            12.0,
+            lambda: self._bots.spawn_bot(
+                TriggerBotProShielded, pos=(-1, 7, -8), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            12.0,
+            lambda: self._bots.spawn_bot(
+                TriggerBotProShielded, pos=(1, 7, -8), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            15.0,
+            lambda: self._bots.spawn_bot(
+                ExplodeyBot, pos=(0, 3, -5), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            20.0,
+            lambda: self._bots.spawn_bot(
+                ExplodeyBot, pos=(0, 3, 1), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            20.0,
+            lambda: self._bots.spawn_bot(
+                ExplodeyBot, pos=(-5, 3, -2), spawn_time=3.0
+            ),
+        )
+        bs.timer(
+            20.0,
+            lambda: self._bots.spawn_bot(
+                ExplodeyBot, pos=(5, 3, -2), spawn_time=3.0
+            ),
+        )
         bs.timer(30, self.street)
 
     def street(self):
         bs.broadcastmessage("Lame Guys Are Here!", color=(1, 0, 0))
         for a in range(-1, 2):
             for b in range(-3, 0):
-                self._bots.spawn_bot(BrawlerBotProShielded, pos=(a, 3, b), spawn_time=3.0)
+                self._bots.spawn_bot(
+                    BrawlerBotProShielded, pos=(a, 3, b), spawn_time=3.0
+                )
 
     def spawn_player(self, player: Player) -> bs.Actor:
         spawn_center = (0, 3, -2)
-        pos = (spawn_center[0] + random.uniform(-1.5, 1.5), spawn_center[1],
-               spawn_center[2] + random.uniform(-1.5, 1.5))
+        pos = (
+            spawn_center[0] + random.uniform(-1.5, 1.5),
+            spawn_center[1],
+            spawn_center[2] + random.uniform(-1.5, 1.5),
+        )
         spaz = self.spawn_player_spaz(player, position=pos)
         p = ["Bigger Blast", "Stronger Punch", "Shield", "Speed"]
         Power = random.choice(p)
         spaz.bomb_type = random.choice(
-            ["normal", "sticky", "ice", "impact", "normal", "ice", "sticky"])
+            ["normal", "sticky", "ice", "impact", "normal", "ice", "sticky"]
+        )
         bs.broadcastmessage(f"Now You Have {Power}")
         if Power == p[0]:
             spaz.bomb_count = 3
@@ -162,8 +251,11 @@ class LameFightGame(bs.TeamGameActivity[Player, Team]):
 class plugin(babase.Plugin):
     def __init__(self):
         ## Campaign support ##
-        babase.app.classic.add_coop_practice_level(bs.Level(
-            name='Lame Fight',
-            gametype=LameFightGame,
-            settings={},
-            preview_texture_name='courtyardPreview'))
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                name='Lame Fight',
+                gametype=LameFightGame,
+                settings={},
+                preview_texture_name='courtyardPreview',
+            )
+        )

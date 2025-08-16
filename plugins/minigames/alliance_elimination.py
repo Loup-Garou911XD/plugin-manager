@@ -16,23 +16,24 @@ from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
 
 if TYPE_CHECKING:
-    from typing import (Any, Tuple, Type, List, Sequence, Optional,
-                        Union)
+    from typing import Any, Tuple, Type, List, Sequence, Optional, Union
 
 
 class Icon(bs.Actor):
     """Creates in in-game icon on screen."""
 
-    def __init__(self,
-                 player: Player,
-                 position: Tuple[float, float],
-                 scale: float,
-                 show_lives: bool = True,
-                 show_death: bool = True,
-                 name_scale: float = 1.0,
-                 name_maxwidth: float = 115.0,
-                 flatness: float = 1.0,
-                 shadow: float = 1.0):
+    def __init__(
+        self,
+        player: Player,
+        position: Tuple[float, float],
+        scale: float,
+        show_lives: bool = True,
+        show_death: bool = True,
+        name_scale: float = 1.0,
+        name_maxwidth: float = 115.0,
+        flatness: float = 1.0,
+        shadow: float = 1.0,
+    ):
         super().__init__()
 
         self._player = player
@@ -42,19 +43,21 @@ class Icon(bs.Actor):
         self._outline_tex = bs.gettexture('characterIconMask')
 
         icon = player.get_icon()
-        self.node = bs.newnode('image',
-                               delegate=self,
-                               attrs={
-                                   'texture': icon['texture'],
-                                   'tint_texture': icon['tint_texture'],
-                                   'tint_color': icon['tint_color'],
-                                   'vr_depth': 400,
-                                   'tint2_color': icon['tint2_color'],
-                                   'mask_texture': self._outline_tex,
-                                   'opacity': 1.0,
-                                   'absolute_scale': True,
-                                   'attach': 'bottomCenter'
-                               })
+        self.node = bs.newnode(
+            'image',
+            delegate=self,
+            attrs={
+                'texture': icon['texture'],
+                'tint_texture': icon['tint_texture'],
+                'tint_color': icon['tint_color'],
+                'vr_depth': 400,
+                'tint2_color': icon['tint2_color'],
+                'mask_texture': self._outline_tex,
+                'opacity': 1.0,
+                'absolute_scale': True,
+                'attach': 'bottomCenter',
+            },
+        )
         self._name_text = bs.newnode(
             'text',
             owner=self.node,
@@ -68,25 +71,29 @@ class Icon(bs.Actor):
                 'shadow': shadow,
                 'flatness': flatness,
                 'h_attach': 'center',
-                'v_attach': 'bottom'
-            })
+                'v_attach': 'bottom',
+            },
+        )
         if self._show_lives:
-            self._lives_text = bs.newnode('text',
-                                          owner=self.node,
-                                          attrs={
-                                              'text': 'x0',
-                                              'color': (1, 1, 0.5),
-                                              'h_align': 'left',
-                                              'vr_depth': 430,
-                                              'shadow': 1.0,
-                                              'flatness': 1.0,
-                                              'h_attach': 'center',
-                                              'v_attach': 'bottom'
-                                          })
+            self._lives_text = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': 'x0',
+                    'color': (1, 1, 0.5),
+                    'h_align': 'left',
+                    'vr_depth': 430,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'h_attach': 'center',
+                    'v_attach': 'bottom',
+                },
+            )
         self.set_position_and_scale(position, scale)
 
-    def set_position_and_scale(self, position: Tuple[float, float],
-                               scale: float) -> None:
+    def set_position_and_scale(
+        self, position: Tuple[float, float], scale: float
+    ) -> None:
         """(Re)position the icon."""
         assert self.node
         self.node.position = position
@@ -94,8 +101,10 @@ class Icon(bs.Actor):
         self._name_text.position = (position[0], position[1] + scale * 52.0)
         self._name_text.scale = 1.0 * scale * self._name_scale
         if self._show_lives:
-            self._lives_text.position = (position[0] + scale * 10.0,
-                                         position[1] - scale * 43.0)
+            self._lives_text.position = (
+                position[0] + scale * 10.0,
+                position[1] - scale * 43.0,
+            )
             self._lives_text.scale = 1.0 * scale
 
     def update_for_lives(self) -> None:
@@ -128,7 +137,9 @@ class Icon(bs.Actor):
             return
         if self._show_death:
             bs.animate(
-                self.node, 'opacity', {
+                self.node,
+                'opacity',
+                {
                     0.00: 1.0,
                     0.05: 0.0,
                     0.10: 1.0,
@@ -140,8 +151,9 @@ class Icon(bs.Actor):
                     0.40: 1.0,
                     0.45: 0.0,
                     0.50: 1.0,
-                    0.55: 0.2
-                })
+                    0.55: 0.2,
+                },
+            )
             lives = self._player.lives
             if lives == 0:
                 bs.timer(0.6, self.update_for_lives)
@@ -174,10 +186,12 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
     """Game type where last player(s) left alive win."""
 
     name = 'Alliance Elimination'
-    description = 'Fight in groups of duo, trio, or more.\nLast remaining alive wins.'
-    scoreconfig = bs.ScoreConfig(label='Survived',
-                                 scoretype=bs.ScoreType.SECONDS,
-                                 none_is_winner=True)
+    description = (
+        'Fight in groups of duo, trio, or more.\nLast remaining alive wins.'
+    )
+    scoreconfig = bs.ScoreConfig(
+        label='Survived', scoretype=bs.ScoreType.SECONDS, none_is_winner=True
+    )
     # Show messages when players die since it's meaningful here.
     announce_player_deaths = True
 
@@ -185,7 +199,8 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]
+    ) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Lives Per Player',
@@ -228,7 +243,8 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
         ]
         if issubclass(sessiontype, bs.DualTeamSession):
             settings.append(
-                bs.BoolSetting('Balance Total Lives', default=False))
+                bs.BoolSetting('Balance Total Lives', default=False)
+            )
         return settings
 
     @classmethod
@@ -249,22 +265,31 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
         self._lives_per_player = int(settings['Lives Per Player'])
         self._time_limit = float(settings['Time Limit'])
         self._balance_total_lives = bool(
-            settings.get('Balance Total Lives', False))
+            settings.get('Balance Total Lives', False)
+        )
         self._players_per_team_in_arena = int(
-            settings['Players Per Team In Arena'])
+            settings['Players Per Team In Arena']
+        )
 
         # Base class overrides:
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
 
     def get_instance_description(self) -> Union[str, Sequence]:
-        return 'Last team standing wins.' if isinstance(
-            self.session, bs.DualTeamSession) else 'Last one standing wins.'
+        return (
+            'Last team standing wins.'
+            if isinstance(self.session, bs.DualTeamSession)
+            else 'Last one standing wins.'
+        )
 
     def get_instance_description_short(self) -> Union[str, Sequence]:
-        return 'last team standing wins' if isinstance(
-            self.session, bs.DualTeamSession) else 'last one standing wins'
+        return (
+            'last team standing wins'
+            if isinstance(self.session, bs.DualTeamSession)
+            else 'last one standing wins'
+        )
 
     def on_player_join(self, player: Player) -> None:
 
@@ -274,12 +299,16 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
             # Make sure their team has survival seconds set if they're all dead
             # (otherwise blocked new ffa players are considered 'still alive'
             # in score tallying).
-            if (self._get_total_team_lives(player.team) == 0
-                    and player.team.survival_seconds is None):
+            if (
+                self._get_total_team_lives(player.team) == 0
+                and player.team.survival_seconds is None
+            ):
                 player.team.survival_seconds = 0
             bs.broadcastmessage(
-                babase.Lstr(resource='playerDelayedJoinText',
-                            subs=[('${PLAYER}', player.getname(full=True))]),
+                babase.Lstr(
+                    resource='playerDelayedJoinText',
+                    subs=[('${PLAYER}', player.getname(full=True))],
+                ),
                 color=(0, 1, 0),
             )
             return
@@ -299,35 +328,43 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
         self.setup_standard_time_limit(self._time_limit)
         self.setup_standard_powerup_drops()
         self._vs_text = bs.NodeActor(
-            bs.newnode('text',
-                       attrs={
-                           'position': (0, 92),
-                           'h_attach': 'center',
-                           'h_align': 'center',
-                           'maxwidth': 200,
-                           'shadow': 0.5,
-                           'vr_depth': 390,
-                           'scale': 0.6,
-                           'v_attach': 'bottom',
-                           'color': (0.8, 0.8, 0.3, 1.0),
-                           'text': babase.Lstr(resource='vsText')
-                       }))
+            bs.newnode(
+                'text',
+                attrs={
+                    'position': (0, 92),
+                    'h_attach': 'center',
+                    'h_align': 'center',
+                    'maxwidth': 200,
+                    'shadow': 0.5,
+                    'vr_depth': 390,
+                    'scale': 0.6,
+                    'v_attach': 'bottom',
+                    'color': (0.8, 0.8, 0.3, 1.0),
+                    'text': babase.Lstr(resource='vsText'),
+                },
+            )
+        )
 
         # If balance-team-lives is on, add lives to the smaller team until
         # total lives match.
-        if (isinstance(self.session, bs.DualTeamSession)
-                and self._balance_total_lives and self.teams[0].players
-                and self.teams[1].players):
+        if (
+            isinstance(self.session, bs.DualTeamSession)
+            and self._balance_total_lives
+            and self.teams[0].players
+            and self.teams[1].players
+        ):
             if self._get_total_team_lives(
-                    self.teams[0]) < self._get_total_team_lives(self.teams[1]):
+                self.teams[0]
+            ) < self._get_total_team_lives(self.teams[1]):
                 lesser_team = self.teams[0]
                 greater_team = self.teams[1]
             else:
                 lesser_team = self.teams[1]
                 greater_team = self.teams[0]
             add_index = 0
-            while (self._get_total_team_lives(lesser_team) <
-                   self._get_total_team_lives(greater_team)):
+            while self._get_total_team_lives(
+                lesser_team
+            ) < self._get_total_team_lives(greater_team):
                 lesser_team.players[add_index].lives += 1
                 add_index = (add_index + 1) % len(lesser_team.players)
 
@@ -373,22 +410,24 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
             test_lives = 1
             while True:
                 players_with_lives = [
-                    p for p in team.spawn_order
-                    if p and p.lives >= test_lives
+                    p for p in team.spawn_order if p and p.lives >= test_lives
                 ]
                 if not players_with_lives:
                     break
                 for player in players_with_lives:
                     player.icons.append(
-                        Icon(player,
-                             position=(xval, (36 if nplayers > 0 else 25)),
-                             scale=0.9 if nplayers > 0 else 0.5,
-                             name_maxwidth=85 if nplayers > 0 else 75,
-                             name_scale=0.8 if nplayers > 0 else 1.0,
-                             flatness=0.0 if nplayers > 0 else 1.0,
-                             shadow=0.5 if nplayers > 0 else 1.0,
-                             show_death=True if nplayers > 0 else False,
-                             show_lives=False))
+                        Icon(
+                            player,
+                            position=(xval, (36 if nplayers > 0 else 25)),
+                            scale=0.9 if nplayers > 0 else 0.5,
+                            name_maxwidth=85 if nplayers > 0 else 75,
+                            name_scale=0.8 if nplayers > 0 else 1.0,
+                            flatness=0.0 if nplayers > 0 else 1.0,
+                            shadow=0.5 if nplayers > 0 else 1.0,
+                            show_death=True if nplayers > 0 else False,
+                            show_lives=False,
+                        )
+                    )
                     xval += x_offs * (0.85 if nplayers > 0 else 0.56)
                     nplayers -= 1
                 test_lives += 1
@@ -411,12 +450,14 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
         if not player or not player.is_alive() or not player.node:
             return
 
-        popuptext.PopupText('x' + str(player.lives - 1),
-                            color=(1, 1, 0, 1),
-                            offset=(0, -0.8, 0),
-                            random_offset=0.0,
-                            scale=1.8,
-                            position=player.node.position).autoretain()
+        popuptext.PopupText(
+            'x' + str(player.lives - 1),
+            color=(1, 1, 0, 1),
+            offset=(0, -0.8, 0),
+            random_offset=0.0,
+            scale=1.8,
+            position=player.node.position,
+        ).autoretain()
 
     def on_player_leave(self, player: Player) -> None:
         super().on_player_leave(player)
@@ -450,7 +491,8 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
             player.lives -= 1
             if player.lives < 0:
                 babase.print_error(
-                    "Got lives < 0 in Alliance Elimination; this shouldn't happen.")
+                    "Got lives < 0 in Alliance Elimination; this shouldn't happen."
+                )
                 player.lives = 0
 
             # If we have any icons, update their state.
@@ -467,8 +509,9 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
                 # If the whole team is now dead, mark their survival time.
                 if self._get_total_team_lives(player.team) == 0:
                     assert self._start_time is not None
-                    player.team.survival_seconds = int(bs.time() -
-                                                       self._start_time)
+                    player.team.survival_seconds = int(
+                        bs.time() - self._start_time
+                    )
 
             # Put ourself at the back of the spawn order.
             player.team.spawn_order.remove(player)
@@ -499,9 +542,10 @@ class AllianceEliminationGame(bs.TeamGameActivity[Player, Team]):
 
     def _get_living_teams(self) -> List[Team]:
         return [
-            team for team in self.teams
-            if len(team.players) > 0 and any(player.lives > 0
-                                             for player in team.players)
+            team
+            for team in self.teams
+            if len(team.players) > 0
+            and any(player.lives > 0 for player in team.players)
         ]
 
     def end_game(self) -> None:

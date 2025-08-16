@@ -18,7 +18,16 @@ if TYPE_CHECKING:
 
 
 class State:
-    def __init__(self, bomb=None, grab=False, punch=False, curse=False, required=False, final=False, name=''):
+    def __init__(
+        self,
+        bomb=None,
+        grab=False,
+        punch=False,
+        curse=False,
+        required=False,
+        final=False,
+        name='',
+    ):
         self.bomb = bomb
         self.grab = grab
         self.punch = punch
@@ -32,9 +41,11 @@ class State:
 
     def apply(self, spaz):
         spaz.disconnect_controls_from_player()
-        spaz.connect_controls_to_player(enable_punch=self.punch,
-                                        enable_bomb=self.bomb,
-                                        enable_pickup=self.grab)
+        spaz.connect_controls_to_player(
+            enable_punch=self.punch,
+            enable_bomb=self.bomb,
+            enable_pickup=self.grab,
+        )
         if self.curse:
             try:
                 spaz.curse_time = -1
@@ -46,16 +57,18 @@ class State:
         spaz.set_score_text(self.name)
 
     def get_setting(self):
-        return (self.name)
+        return self.name
 
 
-states = [State(bomb='normal', name='Basic Bombs'),
-          State(bomb='ice', name='Frozen Bombs'),
-          State(bomb='sticky', name='Sticky Bombs'),
-          State(bomb='impact', name='Impact Bombs'),
-          State(grab=True, name='Grabbing only'),
-          State(punch=True, name='Punching only'),
-          State(curse=True, name='Cursed', final=True)]
+states = [
+    State(bomb='normal', name='Basic Bombs'),
+    State(bomb='ice', name='Frozen Bombs'),
+    State(bomb='sticky', name='Sticky Bombs'),
+    State(bomb='impact', name='Impact Bombs'),
+    State(grab=True, name='Grabbing only'),
+    State(punch=True, name='Punching only'),
+    State(curse=True, name='Cursed', final=True),
+]
 
 
 class Player(bs.Player['Team']):
@@ -84,7 +97,8 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]
+    ) -> List[babase.Setting]:
         settings = [
             bs.IntChoiceSetting(
                 'Time Limit',
@@ -109,17 +123,21 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
                 ],
                 default=1.0,
             ),
-            bs.BoolSetting('Epic Mode', default=False)]
+            bs.BoolSetting('Epic Mode', default=False),
+        ]
         for state in states:
             if not state.required:
-                settings.append(bs.BoolSetting(state.get_setting(), default=True))
+                settings.append(
+                    bs.BoolSetting(state.get_setting(), default=True)
+                )
 
         return settings
 
     @classmethod
     def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.DualTeamSession)
-                or issubclass(sessiontype, bs.FreeForAllSession))
+        return issubclass(sessiontype, bs.DualTeamSession) or issubclass(
+            sessiontype, bs.FreeForAllSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: Type[bs.Session]) -> List[str]:
@@ -138,8 +156,9 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC if self._epic_mode else
-                              bs.MusicType.TO_THE_DEATH)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.TO_THE_DEATH
+        )
 
     def get_instance_description(self) -> Union[str, Sequence]:
         return 'Upgrade your weapon by eliminating enemies.'
@@ -177,10 +196,16 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
 
         if isinstance(msg, bs.PlayerDiedMessage):
             if self.isValidKill(msg):
-                self.stats.player_scored(msg.getkillerplayer(Player), 10, kill=True)
+                self.stats.player_scored(
+                    msg.getkillerplayer(Player), 10, kill=True
+                )
                 if not msg.getkillerplayer(Player).state.final:
-                    msg.getkillerplayer(Player).state = msg.getkillerplayer(Player).state.next
-                    msg.getkillerplayer(Player).state.apply(msg.getkillerplayer(Player).actor)
+                    msg.getkillerplayer(Player).state = msg.getkillerplayer(
+                        Player
+                    ).state.next
+                    msg.getkillerplayer(Player).state.apply(
+                        msg.getkillerplayer(Player).actor
+                    )
                 else:
                     msg.getkillerplayer(Player).team.score += 1
                     self.end_game()

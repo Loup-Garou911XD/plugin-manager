@@ -1,13 +1,13 @@
 """
-    Vanilla Wiggle Dance by SoK
-    Pizza Tower dance ported to BombSquad.
-    Originally made for Explodinary Rebombed.
+Vanilla Wiggle Dance by SoK
+Pizza Tower dance ported to BombSquad.
+Originally made for Explodinary Rebombed.
 
-    Wiggling left and right makes your character play music, wave arms and emit cool sparks :D
-    For much cooler version of this plugin, check out BSE Rebombed Modpack! (not released yet)
-    Version 1.0
+Wiggling left and right makes your character play music, wave arms and emit cool sparks :D
+For much cooler version of this plugin, check out BSE Rebombed Modpack! (not released yet)
+Version 1.0
 
-    If you want to use this plugin in your own work, please let me know on Discord (sok05).
+If you want to use this plugin in your own work, please let me know on Discord (sok05).
 """
 
 from __future__ import annotations
@@ -56,7 +56,9 @@ class WiggleDance(babase.Plugin):
                     self._wiggle_timer = None
 
                 # Start a new timer
-                self._wiggle_timer = bs.Timer(0.18, bs.WeakCall(self._reset_wiggle_count))
+                self._wiggle_timer = bs.Timer(
+                    0.18, bs.WeakCall(self._reset_wiggle_count)
+                )
 
                 # Check if we've been wiggling enough to start dancing
                 if self._wiggle_count > 8 and not self.dancing:
@@ -96,9 +98,15 @@ class WiggleDance(babase.Plugin):
                 self._dance_sound_node = bs.newnode(
                     'sound',
                     owner=self.node,
-                    attrs={'sound': bs.getsound('victoryMusic'), 'volume': 0.2, 'loop': True},
+                    attrs={
+                        'sound': bs.getsound('victoryMusic'),
+                        'volume': 0.2,
+                        'loop': True,
+                    },
                 )
-                self.node.connectattr('position', self._dance_sound_node, 'position')
+                self.node.connectattr(
+                    'position', self._dance_sound_node, 'position'
+                )
 
                 # And add our Spaz as a music one for our activity
                 activity.music_spazzes += 1
@@ -106,7 +114,8 @@ class WiggleDance(babase.Plugin):
             # Start visual dance timer
             if not self._dance_visual_timer:
                 self._dance_visual_timer = bs.Timer(
-                    0.5, bs.WeakCall(self._dance_visual), repeat=True)
+                    0.5, bs.WeakCall(self._dance_visual), repeat=True
+                )
 
         def _dance_visual(self):
             """Create visual dance effects"""
@@ -120,7 +129,7 @@ class WiggleDance(babase.Plugin):
                 count=random.randint(5, 10),
                 scale=random.uniform(0.7, 1.1),
                 spread=0.2,
-                chunk_type='spark'
+                chunk_type='spark',
             )
 
             # Wave arms
@@ -171,4 +180,5 @@ class WiggleDance(babase.Plugin):
 
     # Apply the dance mechanic to the Spaz class
     from bascenev1lib.actor.spaz import Spaz
+
     Spaz = add_dance_mechanic_to_spaz(Spaz)

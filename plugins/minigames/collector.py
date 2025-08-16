@@ -1,27 +1,27 @@
 # ba_meta require api 9
 
 '''
-	Gamemode: Collector
-	Creator: TheMikirog
-	Website: https://bombsquadjoyride.blogspot.com/
+Gamemode: Collector
+Creator: TheMikirog
+Website: https://bombsquadjoyride.blogspot.com/
 
-	This is a gamemode purely made by me just to spite unchallenged modders
-	out there that put out crap to the market.
-	We don't want gamemodes that are just the existing ones
-	with some novelties! Gamers deserve more!
+This is a gamemode purely made by me just to spite unchallenged modders
+out there that put out crap to the market.
+We don't want gamemodes that are just the existing ones
+with some novelties! Gamers deserve more!
 
-	In this gamemode you have to kill others in order to get their Capsules.
-	Capsules can be collected and staked in your inventory,
-	how many as you please.
-	After you kill an enemy that carries some of them,
-	they drop a respective amount of Capsules they carried + two more.
-	Your task is to collect these Capsules,
-	get to the flag and score them KOTH style.
-	You can't score if you don't have any Capsules with you.
-	The first player or team to get to the required ammount wins.
-	This is a gamemode all about trying to stay alive
-	and picking your battles in order to win.
-	A rare skill in BombSquad, where everyone is overly aggressive.
+In this gamemode you have to kill others in order to get their Capsules.
+Capsules can be collected and staked in your inventory,
+how many as you please.
+After you kill an enemy that carries some of them,
+they drop a respective amount of Capsules they carried + two more.
+Your task is to collect these Capsules,
+get to the flag and score them KOTH style.
+You can't score if you don't have any Capsules with you.
+The first player or team to get to the required ammount wins.
+This is a gamemode all about trying to stay alive
+and picking your battles in order to win.
+A rare skill in BombSquad, where everyone is overly aggressive.
 '''
 
 from __future__ import annotations
@@ -46,21 +46,31 @@ if TYPE_CHECKING:
 lang = bs.app.lang.language
 if lang == 'Spanish':
     name = 'Coleccionista'
-    description = ('Elimina a tus oponentes para robar sus cápsulas.\n'
-                   '¡Recolecta y anota en el punto de depósito!')
+    description = (
+        'Elimina a tus oponentes para robar sus cápsulas.\n'
+        '¡Recolecta y anota en el punto de depósito!'
+    )
     description_ingame = 'Obtén ${ARG1} cápsulas de tus enemigos.'
     description_short = 'colecciona ${ARG1} cápsulas'
-    tips = [(
+    tips = [
+        (
             '¡Si tu oponente cae fuera del mapa, sus cápsulas desapareceran!\n'
-            'No intestes matar a tus enemigos arrojándolos al vacio.'),
-            'No te apresures. ¡Puedes perder tus cápsulas rápidamente!',
-            ('¡No dejes que el jugador con más cápsulas anote!\n'
-             '¡Intenta atraparlo si puedes!'),
-            ('¡Las Capsulas de la Suerte te dan 4 cápsulas en lugar de 2'
-            'y tienen un 8% de probabilidad de aparecer después de matar'),
-            ('¡No te quedes en un solo lugar! Muevete más rapido que tu enemigo, '
-            '¡con suerte conseguirás algunas cápsulas!'),
-            ]
+            'No intestes matar a tus enemigos arrojándolos al vacio.'
+        ),
+        'No te apresures. ¡Puedes perder tus cápsulas rápidamente!',
+        (
+            '¡No dejes que el jugador con más cápsulas anote!\n'
+            '¡Intenta atraparlo si puedes!'
+        ),
+        (
+            '¡Las Capsulas de la Suerte te dan 4 cápsulas en lugar de 2'
+            'y tienen un 8% de probabilidad de aparecer después de matar'
+        ),
+        (
+            '¡No te quedes en un solo lugar! Muevete más rapido que tu enemigo, '
+            '¡con suerte conseguirás algunas cápsulas!'
+        ),
+    ]
     capsules_to_win = 'Cápsulas para Ganar'
     capsules_death = 'Cápsulas al Morir'
     lucky_capsules = 'Cápsulas de la Suerte'
@@ -68,21 +78,31 @@ if lang == 'Spanish':
     full_capacity = '¡Capacidad Completa!'
 else:
     name = 'Collector'
-    description = ('Kill your opponents to steal their Capsules.\n'
-                   'Collect them and score at the Deposit point!')
+    description = (
+        'Kill your opponents to steal their Capsules.\n'
+        'Collect them and score at the Deposit point!'
+    )
     description_ingame = 'Score ${ARG1} capsules from your enemies.'
     description_short = 'collect ${ARG1} capsules'
-    tips = [(
+    tips = [
+        (
             'Making you opponent fall down the pit makes his Capsules wasted!\n'
-            'Try not to kill enemies by throwing them off the cliff.'),
-            'Don\'t be too reckless. You can lose your loot quite quickly!',
-            ('Don\'t let the leading player score his Capsules '
-             'at the Deposit Point!\nTry to catch him if you can!'),
-            ('Lucky Capsules give 4 to your inventory and they have 8% chance '
-            'of spawning after kill!'),
-            ('Don\'t camp in one place! Make your move first, '
-            'so hopefully you get some dough!'),
-            ]
+            'Try not to kill enemies by throwing them off the cliff.'
+        ),
+        'Don\'t be too reckless. You can lose your loot quite quickly!',
+        (
+            'Don\'t let the leading player score his Capsules '
+            'at the Deposit Point!\nTry to catch him if you can!'
+        ),
+        (
+            'Lucky Capsules give 4 to your inventory and they have 8% chance '
+            'of spawning after kill!'
+        ),
+        (
+            'Don\'t camp in one place! Make your move first, '
+            'so hopefully you get some dough!'
+        ),
+    ]
     capsules_to_win = 'Capsules to Win'
     capsules_death = 'Capsules on Death'
     lucky_capsules = 'Allow Lucky Capsules'
@@ -127,7 +147,7 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]
+        cls, sessiontype: type[bs.Session]
     ) -> list[babase.Setting]:
         settings = [
             bs.IntSetting(
@@ -292,7 +312,7 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
                 'position': self._flag_pos,
                 'scale': (1.8, 1.8, 1.8),
                 'type': 'sphere',
-                        'materials': flagmats,
+                'materials': flagmats,
             },
         )
         self._update_flag_state()
@@ -326,18 +346,22 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
 
                     player.capsules -= 1
                     scoring_team.score += 1
-                    self._handle_capsule_storage((
-                        self._flag_pos[0],
-                        self._flag_pos[1]+1,
-                        self._flag_pos[2]
-                    ), player)
+                    self._handle_capsule_storage(
+                        (
+                            self._flag_pos[0],
+                            self._flag_pos[1] + 1,
+                            self._flag_pos[2],
+                        ),
+                        player,
+                    )
                     self._collect_sound.play(0.8, position=self._flag_pos)
 
                     self._update_scoreboard()
                     if player.capsules > 0:
                         assert self._flag is not None
                         self._flag.set_score_text(
-                            str(self._score_to_win - scoring_team.score))
+                            str(self._score_to_win - scoring_team.score)
+                        )
 
                     # winner
                     if scoring_team.score >= self._score_to_win:
@@ -414,13 +438,19 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
             s = 0.005 - (player.capsules * 0.01)
             self._capsules.append(
                 Capsule(
-                    position=(pt[0] + random.uniform(-w, w),
-                              pt[1] + 0.75 + random.uniform(-w, w),
-                              pt[2]),
-                    velocity=(random.uniform(-s, s),
-                              random.uniform(-s, s),
-                              random.uniform(-s, s)),
-                    lucky=False))
+                    position=(
+                        pt[0] + random.uniform(-w, w),
+                        pt[1] + 0.75 + random.uniform(-w, w),
+                        pt[2],
+                    ),
+                    velocity=(
+                        random.uniform(-s, s),
+                        random.uniform(-s, s),
+                        random.uniform(-s, s),
+                    ),
+                    lucky=False,
+                )
+            )
         if random.randint(1, 12) == 1 and self._lucky_capsules:
             # How far from each other these capsules should spawn
             w = 0.6
@@ -428,13 +458,19 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
             s = 0.005
             self._capsules.append(
                 Capsule(
-                    position=(pt[0] + random.uniform(-w, w),
-                              pt[1] + 0.75 + random.uniform(-w, w),
-                              pt[2]),
-                    velocity=(random.uniform(-s, s),
-                              random.uniform(-s, s),
-                              random.uniform(-s, s)),
-                    lucky=True))
+                    position=(
+                        pt[0] + random.uniform(-w, w),
+                        pt[1] + 0.75 + random.uniform(-w, w),
+                        pt[2],
+                    ),
+                    velocity=(
+                        random.uniform(-s, s),
+                        random.uniform(-s, s),
+                        random.uniform(-s, s),
+                    ),
+                    lucky=True,
+                )
+            )
 
     def _on_capsule_player_collide(self) -> None:
         if self.has_ended():
@@ -460,21 +496,23 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
                 bonus,
                 color=(1, 1, 0),
                 scale=1.5,
-                position=capsule.node.position
+                position=capsule.node.position,
             ).autoretain()
             self._lucky_collect_sound.play(1.0, position=capsule.node.position)
             bs.emitfx(
                 position=capsule.node.position,
                 velocity=(0, 0, 0),
-                count=int(6.4+random.random()*24),
+                count=int(6.4 + random.random() * 24),
                 scale=1.2,
                 spread=2.0,
-                chunk_type='spark')
+                chunk_type='spark',
+            )
             bs.emitfx(
                 position=capsule.node.position,
                 velocity=(0, 0, 0),
-                count=int(4.0+random.random()*6),
-                emit_type='tendrils')
+                count=int(4.0 + random.random() * 6),
+                emit_type='tendrils',
+            )
         else:
             player.capsules += 1
             self._collect_sound.play(0.6, position=capsule.node.position)
@@ -485,29 +523,29 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
                 'position': capsule.node.position,
                 'height_attenuated': False,
                 'radius': 0.1,
-                'color': (1, 1, 0)})
+                'color': (1, 1, 0),
+            },
+        )
 
         # Create a short text informing about your inventory
         self._handle_capsule_storage(player.position, player)
 
-        bs.animate(light, 'intensity', {
-            0: 0,
-            0.1: 0.5,
-            0.2: 0
-        }, loop=False)
+        bs.animate(light, 'intensity', {0: 0, 0.1: 0.5, 0.2: 0}, loop=False)
         bs.timer(0.2, light.delete)
         capsule.handlemessage(bs.DieMessage())
 
     def _update_player_light(self, player: Player, capsules: int) -> None:
         if player.light:
             intensity = 0.04 * capsules
-            bs.animate(player.light, 'intensity', {
-                0.0: player.light.intensity,
-                0.1: intensity
-            })
+            bs.animate(
+                player.light,
+                'intensity',
+                {0.0: player.light.intensity, 0.1: intensity},
+            )
 
             def newintensity():
                 player.light.intensity = intensity
+
             bs.timer(0.1, newintensity)
         else:
             player.light = bs.newnode(
@@ -516,8 +554,9 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
                     'height_attenuated': False,
                     'radius': 0.2,
                     'intensity': 0.0,
-                    'color': (0.2, 1, 0.2)
-                })
+                    'color': (0.2, 1, 0.2),
+                },
+            )
             player.node.connectattr('position', player.light, 'position')
 
     def _handle_capsule_storage(self, pos: float, player: Player) -> None:
@@ -544,7 +583,7 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
             text,
             color=color,
             scale=scale,
-            position=(pos[0], pos[1]-1, pos[2])
+            position=(pos[0], pos[1] - 1, pos[2]),
         ).autoretain()
         self._update_player_light(player, capsules)
 
@@ -565,10 +604,12 @@ class CollectorGame(bs.TeamGameActivity[Player, Team]):
 
 class Capsule(bs.Actor):
 
-    def __init__(self,
-                 position: Sequence[float] = (0.0, 1.0, 0.0),
-                 velocity: Sequence[float] = (0.0, 0.5, 0.0),
-                 lucky: bool = False):
+    def __init__(
+        self,
+        position: Sequence[float] = (0.0, 1.0, 0.0),
+        velocity: Sequence[float] = (0.0, 0.5, 0.0),
+        lucky: bool = False,
+    ):
         super().__init__()
         shared = SharedObjects.get()
         activity = self.getactivity()
@@ -583,52 +624,70 @@ class Capsule(bs.Actor):
             'prop',
             attrs={
                 'mesh': activity._capsule_mesh,
-                'color_texture': activity._capsule_lucky_tex if lucky else (
-                    activity._capsule_tex),
+                'color_texture': (
+                    activity._capsule_lucky_tex
+                    if lucky
+                    else (activity._capsule_tex)
+                ),
                 'body': 'crate' if lucky else 'capsule',
-                        'reflection': 'powerup' if lucky else 'soft',
-                        'body_scale': 0.65 if lucky else 0.3,
-                        'density': 6.0 if lucky else 4.0,
-                        'reflection_scale': [0.15],
-                        'shadow_size': 0.65 if lucky else 0.6,
-                        'position': self._spawn_pos,
-                        'velocity': velocity,
-                        'materials': [
-                        shared.object_material, activity._capsule_material]
+                'reflection': 'powerup' if lucky else 'soft',
+                'body_scale': 0.65 if lucky else 0.3,
+                'density': 6.0 if lucky else 4.0,
+                'reflection_scale': [0.15],
+                'shadow_size': 0.65 if lucky else 0.6,
+                'position': self._spawn_pos,
+                'velocity': velocity,
+                'materials': [
+                    shared.object_material,
+                    activity._capsule_material,
+                ],
             },
-            delegate=self)
-        bs.animate(self.node, 'mesh_scale', {
-            0.0: 0.0,
-            0.1: 0.9 if lucky else 0.6,
-            0.16: 0.8 if lucky else 0.5
-        })
+            delegate=self,
+        )
+        bs.animate(
+            self.node,
+            'mesh_scale',
+            {0.0: 0.0, 0.1: 0.9 if lucky else 0.6, 0.16: 0.8 if lucky else 0.5},
+        )
         self._light_capsule = bs.newnode(
             'light',
             attrs={
                 'position': self._spawn_pos,
                 'height_attenuated': False,
                 'radius': 0.5 if lucky else 0.1,
-                'color': (0.2, 0.2, 0) if lucky else (0.2, 1, 0.2)
-            })
+                'color': (0.2, 0.2, 0) if lucky else (0.2, 1, 0.2),
+            },
+        )
         self.node.connectattr('position', self._light_capsule, 'position')
 
     def handlemessage(self, msg: Any):
         if isinstance(msg, bs.DieMessage):
             self.node.delete()
-            bs.animate(self._light_capsule, 'intensity', {
-                0: 1.0,
-                0.05: 0.0
-            }, loop=False)
+            bs.animate(
+                self._light_capsule,
+                'intensity',
+                {0: 1.0, 0.05: 0.0},
+                loop=False,
+            )
             bs.timer(0.05, self._light_capsule.delete)
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.handlemessage(bs.DieMessage())
         elif isinstance(msg, bs.HitMessage):
             self.node.handlemessage(
                 'impulse',
-                msg.pos[0], msg.pos[1], msg.pos[2],
-                msg.velocity[0]/8, msg.velocity[1]/8, msg.velocity[2]/8,
-                1.0*msg.magnitude, 1.0*msg.velocity_magnitude, msg.radius, 0,
-                msg.force_direction[0], msg.force_direction[1],
-                msg.force_direction[2])
+                msg.pos[0],
+                msg.pos[1],
+                msg.pos[2],
+                msg.velocity[0] / 8,
+                msg.velocity[1] / 8,
+                msg.velocity[2] / 8,
+                1.0 * msg.magnitude,
+                1.0 * msg.velocity_magnitude,
+                msg.radius,
+                0,
+                msg.force_direction[0],
+                msg.force_direction[1],
+                msg.force_direction[2],
+            )
         else:
             return super().handlemessage(msg)

@@ -82,7 +82,7 @@ class MeteorShowerv2Game(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]
+        cls, sessiontype: type[bs.Session]
     ) -> list[babase.Setting]:
         settings = [
             bs.IntChoiceSetting(
@@ -94,7 +94,7 @@ class MeteorShowerv2Game(bs.TeamGameActivity[Player, Team]):
                     (impact, 3),
                     (land_mine, 4),
                     ('tnt', 5),
-                    (random_bomb, 6)
+                    (random_bomb, 6),
                 ],
                 default=0,
             ),
@@ -241,7 +241,7 @@ class MeteorShowerv2Game(bs.TeamGameActivity[Player, Team]):
 
     def _set_meteor_timer(self) -> None:
         bs.timer(
-                (1.0 + 0.2 * random.random()) * self._meteor_time,
+            (1.0 + 0.2 * random.random()) * self._meteor_time,
             self._drop_bomb_cluster,
         )
 
@@ -277,21 +277,23 @@ class MeteorShowerv2Game(bs.TeamGameActivity[Player, Team]):
         self._set_meteor_timer()
 
     def _drop_bomb(
-            self, position: Sequence[float], velocity: Sequence[float]
+        self, position: Sequence[float], velocity: Sequence[float]
     ) -> None:
         if self._bomb_type == 'tnt':
             bomb_type = random.choice(['tnt', 'tnt', 'tnt', 'tnt', 'impact'])
         elif self._bomb_type == 'land_mine':
-            bomb_type = random.choice([
-                'land_mine', 'land_mine', 'land_mine', 'land_mine', 'impact'])
+            bomb_type = random.choice(
+                ['land_mine', 'land_mine', 'land_mine', 'land_mine', 'impact']
+            )
         elif self._bomb_type == 'random':
-            bomb_type = random.choice([
-                'normal', 'ice', 'sticky', 'impact', 'land_mine', 'tnt'])
+            bomb_type = random.choice(
+                ['normal', 'ice', 'sticky', 'impact', 'land_mine', 'tnt']
+            )
         else:
             bomb_type = self._bomb_type
-        Bomb(position=position,
-             velocity=velocity,
-             bomb_type=bomb_type).autoretain()
+        Bomb(
+            position=position, velocity=velocity, bomb_type=bomb_type
+        ).autoretain()
 
     def _decrement_meteor_time(self) -> None:
         self._meteor_time = max(0.01, self._meteor_time * 0.9)

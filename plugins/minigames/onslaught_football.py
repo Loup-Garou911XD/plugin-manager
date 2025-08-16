@@ -162,9 +162,9 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
                     'position': (15, -130),
                     'h_attach': 'left',
                     'v_attach': 'top',
-                                'scale': 0.55,
-                                'color': (0.3, 0.8, 0.3, 1.0),
-                                'text': '',
+                    'scale': 0.55,
+                    'color': (0.3, 0.8, 0.3, 1.0),
+                    'text': '',
                 },
             )
         )
@@ -202,12 +202,12 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         return totalpts, totaldudes
 
     def _get_distribution(
-            self,
-            target_points: int,
-            min_dudes: int,
-            max_dudes: int,
-            group_count: int,
-            max_level: int,
+        self,
+        target_points: int,
+        min_dudes: int,
+        max_dudes: int,
+        group_count: int,
+        max_level: int,
     ) -> list[list[tuple[int, int]]]:
         """Calculate a distribution of bad guys given some params."""
         max_iterations = 10 + max_dudes * 2
@@ -239,14 +239,14 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
                 # If we don't have enough dudes, kill the group with
                 # the biggest point value.
                 elif (
-                        total_dudes < min_dudes and iteration != max_iterations - 1
+                    total_dudes < min_dudes and iteration != max_iterations - 1
                 ):
                     self._delete_biggest_dist_entry(groups)
 
                 # If we've got too many dudes, kill the group with the
                 # smallest point value.
                 elif (
-                        total_dudes > max_dudes and iteration != max_iterations - 1
+                    total_dudes > max_dudes and iteration != max_iterations - 1
                 ):
                     self._delete_smallest_dist_entry(groups)
 
@@ -258,11 +258,11 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         return groups
 
     def _add_dist_entry_if_possible(
-            self,
-            groups: list[list[tuple[int, int]]],
-            max_dudes: int,
-            target_points: int,
-            types: list[int],
+        self,
+        groups: list[list[tuple[int, int]]],
+        max_dudes: int,
+        target_points: int,
+        types: list[int],
     ) -> int:
         # See how much we're off our target by.
         total_points, total_dudes = self._get_dist_grp_totals(groups)
@@ -286,7 +286,7 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         return diff
 
     def _delete_smallest_dist_entry(
-            self, groups: list[list[tuple[int, int]]]
+        self, groups: list[list[tuple[int, int]]]
     ) -> None:
         smallest_value = 9999
         smallest_entry = None
@@ -302,7 +302,7 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         smallest_entry_group.remove(smallest_entry)
 
     def _delete_biggest_dist_entry(
-            self, groups: list[list[tuple[int, int]]]
+        self, groups: list[list[tuple[int, int]]]
     ) -> None:
         biggest_value = 9999
         biggest_entry = None
@@ -318,7 +318,7 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
             biggest_entry_group.remove(biggest_entry)
 
     def _delete_random_dist_entry(
-            self, groups: list[list[tuple[int, int]]]
+        self, groups: list[list[tuple[int, int]]]
     ) -> None:
         entry_count = 0
         for group in groups:
@@ -348,7 +348,7 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         return spaz
 
     def _handle_player_dropped_bomb(
-            self, player: bs.Actor, bomb: bs.Actor
+        self, player: bs.Actor, bomb: bs.Actor
     ) -> None:
         del player, bomb  # Unused.
         self._player_has_dropped_bomb = True
@@ -368,7 +368,7 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         )
 
     def _drop_powerups(
-            self, standard_points: bool = False, poweruptype: str | None = None
+        self, standard_points: bool = False, poweruptype: str | None = None
     ) -> None:
         """Generic powerup drop."""
         if standard_points:
@@ -428,9 +428,9 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         # If we have no living bots, go to the next wave.
         assert self._bots is not None
         if (
-                self._can_end_wave
-                and not self._bots.have_living_bots()
-                and not self._game_over
+            self._can_end_wave
+            and not self._bots.have_living_bots()
+            and not self._game_over
         ):
             self._can_end_wave = False
             self._time_bonus_timer = None
@@ -554,8 +554,8 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         if self._wavenum > 1 and not self.is_waiting_for_continue():
             for player in self.players:
                 if (
-                        not player.is_alive()
-                        and player.respawn_wave == self._wavenum
+                    not player.is_alive()
+                    and player.respawn_wave == self._wavenum
                 ):
                     self.spawn_player(player)
         self._update_player_spawn_info()
@@ -654,13 +654,13 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
                     'v_attach': 'top',
                     'h_attach': 'center',
                     'h_align': 'center',
-                                'vr_depth': -30,
-                                'color': tbtcolor,
-                                'shadow': 1.0,
-                                'flatness': 1.0,
-                                'position': (0, -60),
-                                'scale': 0.8,
-                                'text': tbttxt,
+                    'vr_depth': -30,
+                    'color': tbtcolor,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'position': (0, -60),
+                    'scale': 0.8,
+                    'text': tbttxt,
                 },
             )
         )
@@ -681,13 +681,13 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
                     'v_attach': 'top',
                     'h_attach': 'center',
                     'h_align': 'center',
-                                'vr_depth': -10,
-                                'color': wtcolor,
-                                'shadow': 1.0,
-                                'flatness': 1.0,
-                                'position': (0, -40),
-                                'scale': 1.3,
-                                'text': wttxt,
+                    'vr_depth': -10,
+                    'color': wtcolor,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'position': (0, -40),
+                    'scale': 1.3,
+                    'text': wttxt,
                 },
             )
         )
@@ -750,10 +750,10 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         return bot_levels
 
     def _add_entries_for_distribution_group(
-            self,
-            group: list[tuple[int, int]],
-            bot_levels: list[list[type[SpazBot]]],
-            all_entries: list[Spawn | Spacing | Delay | None],
+        self,
+        group: list[tuple[int, int]],
+        bot_levels: list[list[type[SpazBot]]],
+        all_entries: list[Spawn | Spacing | Delay | None],
     ) -> None:
         entries: list[Spawn | Spacing | Delay | None] = []
         for entry in group:
@@ -809,17 +809,17 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
         return wave
 
     def add_bot_at_point(
-            self, spaz_type: type[SpazBot], spawn_time: float = 1.0
+        self, spaz_type: type[SpazBot], spawn_time: float = 1.0
     ) -> None:
         """Add a new bot at a specified named point."""
         if self._game_over:
             return
 
         def _getpt() -> Sequence[float]:
-            point = self.map.get_def_points(
-                'ffa_spawn')[self._next_ffa_start_index]
-            self._next_ffa_start_index = (
-                self._next_ffa_start_index + 1) % len(
+            point = self.map.get_def_points('ffa_spawn')[
+                self._next_ffa_start_index
+            ]
+            self._next_ffa_start_index = (self._next_ffa_start_index + 1) % len(
                 self.map.get_def_points('ffa_spawn')
             )
             x_range = (-0.5, 0.5) if point[3] == 0.0 else (-point[3], point[3])
@@ -830,13 +830,14 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
                 point[2] + random.uniform(*z_range),
             )
             return point
+
         pointpos = _getpt()
 
         assert self._bots is not None
         self._bots.spawn_bot(spaz_type, pos=pointpos, spawn_time=spawn_time)
 
     def add_bot_at_angle(
-            self, angle: float, spaz_type: type[SpazBot], spawn_time: float = 1.0
+        self, angle: float, spaz_type: type[SpazBot], spawn_time: float = 1.0
     ) -> None:
         """Add a new bot at a specified angle (for circular maps)."""
         if self._game_over:
@@ -915,8 +916,11 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
                     screenmessage=False,
                     importance=importance,
                 )
-                self._dingsound.play(
-                    volume=0.6) if importance == 1 else self._dingsoundhigh.play(volume=0.6)
+                (
+                    self._dingsound.play(volume=0.6)
+                    if importance == 1
+                    else self._dingsoundhigh.play(volume=0.6)
+                )
 
             # Normally we pull scores from the score-set, but if there's
             # no player lets be explicit.
@@ -963,7 +967,7 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
                 self._award_achievement('Mine Games')
 
     def _handle_training_kill_achievements(
-            self, msg: SpazBotDiedMessage
+        self, msg: SpazBotDiedMessage
     ) -> None:
         # Toss-off-map achievement:
         if msg.spazbot.last_attacked_type == ('picked_up', 'default'):
@@ -997,6 +1001,7 @@ class OnslaughtFootballGame(bs.CoopGameActivity[Player, Team]):
                 self.continue_or_end_game()
             else:
                 self.end_game()
+
 
 # ba_meta export plugin
 

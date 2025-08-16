@@ -61,10 +61,13 @@ else:
 
 class AbyssMap(bs.Map):
     from bascenev1lib.mapdata import happy_thoughts as defs
+
     # Add the y-dimension space for players
-    defs.boxes['map_bounds'] = (-0.8748348681, 9.212941713, -9.729538885) \
-        + (0.0, 0.0, 0.0) \
+    defs.boxes['map_bounds'] = (
+        (-0.8748348681, 9.212941713, -9.729538885)
+        + (0.0, 0.0, 0.0)
         + (36.09666006, 26.19950145, 20.89541168)
+    )
     name = 'Abyss Unhappy'
 
     @classmethod
@@ -86,7 +89,7 @@ class AbyssMap(bs.Map):
             'tex': bs.gettexture('alwaysLandLevelColor'),
             'bgtex': bs.gettexture('alwaysLandBGColor'),
             'vr_fill_mound_mesh': bs.getmesh('alwaysLandVRFillMound'),
-            'vr_fill_mound_tex': bs.gettexture('vrFillMound')
+            'vr_fill_mound_tex': bs.gettexture('vrFillMound'),
         }
         return data
 
@@ -102,17 +105,20 @@ class AbyssMap(bs.Map):
                 'mesh': self.preloaddata['bgmesh'],
                 'lighting': False,
                 'background': True,
-                'color_texture': self.preloaddata['bgtex']
-            })
-        bs.newnode('terrain',
-                   attrs={
-                       'mesh': self.preloaddata['vr_fill_mound_mesh'],
-                       'lighting': False,
-                       'vr_only': True,
-                       'color': (0.2, 0.25, 0.2),
-                       'background': True,
-                       'color_texture': self.preloaddata['vr_fill_mound_tex']
-                   })
+                'color_texture': self.preloaddata['bgtex'],
+            },
+        )
+        bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['vr_fill_mound_mesh'],
+                'lighting': False,
+                'vr_only': True,
+                'color': (0.2, 0.25, 0.2),
+                'background': True,
+                'color_texture': self.preloaddata['vr_fill_mound_tex'],
+            },
+        )
         gnode = bs.getactivity().globalsnode
         gnode.happy_thoughts_mode = True
         gnode.shadow_offset = (0.0, 8.0, 5.0)
@@ -137,12 +143,14 @@ class BombToDieMessage:
 
 class Foothold(bs.Actor):
 
-    def __init__(self,
-                 position: Sequence[float] = (0.0, 1.0, 0.0),
-                 power: str = 'random',
-                 size: float = 6.0,
-                 breakable: bool = True,
-                 moving: bool = False):
+    def __init__(
+        self,
+        position: Sequence[float] = (0.0, 1.0, 0.0),
+        power: str = 'random',
+        size: float = 6.0,
+        breakable: bool = True,
+        moving: bool = False,
+    ):
         super().__init__()
         shared = SharedObjects.get()
         powerup = PowerupBoxFactory.get()
@@ -160,20 +168,24 @@ class Foothold(bs.Actor):
         self.impact_sound = bui.getsound('impactMedium')
 
         self.foothold_material.add_actions(
-            conditions=(('they_dont_have_material', shared.player_material),
-                        'and',
-                        ('they_have_material', shared.object_material),
-                        'or',
-                        ('they_have_material', shared.footing_material)),
-            actions=(('modify_node_collision', 'collide', True),
-                     ))
+            conditions=(
+                ('they_dont_have_material', shared.player_material),
+                'and',
+                ('they_have_material', shared.object_material),
+                'or',
+                ('they_have_material', shared.footing_material),
+            ),
+            actions=(('modify_node_collision', 'collide', True),),
+        )
 
         self.foothold_material.add_actions(
             conditions=('they_have_material', shared.player_material),
-            actions=(('modify_part_collision', 'physical', True),
-                     ('modify_part_collision', 'stiffness', 0.05),
-                     ('message', 'our_node', 'at_connect', SpazTouchFoothold()),
-                     ))
+            actions=(
+                ('modify_part_collision', 'physical', True),
+                ('modify_part_collision', 'stiffness', 0.05),
+                ('message', 'our_node', 'at_connect', SpazTouchFoothold()),
+            ),
+        )
 
         self.foothold_material.add_actions(
             conditions=('they_have_material', self.foothold_material),
@@ -202,7 +214,7 @@ class Foothold(bs.Actor):
             powerup.tex_shield: 4,
             powerup.tex_health: 3,
             powerup.tex_curse: 1,
-            bs.gettexture('tnt'): 2
+            bs.gettexture('tnt'): 2,
         }
 
         self.randtex = []
@@ -226,7 +238,7 @@ class Foothold(bs.Actor):
             powerup.tex_shield: 'shield',
             powerup.tex_health: 'health',
             powerup.tex_curse: 'curse',
-            bs.gettexture('tnt'): 'tnt'
+            bs.gettexture('tnt'): 'tnt',
         }.get(self.tex, '')
 
         self._spawn_pos = (position[0], position[1], position[2])
@@ -238,22 +250,25 @@ class Foothold(bs.Actor):
                 'body': 'landMine',
                 'position': self._spawn_pos,
                 'mesh': fmesh,
-                        'light_mesh': fmeshs,
-                        'shadow_size': 0.5,
-                        'velocity': (0, 0, 0),
-                        'density': 90000000000,
-                        'sticky': False,
-                        'body_scale': size,
-                        'mesh_scale': size,
-                        'color_texture': tex,
-                        'reflection': 'powerup',
-                        'is_area_of_interest': True,
-                        'gravity_scale': 0.0,
-                        'reflection_scale': [0],
-                        'materials': [self.foothold_material,
-                                      shared.object_material,
-                                      shared.footing_material]
-            })
+                'light_mesh': fmeshs,
+                'shadow_size': 0.5,
+                'velocity': (0, 0, 0),
+                'density': 90000000000,
+                'sticky': False,
+                'body_scale': size,
+                'mesh_scale': size,
+                'color_texture': tex,
+                'reflection': 'powerup',
+                'is_area_of_interest': True,
+                'gravity_scale': 0.0,
+                'reflection_scale': [0],
+                'materials': [
+                    self.foothold_material,
+                    shared.object_material,
+                    shared.footing_material,
+                ],
+            },
+        )
         self.touchedSpazs = set()
         self.keep_vel()
 
@@ -264,7 +279,10 @@ class Foothold(bs.Actor):
                 if abs(self.node.position[0]) > 10:
                     self.lrSig *= -1
                 self.node.velocity = (
-                    self.lrSig * speed * self.lrSpeedPlus, speed, 0)
+                    self.lrSig * speed * self.lrSpeedPlus,
+                    speed,
+                    0,
+                )
                 bs.timer(0.1, bs.WeakCall(self.keep_vel))
             else:
                 self.node.velocity = (0, speed, 0)
@@ -273,10 +291,9 @@ class Foothold(bs.Actor):
 
     def tnt_explode(self) -> None:
         pos = self.node.position
-        Blast(position=pos,
-              blast_radius=6.0,
-              blast_type='tnt',
-              source_player=None).autoretain()
+        Blast(
+            position=pos, blast_radius=6.0, blast_type='tnt', source_player=None
+        ).autoretain()
 
     def spawn_npc(self) -> None:
         if not self.breakable:
@@ -290,7 +307,8 @@ class Foothold(bs.Actor):
         self._npcBots.spawn_bot(
             bot_type=random.choice([ChargerBotPro, TriggerBotPro]),
             pos=pos,
-            spawn_time=10)
+            spawn_time=10,
+        )
 
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, bs.DieMessage):
@@ -304,7 +322,7 @@ class Foothold(bs.Actor):
                 self.tnt_explode()
             self.handlemessage(bs.DieMessage())
         elif isinstance(msg, bs.HitMessage):
-            ispunched = (msg.srcnode and msg.srcnode.getnodetype() == 'spaz')
+            ispunched = msg.srcnode and msg.srcnode.getnodetype() == 'spaz'
             if not ispunched:
                 if self.breakable:
                     self.handlemessage(BombToDieMessage())
@@ -321,8 +339,7 @@ class Foothold(bs.Actor):
                     self.spawn_npc()
                     spaz.fix_2D_position()
                     if self.powerup_type not in ['', 'tnt']:
-                        node.handlemessage(
-                            bs.PowerupMessage(self.powerup_type))
+                        node.handlemessage(bs.PowerupMessage(self.powerup_type))
                 except Exception as e:
                     print(e)
                     pass
@@ -330,22 +347,28 @@ class Foothold(bs.Actor):
 
 class AbyssPlayerSpaz(PlayerSpaz):
 
-    def __init__(self,
-                 player: bs.Player,
-                 color: Sequence[float] = (1.0, 1.0, 1.0),
-                 highlight: Sequence[float] = (0.5, 0.5, 0.5),
-                 character: str = 'Spaz',
-                 powerups_expire: bool = True):
-        super().__init__(player=player,
-                         color=color,
-                         highlight=highlight,
-                         character=character,
-                         powerups_expire=powerups_expire)
+    def __init__(
+        self,
+        player: bs.Player,
+        color: Sequence[float] = (1.0, 1.0, 1.0),
+        highlight: Sequence[float] = (0.5, 0.5, 0.5),
+        character: str = 'Spaz',
+        powerups_expire: bool = True,
+    ):
+        super().__init__(
+            player=player,
+            color=color,
+            highlight=highlight,
+            character=character,
+            powerups_expire=powerups_expire,
+        )
         self.node.fly = False
         self.node.hockey = True
         self.hitpoints_max = self.hitpoints = 1500  # more HP to handle drop
-        bs.timer(bs.getactivity().peace_time,
-                 bs.WeakCall(self.safe_connect_controls_to_player))
+        bs.timer(
+            bs.getactivity().peace_time,
+            bs.WeakCall(self.safe_connect_controls_to_player),
+        )
 
     def safe_connect_controls_to_player(self) -> None:
         try:
@@ -365,7 +388,7 @@ class AbyssPlayerSpaz(PlayerSpaz):
         if self.node.run > 0.1:
             self.node.move_up_down = value
         else:
-            self.node.move_up_down = value / 3.
+            self.node.move_up_down = value / 3.0
 
     def on_move_left_right(self, value: float) -> None:
         """
@@ -402,8 +425,9 @@ class AbyssPlayerSpaz(PlayerSpaz):
             for attr in ['materials', 'roller_materials']:
                 materials = getattr(self.node, attr)
                 if factory.curse_material not in materials:
-                    setattr(self.node, attr,
-                            materials + (factory.curse_material, ))
+                    setattr(
+                        self.node, attr, materials + (factory.curse_material,)
+                    )
 
             # None specifies no time limit
             assert self.node
@@ -441,8 +465,11 @@ class AbyssPlayerSpaz(PlayerSpaz):
 
             # if we're grabbing the pelvis of a non-shattered spaz,
             # we wanna grab the torso instead
-            if (opposingnode.getnodetype() == 'spaz'
-                    and not opposingnode.shattered and opposingbody == 4):
+            if (
+                opposingnode.getnodetype() == 'spaz'
+                and not opposingnode.shattered
+                and opposingbody == 4
+            ):
                 opposingbody = 1
 
             # Special case - if we're holding a flag, don't replace it
@@ -477,9 +504,9 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
 
     name = name
     description = description
-    scoreconfig = bs.ScoreConfig(label='Survived',
-                                 scoretype=bs.ScoreType.MILLISECONDS,
-                                 version='B')
+    scoreconfig = bs.ScoreConfig(
+        label='Survived', scoretype=bs.ScoreType.MILLISECONDS, version='B'
+    )
 
     # Print messages when players die (since its meaningful in this game).
     announce_player_deaths = True
@@ -491,7 +518,8 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]) -> list[babase.Setting]:
+        cls, sessiontype: type[bs.Session]
+    ) -> list[babase.Setting]:
         settings = [
             bs.FloatChoiceSetting(
                 peaceTime,
@@ -523,9 +551,11 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
     # We support teams, free-for-all, and co-op sessions.
     @classmethod
     def supports_session_type(cls, sessiontype: type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.DualTeamSession)
-                or issubclass(sessiontype, bs.FreeForAllSession)
-                or issubclass(sessiontype, bs.CoopSession))
+        return (
+            issubclass(sessiontype, bs.DualTeamSession)
+            or issubclass(sessiontype, bs.FreeForAllSession)
+            or issubclass(sessiontype, bs.CoopSession)
+        )
 
     def __init__(self, settings: dict):
         super().__init__(settings)
@@ -535,16 +565,19 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
         self.fix_y = -5.614479365
         self.start_z = 0
         self.init_position = (0, self.start_z, self.fix_y)
-        self.team_init_positions = [(-5, self.start_z, self.fix_y),
-                                    (5, self.start_z, self.fix_y)]
+        self.team_init_positions = [
+            (-5, self.start_z, self.fix_y),
+            (5, self.start_z, self.fix_y),
+        ]
         self.cur_speed = 2.5
         # TODO: The variable below should be set in settings
         self.peace_time = float(settings[peaceTime])
         self.npc_density = float(settings[npcDensity])
 
         # Some base class overrides:
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
         if self._epic_mode:
             self.slow_motion = True
 
@@ -555,13 +588,15 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
                     'v_attach': 'bottom',
                     'h_align': 'center',
                     'vr_depth': 0,
-                                'color': (0.0, 0.7, 1.0),
-                                'shadow': 1.0 if True else 0.5,
-                                'flatness': 1.0 if True else 0.5,
-                                'position': (0, 0),
-                                'scale': 0.8,
-                                'text': ' | '.join([author, github, blog])
-                }))
+                    'color': (0.0, 0.7, 1.0),
+                    'shadow': 1.0 if True else 0.5,
+                    'flatness': 1.0 if True else 0.5,
+                    'position': (0, 0),
+                    'scale': 0.8,
+                    'text': ' | '.join([author, github, blog]),
+                },
+            )
+        )
 
     def get_instance_description(self) -> str | Sequence:
         return description
@@ -572,10 +607,13 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
     def on_player_join(self, player: Player) -> None:
         if self.has_begun():
             player.notIn = True
-            bs.broadcastmessage(babase.Lstr(
-                resource='playerDelayedJoinText',
-                subs=[('${PLAYER}', player.getname(full=True))]),
-                color=(0, 1, 0))
+            bs.broadcastmessage(
+                babase.Lstr(
+                    resource='playerDelayedJoinText',
+                    subs=[('${PLAYER}', player.getname(full=True))],
+                ),
+                color=(0, 1, 0),
+            )
         self.spawn_player(player)
 
     def on_begin(self) -> None:
@@ -589,24 +627,28 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
             ip0 = self.team_init_positions[0]
             ip1 = self.team_init_positions[1]
             Foothold(
-                    (ip0[0], ip0[1] - 2, ip0[2]),
-                power='shield', breakable=False).autoretain()
+                (ip0[0], ip0[1] - 2, ip0[2]), power='shield', breakable=False
+            ).autoretain()
             Foothold(
-                    (ip1[0], ip1[1] - 2, ip1[2]),
-                power='shield', breakable=False).autoretain()
+                (ip1[0], ip1[1] - 2, ip1[2]), power='shield', breakable=False
+            ).autoretain()
         else:
             ip = self.init_position
             Foothold(
-                    (ip[0], ip[1] - 2, ip[2]),
-                power='shield', breakable=False).autoretain()
+                (ip[0], ip[1] - 2, ip[2]), power='shield', breakable=False
+            ).autoretain()
 
-        bs.timer(int(5.0 / self.cur_speed),
-                 bs.WeakCall(self.add_foothold), repeat=True)
+        bs.timer(
+            int(5.0 / self.cur_speed),
+            bs.WeakCall(self.add_foothold),
+            repeat=True,
+        )
 
         # Repeat check game end
         bs.timer(1.0, self._check_end_game, repeat=True)
-        bs.timer(self.peace_time + 0.1,
-                 bs.WeakCall(self.tip_hint, hint_use_punch))
+        bs.timer(
+            self.peace_time + 0.1, bs.WeakCall(self.tip_hint, hint_use_punch)
+        )
         bs.timer(6.0, bs.WeakCall(self.faster_speed), repeat=True)
 
     def tip_hint(self, text: str) -> None:
@@ -622,29 +664,28 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
         ru = random.uniform
         self.level_cnt += 1
         if self.level_cnt % 3:
-            Foothold((
-                ip_1[0] + ru(-5, 5),
-                ip[1] - 2,
-                ip[2] + ru(-0.0, 0.0))).autoretain()
-            Foothold((
-                ip_2[0] + ru(-5, 5),
-                ip[1] - 2,
-                ip[2] + ru(-0.0, 0.0))).autoretain()
+            Foothold(
+                (ip_1[0] + ru(-5, 5), ip[1] - 2, ip[2] + ru(-0.0, 0.0))
+            ).autoretain()
+            Foothold(
+                (ip_2[0] + ru(-5, 5), ip[1] - 2, ip[2] + ru(-0.0, 0.0))
+            ).autoretain()
         else:
-            Foothold((
-                ip[0] + ru(-8, 8),
-                ip[1] - 2,
-                ip[2]), moving=True).autoretain()
+            Foothold(
+                (ip[0] + ru(-8, 8), ip[1] - 2, ip[2]), moving=True
+            ).autoretain()
 
     def teams_or_ffa(self) -> None:
         if isinstance(self.session, bs.DualTeamSession):
             return 'teams'
         return 'ffa'
 
-    def spawn_player_spaz(self,
-                          player: Player,
-                          position: Sequence[float] = (0, 0, 0),
-                          angle: float | None = None) -> PlayerSpaz:
+    def spawn_player_spaz(
+        self,
+        player: Player,
+        position: Sequence[float] = (0, 0, 0),
+        angle: float | None = None,
+    ) -> PlayerSpaz:
         # pylint: disable=too-many-locals
         # pylint: disable=cyclic-import
         from babase import _math
@@ -661,25 +702,28 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
 
         light_color = _math.normalized_color(color)
         display_color = _babase.safecolor(color, target_intensity=0.75)
-        spaz = AbyssPlayerSpaz(color=color,
-                               highlight=highlight,
-                               character=player.character,
-                               player=player)
+        spaz = AbyssPlayerSpaz(
+            color=color,
+            highlight=highlight,
+            character=player.character,
+            player=player,
+        )
 
         player.actor = spaz
         assert spaz.node
 
         spaz.node.name = name
         spaz.node.name_color = display_color
-        spaz.connect_controls_to_player(enable_punch=False,
-                                        enable_bomb=True,
-                                        enable_pickup=False)
+        spaz.connect_controls_to_player(
+            enable_punch=False, enable_bomb=True, enable_pickup=False
+        )
 
         # Move to the stand position and add a flash of light.
         spaz.handlemessage(
             bs.StandMessage(
-                position,
-                angle if angle is not None else random.uniform(0, 360)))
+                position, angle if angle is not None else random.uniform(0, 360)
+            )
+        )
         self._spawn_sound.play(1, position=spaz.node.position)
         light = bs.newnode('light', attrs={'color': light_color})
         spaz.node.connectattr('position', light, 'position')
@@ -781,8 +825,7 @@ class AbyssGame(bs.TeamGameActivity[Player, Team]):
             longest_life = 0.0
             for player in team.players:
                 assert player.death_time is not None
-                longest_life = max(longest_life,
-                                   player.death_time - start_time)
+                longest_life = max(longest_life, player.death_time - start_time)
 
             # Submit the score value in milliseconds.
             results.set_team_score(team, int(1000.0 * longest_life))

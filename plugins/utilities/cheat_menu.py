@@ -30,13 +30,8 @@ from baenv import TARGET_BALLISTICA_BUILD as build_number
 from bauiv1lib.settings.allsettings import AllSettingsWindow
 from bascenev1lib.actor.spaz import Spaz
 
-from typing import (
-    Text,
-    Tuple,
-    Optional,
-    Union,
-    get_args
-)
+from typing import Text, Tuple, Optional, Union, get_args
+
 type
 
 # Default Confings/Settings
@@ -79,7 +74,11 @@ def update_config(config: str, change: any):
 # ba_meta export plugin
 class Plugin(babase.Plugin):
     def on_app_running(self) -> None:
-        if babase.app.build_number if build_number < 21282 else babase.app.env.build_number:
+        if (
+            babase.app.build_number
+            if build_number < 21282
+            else babase.app.env.build_number
+        ):
             setconfigs()
             self.overwrite()
 
@@ -92,7 +91,9 @@ class Plugin(babase.Plugin):
 
 
 # creating Cheat button, start button
-def AllSettingsWindowInit(self, transition: str = 'in_right', origin_widget: bui.Widget = None):
+def AllSettingsWindowInit(
+    self, transition: str = 'in_right', origin_widget: bui.Widget = None
+):
     self.init(transition)
 
     uiscale = bui.app.ui_v1.uiscale
@@ -108,28 +109,30 @@ def AllSettingsWindowInit(self, transition: str = 'in_right', origin_widget: bui
         label='Cheats',
         button_type='square',
         text_scale=1.2,
-        on_activate_call=babase.Call(
-            on_cheat_menu_btn_press, self))
+        on_activate_call=babase.Call(on_cheat_menu_btn_press, self),
+    )
 
 
 # on cheat button press call Window
 def on_cheat_menu_btn_press(self):
-    bui.containerwidget(edit=self._root_widget,
-                        transition='out_scale')
+    bui.containerwidget(edit=self._root_widget, transition='out_scale')
     bui.app.ui_v1.set_main_menu_window(
-        CheatMenuWindow(
-            transition='in_right').get_root_widget(), from_window=self._root_widget)
+        CheatMenuWindow(transition='in_right').get_root_widget(),
+        from_window=self._root_widget,
+    )
 
 
 class CheatMenuWindow(bui.Window):
-    def __init__(self,
-                 transition: Optional[str] = 'in_right') -> None:
+    def __init__(self, transition: Optional[str] = 'in_right') -> None:
 
         # background window, main widget parameters
         uiscale = bui.app.ui_v1.uiscale
         self._width = 870.0 if uiscale is babase.UIScale.SMALL else 670.0
-        self._height = (390.0 if uiscale is babase.UIScale.SMALL else
-                        450.0 if uiscale is babase.UIScale.MEDIUM else 520.0)
+        self._height = (
+            390.0
+            if uiscale is babase.UIScale.SMALL
+            else 450.0 if uiscale is babase.UIScale.MEDIUM else 520.0
+        )
         extra_x = 100 if uiscale is babase.UIScale.SMALL else 0
         self.extra_x = extra_x
         top_extra = 20 if uiscale is babase.UIScale.SMALL else 0
@@ -146,22 +149,28 @@ class CheatMenuWindow(bui.Window):
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
                 transition=transition,
-                scale=(2.06 if uiscale is babase.UIScale.SMALL else
-                       1.4 if uiscale is babase.UIScale.MEDIUM else 1.0)))
+                scale=(
+                    2.06
+                    if uiscale is babase.UIScale.SMALL
+                    else 1.4 if uiscale is babase.UIScale.MEDIUM else 1.0
+                ),
+            )
+        )
 
         # back button widget
         self._back_button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=True,
-            position=(52 + self.extra_x,
-                      self._height - 60 - top_extra),
+            position=(52 + self.extra_x, self._height - 60 - top_extra),
             size=(60, 60),
             scale=0.8,
             label=babase.charstr(babase.SpecialChar.BACK),
             button_type='backSmall',
-            on_activate_call=self._back)
-        bui.containerwidget(edit=self._root_widget,
-                            cancel_button=self._back_button)
+            on_activate_call=self._back,
+        )
+        bui.containerwidget(
+            edit=self._root_widget, cancel_button=self._back_button
+        )
 
         # window title, apears in top center of window
         self._title_text = bui.textwidget(
@@ -172,26 +181,26 @@ class CheatMenuWindow(bui.Window):
             color=bui.app.ui_v1.title_color,
             scale=1.2,
             h_align='center',
-            v_align='top')
+            v_align='top',
+        )
 
         self._scrollwidget = bui.scrollwidget(
             parent=self._root_widget,
             position=(50 + extra_x, 50 - top_extra),
             simple_culling_v=20.0,
             highlight=False,
-            size=(self._scroll_width,
-                  self._scroll_height),
-            selection_loops_to_parent=True)
-        bui.widget(edit=self._scrollwidget,
-                   right_widget=self._scrollwidget)
+            size=(self._scroll_width, self._scroll_height),
+            selection_loops_to_parent=True,
+        )
+        bui.widget(edit=self._scrollwidget, right_widget=self._scrollwidget)
 
         # subcontainer represents scroll widget and used as parent
         self._subcontainer = bui.containerwidget(
             parent=self._scrollwidget,
-            size=(self._sub_width,
-                  self._sub_height),
+            size=(self._sub_width, self._sub_height),
             background=False,
-            selection_loops_to_parent=True)
+            selection_loops_to_parent=True,
+        )
 
         v = self._sub_height - 35
         v -= self._spacing * 1.2
@@ -206,10 +215,10 @@ class CheatMenuWindow(bui.Window):
                 text=checkbox,
                 textcolor=(0.8, 0.8, 0.8),
                 value=APPCONFIG[CONFIG][checkbox],
-                on_value_change_call=babase.Call(
-                    self.update, checkbox),
+                on_value_change_call=babase.Call(self.update, checkbox),
                 scale=1.4,
-                maxwidth=430)
+                maxwidth=430,
+            )
             v -= 70
 
     def update(self, config: str, change) -> None:
@@ -221,8 +230,9 @@ class CheatMenuWindow(bui.Window):
         """
         try:
             if change == True and config == "Fly":
-                bui.screenmessage("Some maps may not work good for flying",
-                                  color=(1, 0, 0))
+                bui.screenmessage(
+                    "Some maps may not work good for flying", color=(1, 0, 0)
+                )
             update_config(config, change)
             bui.getsound('gunCocking').play()
         except Exception:
@@ -231,11 +241,9 @@ class CheatMenuWindow(bui.Window):
 
         try:
             if change == True and config == "SuperPunch":
-                bui.screenmessage("SuperPunch Activated",
-                                  color=(1, 0, 0))
+                bui.screenmessage("SuperPunch Activated", color=(1, 0, 0))
             elif change == False and config == "SuperPunch":
-                bui.screenmessage("Super Punch Deactivated",
-                                  color=(0.5, 0, 0))
+                bui.screenmessage("Super Punch Deactivated", color=(0.5, 0, 0))
             update_config(config, change)
             bui.getsound('gunCocking').play()
         except Exception:
@@ -244,11 +252,9 @@ class CheatMenuWindow(bui.Window):
 
         try:
             if change == True and config == "IceOnly":
-                bui.screenmessage("Ice Bombs Activated",
-                                  color=(0.1, 1, 1))
+                bui.screenmessage("Ice Bombs Activated", color=(0.1, 1, 1))
             elif change == False and config == "IceOnly":
-                bui.screenmessage("Ice Bombs Deactivated",
-                                  color=(1, 0, 0))
+                bui.screenmessage("Ice Bombs Deactivated", color=(1, 0, 0))
             update_config(config, change)
             bui.getsound('gunCocking').play()
         except Exception:
@@ -256,11 +262,9 @@ class CheatMenuWindow(bui.Window):
             bui.getsound('spazOw').play()
         try:
             if change == True and config == "StickyOnly":
-                bui.screenmessage("Sticky Bombs Activated",
-                                  color=(0, 1, 0))
+                bui.screenmessage("Sticky Bombs Activated", color=(0, 1, 0))
             elif change == False and config == "StickyOnly":
-                bui.screenmessage("Sticky Bombs Deactivated",
-                                  color=(1, 0, 0))
+                bui.screenmessage("Sticky Bombs Deactivated", color=(1, 0, 0))
             update_config(config, change)
             bui.getsound('gunCocking').play()
         except Exception:
@@ -269,11 +273,11 @@ class CheatMenuWindow(bui.Window):
 
         try:
             if change == True and config == "ImpactOnly":
-                bui.screenmessage("Impact Bombs Activated",
-                                  color=(0.5, 0.5, 0.5))
+                bui.screenmessage(
+                    "Impact Bombs Activated", color=(0.5, 0.5, 0.5)
+                )
             elif change == False and config == "ImpactOnly":
-                bui.screenmessage("Impact Bombs Deactivated",
-                                  color=(1, 0, 0))
+                bui.screenmessage("Impact Bombs Deactivated", color=(1, 0, 0))
             update_config(config, change)
             bui.getsound('gunCocking').play()
         except Exception:
@@ -282,8 +286,10 @@ class CheatMenuWindow(bui.Window):
 
         try:
             if change == True and config == "More Are Coming":
-                bui.screenmessage("Check out https://discord.gg/2RKd9QQdQY For More Mods",
-                                  color=(4, 9, 2))
+                bui.screenmessage(
+                    "Check out https://discord.gg/2RKd9QQdQY For More Mods",
+                    color=(4, 9, 2),
+                )
             update_config(config, change)
             bui.getsound('gunCocking').play()
         except Exception:
@@ -292,8 +298,10 @@ class CheatMenuWindow(bui.Window):
 
         try:
             if change == True and config == "Credits":
-                bui.screenmessage("To Pranav Made The Mod and Emily For Ideas, Thx",
-                                  color=(4, 9, 2))
+                bui.screenmessage(
+                    "To Pranav Made The Mod and Emily For Ideas, Thx",
+                    color=(4, 9, 2),
+                )
             update_config(config, change)
             bui.getsound('gunCocking').play()
         except Exception:
@@ -301,13 +309,12 @@ class CheatMenuWindow(bui.Window):
             bui.getsound('cheer').play()
 
     def _back(self) -> None:
-        """Kill the window and get back to previous one
-        """
-        bui.containerwidget(edit=self._root_widget,
-                            transition='out_scale')
+        """Kill the window and get back to previous one"""
+        bui.containerwidget(edit=self._root_widget, transition='out_scale')
         bui.app.ui_v1.set_main_menu_window(
-            AllSettingsWindow(
-                transition='in_left').get_root_widget(), from_window=self._root_widget)
+            AllSettingsWindow(transition='in_left').get_root_widget(),
+            from_window=self._root_widget,
+        )
 
 
 def ishost():

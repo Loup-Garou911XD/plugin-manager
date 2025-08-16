@@ -2,14 +2,14 @@
 # ba_meta require api 9
 
 """
-    TNT Respawn Text by TheMikirog
-    Version 1
-    
-    Shows when a TNT box is about to respawn with non-intrusive text.
-    
-    Heavily commented for easy modding learning!
-    
-    No Rights Reserved
+TNT Respawn Text by TheMikirog
+Version 1
+
+Shows when a TNT box is about to respawn with non-intrusive text.
+
+Heavily commented for easy modding learning!
+
+No Rights Reserved
 """
 
 from __future__ import annotations
@@ -60,11 +60,7 @@ class TNTRespawnText(babase.Plugin):
         bs.animate(
             self._respawn_text,
             'opacity',
-            {
-                0: 0.0,
-                self._respawn_time * 0.5: 0.175,
-                self._respawn_time: 0.4
-            },
+            {0: 0.0, self._respawn_time * 0.5: 0.175, self._respawn_time: 0.4},
         )
 
     # We're gonna use the magic of decorators to expand the original code with new stuff.
@@ -92,9 +88,11 @@ class TNTRespawnText(babase.Plugin):
 
             # Let's make the text.
             # We tap into the spawner position in order to decide where the text should be.
-            respawn_text_position = (args[0]._position[0],
-                                     args[0]._position[1] - 0.4,
-                                     args[0]._position[2])
+            respawn_text_position = (
+                args[0]._position[0],
+                args[0]._position[1] - 0.4,
+                args[0]._position[2],
+            )
             args[0]._respawn_text = bs.newnode(
                 'text',
                 attrs={
@@ -127,10 +125,13 @@ class TNTRespawnText(babase.Plugin):
             # Here however we'll use this function to manipulate our text logic.
             # We want to animate our text the moment the TNT box dies.
             args[0]._tnt.node.add_death_action(tnt_callback)
+
         return wrapper
+
     # Let's replace the original init function with our modified version.
     bascenev1lib.actor.bomb.TNTSpawner.__init__ = new_init(
-        bascenev1lib.actor.bomb.TNTSpawner.__init__)
+        bascenev1lib.actor.bomb.TNTSpawner.__init__
+    )
 
     # Our modified update function.
     # This gets called every 1.1s. Check the TNTSpawner class in the game's code for details.
@@ -162,12 +163,16 @@ class TNTRespawnText(babase.Plugin):
                 value = TNTRespawnText.clamp(value, 0, 100)
 
                 # Let's finish it off with a percentage symbol and preso!
-                args[0]._respawn_text.text = str(value)+"%"
+                args[0]._respawn_text.text = str(value) + "%"
 
             # When the timer ticks, we do different things depending on the time and the state of our TNT box.
             if not tnt_alive:
                 # Code goes here if we don't have a TNT box and we reached 100%.
-                if args[0]._tnt is None or args[0]._wait_time >= args[0]._respawn_time and args[0]._respawn_text:
+                if (
+                    args[0]._tnt is None
+                    or args[0]._wait_time >= args[0]._respawn_time
+                    and args[0]._respawn_text
+                ):
                     # Animate the text "bounce" to draw attention
                     bs.animate(
                         args[0]._respawn_text,
@@ -176,17 +181,14 @@ class TNTRespawnText(babase.Plugin):
                             0: args[0]._respawn_text.scale * 1.2,
                             0.3: args[0]._respawn_text.scale * 1.05,
                             0.6: args[0]._respawn_text.scale * 1.025,
-                            1.1: args[0]._respawn_text.scale
+                            1.1: args[0]._respawn_text.scale,
                         },
                     )
                     # Fade the text away
                     bs.animate(
                         args[0]._respawn_text,
                         'opacity',
-                        {
-                            0: args[0]._respawn_text.opacity,
-                            1.1: 0.0
-                        },
+                        {0: args[0]._respawn_text.opacity, 1.1: 0.0},
                     )
                     # Make sure it says 100%, because our value we calculated earlier might not be accurate at that point.
                     args[0]._respawn_text.text = "100%"
@@ -212,9 +214,12 @@ class TNTRespawnText(babase.Plugin):
 
                 def tnt_callback():
                     TNTRespawnText.on_tnt_exploded(args[0])
+
                 args[0]._tnt.node.add_death_action(tnt_callback)
+
         return wrapper
 
     # Let's replace the original update function with our modified version.
     bascenev1lib.actor.bomb.TNTSpawner._update = new_update(
-        bascenev1lib.actor.bomb.TNTSpawner._update)
+        bascenev1lib.actor.bomb.TNTSpawner._update
+    )

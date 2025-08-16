@@ -21,6 +21,7 @@ from bascenev1lib.gameutils import SharedObjects
 from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.game.keepaway import KeepAwayGame, FlagState, Player
 from bascenev1lib.actor import spaz
+
 if TYPE_CHECKING:
     from typing import Any, Sequence, Dict, Type, List
 
@@ -53,40 +54,45 @@ class ChooseQueen(KeepAwayGame):
         self._room_wall_material.add_actions(
             actions=(
                 ('modify_part_collision', 'collide', False),
-                ('modify_part_collision', 'physical', False)
-            ))
+                ('modify_part_collision', 'physical', False),
+            )
+        )
         self._queen_material = bs.Material()
         self._queen_material.add_actions(
             conditions=('they_have_material', self._room_wall_material),
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True)
-            ))
+                ('modify_part_collision', 'physical', True),
+            ),
+        )
         self._queen_material.add_actions(
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True)
-            ))
+                ('modify_part_collision', 'physical', True),
+            )
+        )
         self._room_wall_material.add_actions(
             conditions=('they_have_material', self._queen_material),
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True)
-            ))
+                ('modify_part_collision', 'physical', True),
+            ),
+        )
         self._real_wall_material = bs.Material()
         self._real_wall_material.add_actions(
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True)
-            ))
+                ('modify_part_collision', 'physical', True),
+            )
+        )
 
         self._real_wall_material.add_actions(
             conditions=('they_have_material', shared.player_material),
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True)
-
-            ))
+                ('modify_part_collision', 'physical', True),
+            ),
+        )
 
     def on_begin(self):
         bs.getactivity().globalsnode.happy_thoughts_mode = True
@@ -101,7 +107,10 @@ class ChooseQueen(KeepAwayGame):
         self._flag = spaz.Spaz(color=(0, 0, 0), character="Pixel").autoretain()
         self._flag.handlemessage(bs.StandMessage((0, 14.63, -5.52), 93))
         self._flag.node.hold_position_pressed = True
-        self._flag.node.materials = (self._queen_material, shared.object_material)
+        self._flag.node.materials = (
+            self._queen_material,
+            shared.object_material,
+        )
         # self._flag.node.extras_material= tuple(list(self._flag.node.extras_material).append(self._queen_materia))
         self._flag.hitpoints = 5000
         self._flag.hitpoints_max = 5000
@@ -131,9 +140,7 @@ class ChooseQueen(KeepAwayGame):
                     and player.actor.node
                     and player.actor.node.hold_node
                 ):
-                    holdingflag = (
-                        player.actor.node.hold_node == self._flag.node
-                    )
+                    holdingflag = player.actor.node.hold_node == self._flag.node
             except Exception:
                 babase.print_exception('Error checking hold flag.')
             if holdingflag:
@@ -172,29 +179,95 @@ class ChooseQueen(KeepAwayGame):
     def make_map(self):
         shared = SharedObjects.get()
         bs.get_foreground_host_activity()._map.leftwall.materials = [
-            shared.footing_material, self._real_wall_material]
+            shared.footing_material,
+            self._real_wall_material,
+        ]
 
         bs.get_foreground_host_activity()._map.rightwall.materials = [
-            shared.footing_material, self._real_wall_material]
+            shared.footing_material,
+            self._real_wall_material,
+        ]
 
         bs.get_foreground_host_activity()._map.topwall.materials = [
-            shared.footing_material, self._real_wall_material]
+            shared.footing_material,
+            self._real_wall_material,
+        ]
 
-        self.floorwall1 = bs.newnode('region', attrs={'position': (-10, 5, -5.52), 'scale':
-                                                      (15, 0.2, 2), 'type': 'box', 'materials': [shared.footing_material, self._real_wall_material]})
-        self.floorwall2 = bs.newnode('region', attrs={'position': (10, 5, -5.52), 'scale': (
-            15, 0.2, 2), 'type': 'box', 'materials': [shared.footing_material, self._real_wall_material]})
+        self.floorwall1 = bs.newnode(
+            'region',
+            attrs={
+                'position': (-10, 5, -5.52),
+                'scale': (15, 0.2, 2),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._real_wall_material,
+                ],
+            },
+        )
+        self.floorwall2 = bs.newnode(
+            'region',
+            attrs={
+                'position': (10, 5, -5.52),
+                'scale': (15, 0.2, 2),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._real_wall_material,
+                ],
+            },
+        )
 
-        self.wall1 = bs.newnode('region', attrs={'position': (0, 11, -6.90), 'scale': (
-            35.4, 20, 1), 'type': 'box', 'materials': [shared.footing_material, self._real_wall_material]})
-        self.wall2 = bs.newnode('region', attrs={'position': (0, 11, -4.14), 'scale': (
-            35.4, 20, 1), 'type': 'box', 'materials': [shared.footing_material, self._real_wall_material]})
+        self.wall1 = bs.newnode(
+            'region',
+            attrs={
+                'position': (0, 11, -6.90),
+                'scale': (35.4, 20, 1),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._real_wall_material,
+                ],
+            },
+        )
+        self.wall2 = bs.newnode(
+            'region',
+            attrs={
+                'position': (0, 11, -4.14),
+                'scale': (35.4, 20, 1),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._real_wall_material,
+                ],
+            },
+        )
 
-        bs.newnode('locator', attrs={'shape': 'box', 'position': (-10, 5, -5.52), 'color': (
-            0, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': (15, 0.2, 2)})
+        bs.newnode(
+            'locator',
+            attrs={
+                'shape': 'box',
+                'position': (-10, 5, -5.52),
+                'color': (0, 0, 0),
+                'opacity': 1,
+                'draw_beauty': True,
+                'additive': False,
+                'size': (15, 0.2, 2),
+            },
+        )
 
-        bs.newnode('locator', attrs={'shape': 'box', 'position': (10, 5, -5.52), 'color': (
-            0, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': (15, 0.2, 2)})
+        bs.newnode(
+            'locator',
+            attrs={
+                'shape': 'box',
+                'position': (10, 5, -5.52),
+                'color': (0, 0, 0),
+                'opacity': 1,
+                'draw_beauty': True,
+                'additive': False,
+                'size': (15, 0.2, 2),
+            },
+        )
 
         self.create_static_step(0, 14.29)
         #    upper right
@@ -218,26 +291,86 @@ class ChooseQueen(KeepAwayGame):
         self.create_static_step(-3, 10)
 
         # create queen personal room
-        self.room_wall_left = bs.newnode('region', attrs={'position': (-3.633, 16.63, -5.52), 'scale':
-                                                          (2, 4, 5), 'type': 'box', 'materials': [shared.footing_material, self._room_wall_material]})
-        self.room_wall_right = bs.newnode('region', attrs={'position': (3.533, 16.63, -5.52), 'scale':
-                                                           (2, 4, 5), 'type': 'box', 'materials': [shared.footing_material, self._room_wall_material]})
+        self.room_wall_left = bs.newnode(
+            'region',
+            attrs={
+                'position': (-3.633, 16.63, -5.52),
+                'scale': (2, 4, 5),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._room_wall_material,
+                ],
+            },
+        )
+        self.room_wall_right = bs.newnode(
+            'region',
+            attrs={
+                'position': (3.533, 16.63, -5.52),
+                'scale': (2, 4, 5),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._room_wall_material,
+                ],
+            },
+        )
 
     def create_static_step(self, x, y):
         shared = SharedObjects.get()
-        bs.newnode('region', attrs={'position': (x, y, -5.52), 'scale': (5.5, 0.1, 6),
-                   'type': 'box', 'materials': [shared.footing_material, self._real_wall_material]})
-        bs.newnode('locator', attrs={'shape': 'box', 'position': (x, y,  -5.52), 'color': (
-            1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': (5.5, 0.1, 2)})
+        bs.newnode(
+            'region',
+            attrs={
+                'position': (x, y, -5.52),
+                'scale': (5.5, 0.1, 6),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._real_wall_material,
+                ],
+            },
+        )
+        bs.newnode(
+            'locator',
+            attrs={
+                'shape': 'box',
+                'position': (x, y, -5.52),
+                'color': (1, 1, 0),
+                'opacity': 1,
+                'draw_beauty': True,
+                'additive': False,
+                'size': (5.5, 0.1, 2),
+            },
+        )
 
     def create_slope(self, x, y, backslash):
         shared = SharedObjects.get()
 
         for _ in range(0, 21):
-            bs.newnode('region', attrs={'position': (x, y, -5.52), 'scale': (0.2, 0.1, 6),
-                       'type': 'box', 'materials': [shared.footing_material, self._real_wall_material]})
-            bs.newnode('locator', attrs={'shape': 'box', 'position': (x, y,  -5.52), 'color': (
-                1, 1, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': (0.2, 0.1, 2)})
+            bs.newnode(
+                'region',
+                attrs={
+                    'position': (x, y, -5.52),
+                    'scale': (0.2, 0.1, 6),
+                    'type': 'box',
+                    'materials': [
+                        shared.footing_material,
+                        self._real_wall_material,
+                    ],
+                },
+            )
+            bs.newnode(
+                'locator',
+                attrs={
+                    'shape': 'box',
+                    'position': (x, y, -5.52),
+                    'color': (1, 1, 0),
+                    'opacity': 1,
+                    'draw_beauty': True,
+                    'additive': False,
+                    'size': (0.2, 0.1, 2),
+                },
+            )
             if backslash:
                 x = x + 0.1
                 y = y + 0.1
@@ -250,44 +383,85 @@ class mapdefs:
     points = {}
     # noinspection PyDictCreation
     boxes = {}
-    boxes['area_of_interest_bounds'] = (-1.045859963, 12.67722855,
-                                        -5.401537075) + (0.0, 0.0, 0.0) + (
-                                            42.46156851, 20.94044653, 0.6931564611)
-    points['ffa_spawn1'] = (-9.295167711, 8.010664315,
-                            -5.44451005) + (1.555840357, 1.453808816, 0.1165648888)
+    boxes['area_of_interest_bounds'] = (
+        (-1.045859963, 12.67722855, -5.401537075)
+        + (0.0, 0.0, 0.0)
+        + (42.46156851, 20.94044653, 0.6931564611)
+    )
+    points['ffa_spawn1'] = (-9.295167711, 8.010664315, -5.44451005) + (
+        1.555840357,
+        1.453808816,
+        0.1165648888,
+    )
     points['ffa_spawn2'] = (7.484707127, 8.172681752, -5.614479365) + (
-        1.553861796, 1.453808816, 0.04419853907)
+        1.553861796,
+        1.453808816,
+        0.04419853907,
+    )
     points['ffa_spawn3'] = (9.55724115, 11.30789446, -5.614479365) + (
-        1.337925849, 1.453808816, 0.04419853907)
+        1.337925849,
+        1.453808816,
+        0.04419853907,
+    )
     points['ffa_spawn4'] = (-11.55747023, 10.99170684, -5.614479365) + (
-        1.337925849, 1.453808816, 0.04419853907)
+        1.337925849,
+        1.453808816,
+        0.04419853907,
+    )
     points['ffa_spawn5'] = (-1.878892369, 9.46490571, -5.614479365) + (
-        1.337925849, 1.453808816, 0.04419853907)
+        1.337925849,
+        1.453808816,
+        0.04419853907,
+    )
     points['ffa_spawn6'] = (-0.4912812943, 5.077006397, -5.521672101) + (
-        1.878332089, 1.453808816, 0.007578097856)
+        1.878332089,
+        1.453808816,
+        0.007578097856,
+    )
     points['flag1'] = (-11.75152479, 8.057427485, -5.52)
     points['flag2'] = (9.840909039, 8.188634282, -5.52)
     points['flag3'] = (-0.2195258696, 5.010273907, -5.52)
     points['flag4'] = (-0.04605809154, 12.73369108, -5.52)
     points['flag_default'] = (-0.04201942896, 12.72374492, -5.52)
-    boxes['map_bounds'] = (-0.8748348681, 9.212941713, -5.729538885) + (
-        0.0, 0.0, 0.0) + (42.09666006, 26.19950145, 7.89541168)
+    boxes['map_bounds'] = (
+        (-0.8748348681, 9.212941713, -5.729538885)
+        + (0.0, 0.0, 0.0)
+        + (42.09666006, 26.19950145, 7.89541168)
+    )
     points['powerup_spawn1'] = (1.160232442, 6.745963662, -5.469115985)
     points['powerup_spawn2'] = (-1.899700206, 10.56447241, -5.505721177)
     points['powerup_spawn3'] = (10.56098871, 12.25165669, -5.576232453)
     points['powerup_spawn4'] = (-12.33530337, 12.25165669, -5.576232453)
-    points['spawn1'] = (-9.295167711, 8.010664315,
-                        -5.44451005) + (1.555840357, 1.453808816, 0.1165648888)
-    points['spawn2'] = (7.484707127, 8.172681752,
-                        -5.614479365) + (1.553861796, 1.453808816, 0.04419853907)
+    points['spawn1'] = (-9.295167711, 8.010664315, -5.44451005) + (
+        1.555840357,
+        1.453808816,
+        0.1165648888,
+    )
+    points['spawn2'] = (7.484707127, 8.172681752, -5.614479365) + (
+        1.553861796,
+        1.453808816,
+        0.04419853907,
+    )
     points['spawn_by_flag1'] = (-9.295167711, 8.010664315, -5.44451005) + (
-        1.555840357, 1.453808816, 0.1165648888)
+        1.555840357,
+        1.453808816,
+        0.1165648888,
+    )
     points['spawn_by_flag2'] = (7.484707127, 8.172681752, -5.614479365) + (
-        1.553861796, 1.453808816, 0.04419853907)
+        1.553861796,
+        1.453808816,
+        0.04419853907,
+    )
     points['spawn_by_flag3'] = (-1.45994593, 5.038762459, -5.535288724) + (
-        0.9516389866, 0.6666414677, 0.08607244075)
+        0.9516389866,
+        0.6666414677,
+        0.08607244075,
+    )
     points['spawn_by_flag4'] = (0.4932087091, 12.74493212, -5.598987003) + (
-        0.5245740665, 0.5245740665, 0.01941146064)
+        0.5245740665,
+        0.5245740665,
+        0.01941146064,
+    )
 
 
 class CreativeThoughts(bs.Map):
@@ -300,9 +474,7 @@ class CreativeThoughts(bs.Map):
     @classmethod
     def get_play_types(cls) -> List[str]:
         """Return valid play types for this map."""
-        return [
-            'melee', 'keep_away', 'team_flag'
-        ]
+        return ['melee', 'keep_away', 'team_flag']
 
     @classmethod
     def get_preview_texture_name(cls) -> str:
@@ -318,7 +490,7 @@ class CreativeThoughts(bs.Map):
             'tex': bs.gettexture('alwaysLandLevelColor'),
             'bgtex': bs.gettexture('alwaysLandBGColor'),
             'vr_fill_mound_mesh': bs.getmesh('alwaysLandVRFillMound'),
-            'vr_fill_mound_tex': bs.gettexture('vrFillMound')
+            'vr_fill_mound_tex': bs.gettexture('vrFillMound'),
         }
         return data
 
@@ -332,41 +504,105 @@ class CreativeThoughts(bs.Map):
         self._fake_wall_material = bs.Material()
         self._real_wall_material = bs.Material()
         self._fake_wall_material.add_actions(
-            conditions=(('they_are_younger_than', 9000), 'and',
-                        ('they_have_material', shared.player_material)),
+            conditions=(
+                ('they_are_younger_than', 9000),
+                'and',
+                ('they_have_material', shared.player_material),
+            ),
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True)
-
-            ))
+                ('modify_part_collision', 'physical', True),
+            ),
+        )
         self._real_wall_material.add_actions(
             conditions=('they_have_material', shared.player_material),
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True)
-
-            ))
+                ('modify_part_collision', 'physical', True),
+            ),
+        )
         self.background = bs.newnode(
             'terrain',
             attrs={
                 'mesh': self.preloaddata['bgmesh'],
                 'lighting': False,
                 'background': True,
-                'color_texture': bs.gettexture("rampageBGColor")
-            })
+                'color_texture': bs.gettexture("rampageBGColor"),
+            },
+        )
 
-        self.leftwall = bs.newnode('region', attrs={'position': (-17.75152479, 13, -5.52), 'scale': (
-            0.1, 15.5, 2), 'type': 'box', 'materials': [shared.footing_material, self._real_wall_material]})
-        self.rightwall = bs.newnode('region', attrs={'position': (17.75, 13, -5.52), 'scale': (
-            0.1, 15.5, 2), 'type': 'box', 'materials': [shared.footing_material, self._real_wall_material]})
-        self.topwall = bs.newnode('region', attrs={'position': (0, 21.0, -5.52), 'scale': (
-            35.4, 0.2, 2), 'type': 'box', 'materials': [shared.footing_material, self._real_wall_material]})
-        bs.newnode('locator', attrs={'shape': 'box', 'position': (-17.75152479, 13, -5.52), 'color': (
-            0, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': (0.1, 15.5, 2)})
-        bs.newnode('locator', attrs={'shape': 'box', 'position': (17.75, 13, -5.52), 'color': (
-            0, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': (0.1, 15.5, 2)})
-        bs.newnode('locator', attrs={'shape': 'box', 'position': (0, 21.0, -5.52), 'color': (
-            0, 0, 0), 'opacity': 1, 'draw_beauty': True, 'additive': False, 'size': (35.4, 0.2, 2)})
+        self.leftwall = bs.newnode(
+            'region',
+            attrs={
+                'position': (-17.75152479, 13, -5.52),
+                'scale': (0.1, 15.5, 2),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._real_wall_material,
+                ],
+            },
+        )
+        self.rightwall = bs.newnode(
+            'region',
+            attrs={
+                'position': (17.75, 13, -5.52),
+                'scale': (0.1, 15.5, 2),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._real_wall_material,
+                ],
+            },
+        )
+        self.topwall = bs.newnode(
+            'region',
+            attrs={
+                'position': (0, 21.0, -5.52),
+                'scale': (35.4, 0.2, 2),
+                'type': 'box',
+                'materials': [
+                    shared.footing_material,
+                    self._real_wall_material,
+                ],
+            },
+        )
+        bs.newnode(
+            'locator',
+            attrs={
+                'shape': 'box',
+                'position': (-17.75152479, 13, -5.52),
+                'color': (0, 0, 0),
+                'opacity': 1,
+                'draw_beauty': True,
+                'additive': False,
+                'size': (0.1, 15.5, 2),
+            },
+        )
+        bs.newnode(
+            'locator',
+            attrs={
+                'shape': 'box',
+                'position': (17.75, 13, -5.52),
+                'color': (0, 0, 0),
+                'opacity': 1,
+                'draw_beauty': True,
+                'additive': False,
+                'size': (0.1, 15.5, 2),
+            },
+        )
+        bs.newnode(
+            'locator',
+            attrs={
+                'shape': 'box',
+                'position': (0, 21.0, -5.52),
+                'color': (0, 0, 0),
+                'opacity': 1,
+                'draw_beauty': True,
+                'additive': False,
+                'size': (35.4, 0.2, 2),
+            },
+        )
 
         gnode = bs.getactivity().globalsnode
         gnode.happy_thoughts_mode = True
@@ -379,25 +615,24 @@ class CreativeThoughts(bs.Map):
         self.is_flying = True
 
         # throw out some tips on flying
-        txt = bs.newnode('text',
-                         attrs={
-                             'text': babase.Lstr(resource='pressJumpToFlyText'),
-                             'scale': 1.2,
-                             'maxwidth': 800,
-                             'position': (0, 200),
-                             'shadow': 0.5,
-                             'flatness': 0.5,
-                             'h_align': 'center',
-                             'v_attach': 'bottom'
-                         })
-        cmb = bs.newnode('combine',
-                         owner=txt,
-                         attrs={
-                             'size': 4,
-                             'input0': 0.3,
-                             'input1': 0.9,
-                             'input2': 0.0
-                         })
+        txt = bs.newnode(
+            'text',
+            attrs={
+                'text': babase.Lstr(resource='pressJumpToFlyText'),
+                'scale': 1.2,
+                'maxwidth': 800,
+                'position': (0, 200),
+                'shadow': 0.5,
+                'flatness': 0.5,
+                'h_align': 'center',
+                'v_attach': 'bottom',
+            },
+        )
+        cmb = bs.newnode(
+            'combine',
+            owner=txt,
+            attrs={'size': 4, 'input0': 0.3, 'input1': 0.9, 'input2': 0.0},
+        )
         bs.animate(cmb, 'input3', {3.0: 0, 4.0: 1, 9.0: 1, 10.0: 0})
         cmb.connectattr('output', txt, 'color')
         bs.timer(10.0, txt.delete)

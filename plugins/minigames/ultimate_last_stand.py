@@ -42,12 +42,22 @@ from bascenev1lib.actor.bomb import TNTSpawner
 from bascenev1lib.actor.onscreentimer import OnScreenTimer
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.spazfactory import SpazFactory
-from bascenev1lib.actor.spazbot import (SpazBot, SpazBotSet, BomberBot,
-                                        BomberBotPro, BomberBotProShielded,
-                                        BrawlerBot, BrawlerBotPro,
-                                        BrawlerBotProShielded, TriggerBot,
-                                        TriggerBotPro, TriggerBotProShielded,
-                                        ChargerBot, StickyBot, ExplodeyBot)
+from bascenev1lib.actor.spazbot import (
+    SpazBot,
+    SpazBotSet,
+    BomberBot,
+    BomberBotPro,
+    BomberBotProShielded,
+    BrawlerBot,
+    BrawlerBotPro,
+    BrawlerBotProShielded,
+    TriggerBot,
+    TriggerBotPro,
+    TriggerBotProShielded,
+    ChargerBot,
+    StickyBot,
+    ExplodeyBot,
+)
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -59,6 +69,7 @@ class IceBot(SpazBot):
 
     category: Bot Classes
     """
+
     character = 'Pascal'
     punchiness = 0.9
     throwiness = 1
@@ -77,16 +88,18 @@ class IceBot(SpazBot):
 class Icon(bs.Actor):
     """Creates in in-game icon on screen."""
 
-    def __init__(self,
-                 player: Player,
-                 position: tuple[float, float],
-                 scale: float,
-                 show_lives: bool = True,
-                 show_death: bool = True,
-                 name_scale: float = 1.0,
-                 name_maxwidth: float = 115.0,
-                 flatness: float = 1.0,
-                 shadow: float = 1.0):
+    def __init__(
+        self,
+        player: Player,
+        position: tuple[float, float],
+        scale: float,
+        show_lives: bool = True,
+        show_death: bool = True,
+        name_scale: float = 1.0,
+        name_maxwidth: float = 115.0,
+        flatness: float = 1.0,
+        shadow: float = 1.0,
+    ):
         super().__init__()
 
         self._player = player
@@ -96,19 +109,21 @@ class Icon(bs.Actor):
         self._outline_tex = bs.gettexture('characterIconMask')
 
         icon = player.get_icon()
-        self.node = bs.newnode('image',
-                               delegate=self,
-                               attrs={
-                                   'texture': icon['texture'],
-                                   'tint_texture': icon['tint_texture'],
-                                   'tint_color': icon['tint_color'],
-                                   'vr_depth': 400,
-                                   'tint2_color': icon['tint2_color'],
-                                   'mask_texture': self._outline_tex,
-                                   'opacity': 1.0,
-                                   'absolute_scale': True,
-                                   'attach': 'bottomCenter'
-                               })
+        self.node = bs.newnode(
+            'image',
+            delegate=self,
+            attrs={
+                'texture': icon['texture'],
+                'tint_texture': icon['tint_texture'],
+                'tint_color': icon['tint_color'],
+                'vr_depth': 400,
+                'tint2_color': icon['tint2_color'],
+                'mask_texture': self._outline_tex,
+                'opacity': 1.0,
+                'absolute_scale': True,
+                'attach': 'bottomCenter',
+            },
+        )
         self._name_text = bs.newnode(
             'text',
             owner=self.node,
@@ -122,25 +137,29 @@ class Icon(bs.Actor):
                 'shadow': shadow,
                 'flatness': flatness,
                 'h_attach': 'center',
-                'v_attach': 'bottom'
-            })
+                'v_attach': 'bottom',
+            },
+        )
         if self._show_lives:
-            self._lives_text = bs.newnode('text',
-                                          owner=self.node,
-                                          attrs={
-                                              'text': 'x0',
-                                              'color': (1, 1, 0.5),
-                                              'h_align': 'left',
-                                              'vr_depth': 430,
-                                              'shadow': 1.0,
-                                              'flatness': 1.0,
-                                              'h_attach': 'center',
-                                              'v_attach': 'bottom'
-                                          })
+            self._lives_text = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': 'x0',
+                    'color': (1, 1, 0.5),
+                    'h_align': 'left',
+                    'vr_depth': 430,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'h_attach': 'center',
+                    'v_attach': 'bottom',
+                },
+            )
         self.set_position_and_scale(position, scale)
 
-    def set_position_and_scale(self, position: tuple[float, float],
-                               scale: float) -> None:
+    def set_position_and_scale(
+        self, position: tuple[float, float], scale: float
+    ) -> None:
         """(Re)position the icon."""
         assert self.node
         self.node.position = position
@@ -148,8 +167,10 @@ class Icon(bs.Actor):
         self._name_text.position = (position[0], position[1] + scale * 52.0)
         self._name_text.scale = 1.0 * scale * self._name_scale
         if self._show_lives:
-            self._lives_text.position = (position[0] + scale * 10.0,
-                                         position[1] - scale * 43.0)
+            self._lives_text.position = (
+                position[0] + scale * 10.0,
+                position[1] - scale * 43.0,
+            )
             self._lives_text.scale = 1.0 * scale
 
     def update_for_lives(self) -> None:
@@ -182,7 +203,9 @@ class Icon(bs.Actor):
             return
         if self._show_death:
             bs.animate(
-                self.node, 'opacity', {
+                self.node,
+                'opacity',
+                {
                     0.00: 1.0,
                     0.05: 0.0,
                     0.10: 1.0,
@@ -194,8 +217,9 @@ class Icon(bs.Actor):
                     0.40: 1.0,
                     0.45: 0.0,
                     0.50: 1.0,
-                    0.55: 0.2
-                })
+                    0.55: 0.2,
+                },
+            )
             lives = self._player.lives
             if lives == 0:
                 bs.timer(0.6, self.update_for_lives)
@@ -210,6 +234,7 @@ class Icon(bs.Actor):
 @dataclass
 class SpawnInfo:
     """Spawning info for a particular bot type."""
+
     spawnrate: float
     increase: float
     dincrease: float
@@ -239,9 +264,9 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
 
     name = 'Ultimate Last Stand'
     description = 'Only the strongest will stand at the end.'
-    scoreconfig = bs.ScoreConfig(label='Survived',
-                                 scoretype=bs.ScoreType.SECONDS,
-                                 none_is_winner=True)
+    scoreconfig = bs.ScoreConfig(
+        label='Survived', scoretype=bs.ScoreType.SECONDS, none_is_winner=True
+    )
 
     # Print messages when players die (since its meaningful in this game).
     announce_player_deaths = True
@@ -252,8 +277,8 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls,
-            sessiontype: type[bs.Session]) -> list[babase.Setting]:
+        cls, sessiontype: type[bs.Session]
+    ) -> list[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Lives Per Player',
@@ -277,7 +302,8 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
         ]
         if issubclass(sessiontype, bs.DualTeamSession):
             settings.append(
-                bs.BoolSetting('Balance Total Lives', default=False))
+                bs.BoolSetting('Balance Total Lives', default=False)
+            )
         return settings
 
     # We're currently hard-coded for one map.
@@ -288,8 +314,9 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
     # We support teams, free-for-all, and co-op sessions.
     @classmethod
     def supports_session_type(cls, sessiontype: type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.DualTeamSession)
-                or issubclass(sessiontype, bs.FreeForAllSession))
+        return issubclass(sessiontype, bs.DualTeamSession) or issubclass(
+            sessiontype, bs.FreeForAllSession
+        )
 
     def __init__(self, settings: dict):
         super().__init__(settings)
@@ -300,7 +327,8 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
         self._round_end_timer: bs.Timer | None = None
         self._lives_per_player = int(settings['Lives Per Player'])
         self._balance_total_lives = bool(
-            settings.get('Balance Total Lives', False))
+            settings.get('Balance Total Lives', False)
+        )
         self._epic_mode = settings.get('Epic Mode', True)
         self._last_player_death_time: float | None = None
         self._timer: OnScreenTimer | None = None
@@ -312,20 +340,23 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
 
         # Base class overrides:
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
 
-        self.node = bs.newnode('text',
-                               attrs={
-                                   'v_attach': 'bottom',
-                                   'h_align': 'center',
-                                   'color': (0.83, 0.69, 0.21),
-                                   'flatness': 0.5,
-                                   'shadow': 0.5,
-                                   'position': (0, 75),
-                                   'scale': 0.7,
-                                   'text': 'By Cross Joy'
-                               })
+        self.node = bs.newnode(
+            'text',
+            attrs={
+                'v_attach': 'bottom',
+                'h_align': 'center',
+                'color': (0.83, 0.69, 0.21),
+                'flatness': 0.5,
+                'shadow': 0.5,
+                'position': (0, 75),
+                'scale': 0.7,
+                'text': 'By Cross Joy',
+            },
+        )
 
         # For each bot type: [spawnrate, increase, d_increase]
         self._bot_spawn_types = {
@@ -341,24 +372,29 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
             ChargerBot: SpawnInfo(0.30, 0.05, 0.000),
             StickyBot: SpawnInfo(0.10, 0.03, 0.001),
             IceBot: SpawnInfo(0.10, 0.03, 0.001),
-            ExplodeyBot: SpawnInfo(0.05, 0.02, 0.002)
+            ExplodeyBot: SpawnInfo(0.05, 0.02, 0.002),
         }  # yapf: disable
 
         # Some base class overrides:
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
         if self._epic_mode:
             self.slow_motion = True
 
     def get_instance_description(self) -> str | Sequence:
-        return 'Only the strongest team will stand at the end.' if isinstance(
-            self.session,
-            bs.DualTeamSession) else 'Only the strongest will stand at the end.'
+        return (
+            'Only the strongest team will stand at the end.'
+            if isinstance(self.session, bs.DualTeamSession)
+            else 'Only the strongest will stand at the end.'
+        )
 
     def get_instance_description_short(self) -> str | Sequence:
-        return 'Only the strongest team will stand at the end.' if isinstance(
-            self.session,
-            bs.DualTeamSession) else 'Only the strongest will stand at the end.'
+        return (
+            'Only the strongest team will stand at the end.'
+            if isinstance(self.session, bs.DualTeamSession)
+            else 'Only the strongest will stand at the end.'
+        )
 
     def on_transition_in(self) -> None:
         super().on_transition_in()
@@ -377,15 +413,22 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
 
     def on_begin(self) -> None:
         super().on_begin()
-        bs.animate_array(node=self.node, attr='color', size=3, keys={
-            0.0: (0.5, 0.5, 0.5),
-            0.8: (0.83, 0.69, 0.21),
-            1.6: (0.5, 0.5, 0.5)
-        }, loop=True)
+        bs.animate_array(
+            node=self.node,
+            attr='color',
+            size=3,
+            keys={
+                0.0: (0.5, 0.5, 0.5),
+                0.8: (0.83, 0.69, 0.21),
+                1.6: (0.5, 0.5, 0.5),
+            },
+            loop=True,
+        )
 
         bs.timer(0.001, bs.WeakCall(self._start_bot_updates))
-        self._tntspawner = TNTSpawner(position=self._tntspawnpos,
-                                      respawn_time=10.0)
+        self._tntspawner = TNTSpawner(
+            position=self._tntspawnpos, respawn_time=10.0
+        )
 
         self._timer = OnScreenTimer()
         self._timer.start()
@@ -396,19 +439,24 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
 
         # If balance-team-lives is on, add lives to the smaller team until
         # total lives match.
-        if (isinstance(self.session, bs.DualTeamSession)
-            and self._balance_total_lives and self.teams[0].players
-                and self.teams[1].players):
+        if (
+            isinstance(self.session, bs.DualTeamSession)
+            and self._balance_total_lives
+            and self.teams[0].players
+            and self.teams[1].players
+        ):
             if self._get_total_team_lives(
-               self.teams[0]) < self._get_total_team_lives(self.teams[1]):
+                self.teams[0]
+            ) < self._get_total_team_lives(self.teams[1]):
                 lesser_team = self.teams[0]
                 greater_team = self.teams[1]
             else:
                 lesser_team = self.teams[1]
                 greater_team = self.teams[0]
             add_index = 0
-            while (self._get_total_team_lives(lesser_team) <
-                   self._get_total_team_lives(greater_team)):
+            while self._get_total_team_lives(
+                lesser_team
+            ) < self._get_total_team_lives(greater_team):
                 lesser_team.players[add_index].lives += 1
                 add_index = (add_index + 1) % len(lesser_team.players)
 
@@ -484,12 +532,14 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
         if not player or not player.is_alive() or not player.node:
             return
 
-        popuptext.PopupText('x' + str(player.lives - 1),
-                            color=(1, 1, 0, 1),
-                            offset=(0, -0.8, 0),
-                            random_offset=0.0,
-                            scale=1.8,
-                            position=player.node.position).autoretain()
+        popuptext.PopupText(
+            'x' + str(player.lives - 1),
+            color=(1, 1, 0, 1),
+            offset=(0, -0.8, 0),
+            random_offset=0.0,
+            scale=1.8,
+            position=player.node.position,
+        ).autoretain()
 
     def _get_total_team_lives(self, team: Team) -> int:
         return sum(player.lives for player in team.players)
@@ -502,17 +552,21 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
             self._update_bots()
         if len(self.players) > 3:
             self._update_bots()
-        self._bot_update_timer = bs.Timer(self._bot_update_interval,
-                                          bs.WeakCall(self._update_bots))
+        self._bot_update_timer = bs.Timer(
+            self._bot_update_interval, bs.WeakCall(self._update_bots)
+        )
 
     def _update_bots(self) -> None:
         assert self._bot_update_interval is not None
         self._bot_update_interval = max(0.5, self._bot_update_interval * 0.98)
-        self._bot_update_timer = bs.Timer(self._bot_update_interval,
-                                          bs.WeakCall(self._update_bots))
-        botspawnpts: list[Sequence[float]] = [[-5.0, 5.5, -4.14],
-                                              [0.0, 5.5, -4.14],
-                                              [5.0, 5.5, -4.14]]
+        self._bot_update_timer = bs.Timer(
+            self._bot_update_interval, bs.WeakCall(self._update_bots)
+        )
+        botspawnpts: list[Sequence[float]] = [
+            [-5.0, 5.5, -4.14],
+            [0.0, 5.5, -4.14],
+            [5.0, 5.5, -4.14],
+        ]
         for player in self.players:
             try:
                 if player.is_alive():
@@ -522,10 +576,14 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
                 babase.print_exception('Error updating bots.')
 
         spawnpt = random.choice(
-            [botspawnpts[0], botspawnpts[1], botspawnpts[2]])
+            [botspawnpts[0], botspawnpts[1], botspawnpts[2]]
+        )
 
-        spawnpt = (spawnpt[0] + 3.0 * (random.random() - 0.5), spawnpt[1],
-                   2.0 * (random.random() - 0.5) + spawnpt[2])
+        spawnpt = (
+            spawnpt[0] + 3.0 * (random.random() - 0.5),
+            spawnpt[1],
+            2.0 * (random.random() - 0.5) + spawnpt[2],
+        )
 
         # Normalize our bot type total and find a random number within that.
         total = 0.0
@@ -584,17 +642,19 @@ class UltimateLastStand(bs.TeamGameActivity[Player, Team]):
                 # If the whole team is now dead, mark their survival time.
                 if self._get_total_team_lives(player.team) == 0:
                     assert self._start_time is not None
-                    player.team.survival_seconds = int(bs.time() -
-                                                       self._start_time)
+                    player.team.survival_seconds = int(
+                        bs.time() - self._start_time
+                    )
             else:
                 # Otherwise, in regular mode, respawn.
                 self.respawn_player(player)
 
     def _get_living_teams(self) -> list[Team]:
         return [
-            team for team in self.teams
-            if len(team.players) > 0 and any(player.lives > 0
-                                             for player in team.players)
+            team
+            for team in self.teams
+            if len(team.players) > 0
+            and any(player.lives > 0 for player in team.players)
         ]
 
     def _update(self) -> None:

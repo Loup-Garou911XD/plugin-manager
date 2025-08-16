@@ -12,12 +12,21 @@ if not os.path.exists(CONFIGS_DIR):
     os.makedirs(CONFIGS_DIR)
 
 MSG_PATH = os.path.join(CONFIGS_DIR, 'quick_chat_msgs.json')
-DEFAULT_MESSAGES = ['Hi!', 'Let\'s go!', 'GG!', 'Oops!', 'Good luck!', 'Well played!']
+DEFAULT_MESSAGES = [
+    'Hi!',
+    'Let\'s go!',
+    'GG!',
+    'Oops!',
+    'Good luck!',
+    'Well played!',
+]
 
 
 def load_messages():
     if not os.path.exists(MSG_PATH):
-        save_messages(DEFAULT_MESSAGES)  # <--- creates JSON file with default msgs
+        save_messages(
+            DEFAULT_MESSAGES
+        )  # <--- creates JSON file with default msgs
         return DEFAULT_MESSAGES
     try:
         with open(MSG_PATH, 'r') as f:
@@ -44,19 +53,30 @@ class QuickChatPartyWindow(bauiv1lib.party.PartyWindow):
             button_type='square',
             color=(0, 0, 0),
             textcolor=(1, 1, 1),
-            on_activate_call=self._open_quick_chat_menu
+            on_activate_call=self._open_quick_chat_menu,
         )
 
     def _open_quick_chat_menu(self):
         messages = load_messages()
         w, h = 400, 300
 
-        root = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'), size=(w, h), transition='in_scale', scale=1.2, color=(
-            0, 0, 0), on_outside_click_call=lambda: bui.containerwidget(edit=root, transition='out_scale'))
+        root = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(w, h),
+            transition='in_scale',
+            scale=1.2,
+            color=(0, 0, 0),
+            on_outside_click_call=lambda: bui.containerwidget(
+                edit=root, transition='out_scale'
+            ),
+        )
 
         self._msg_scroll = bui.scrollwidget(
-            parent=root, position=(20, 80), size=(360, 180), color=(0, 0, 0))
-        self._msg_col = bui.columnwidget(parent=self._msg_scroll, border=2, margin=0)
+            parent=root, position=(20, 80), size=(360, 180), color=(0, 0, 0)
+        )
+        self._msg_col = bui.columnwidget(
+            parent=self._msg_scroll, border=2, margin=0
+        )
 
         for msg in messages:
             bui.buttonwidget(
@@ -65,7 +85,7 @@ class QuickChatPartyWindow(bauiv1lib.party.PartyWindow):
                 label=msg,
                 textcolor=(1, 1, 1),
                 color=(0.4, 0.7, 1),
-                on_activate_call=lambda m=msg: self._send_and_close(m, root)
+                on_activate_call=lambda m=msg: self._send_and_close(m, root),
             )
 
         bui.buttonwidget(
@@ -75,7 +95,7 @@ class QuickChatPartyWindow(bauiv1lib.party.PartyWindow):
             label='Add',
             color=(0.4, 0.7, 1),
             textcolor=(1, 1, 1),
-            on_activate_call=lambda: self._add_message(root)
+            on_activate_call=lambda: self._add_message(root),
         )
 
         bui.buttonwidget(
@@ -85,7 +105,7 @@ class QuickChatPartyWindow(bauiv1lib.party.PartyWindow):
             label='Remove',
             color=(0.4, 0.7, 1),
             textcolor=(1, 1, 1),
-            on_activate_call=lambda: self._remove_message(root)
+            on_activate_call=lambda: self._remove_message(root),
         )
 
         bui.buttonwidget(
@@ -95,7 +115,9 @@ class QuickChatPartyWindow(bauiv1lib.party.PartyWindow):
             label='Close',
             color=(0.4, 0.7, 1),
             textcolor=(1, 1, 1),
-            on_activate_call=lambda: bui.containerwidget(edit=root, transition='out_scale')
+            on_activate_call=lambda: bui.containerwidget(
+                edit=root, transition='out_scale'
+            ),
         )
 
     def _send_and_close(self, message: str, root_widget):
@@ -114,21 +136,58 @@ class QuickChatPartyWindow(bauiv1lib.party.PartyWindow):
             bui.containerwidget(edit=parent, transition='out_scale')
             self._open_quick_chat_menu()
 
-        win = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'), size=(300, 140), transition='in_scale',
-                                  scale=1.2, color=(0, 0, 0), on_outside_click_call=lambda: bui.containerwidget(edit=win, transition='out_scale'))
+        win = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 140),
+            transition='in_scale',
+            scale=1.2,
+            color=(0, 0, 0),
+            on_outside_click_call=lambda: bui.containerwidget(
+                edit=win, transition='out_scale'
+            ),
+        )
 
-        bui.textwidget(parent=win, position=(20, 90), size=(260, 30),
-                       text='New Message:', scale=0.9, h_align='left', v_align='center', color=(1, 1, 1))
+        bui.textwidget(
+            parent=win,
+            position=(20, 90),
+            size=(260, 30),
+            text='New Message:',
+            scale=0.9,
+            h_align='left',
+            v_align='center',
+            color=(1, 1, 1),
+        )
 
-        txt = bui.textwidget(parent=win, position=(20, 60), size=(260, 30),
-                             text='', editable=True, maxwidth=200)
+        txt = bui.textwidget(
+            parent=win,
+            position=(20, 60),
+            size=(260, 30),
+            text='',
+            editable=True,
+            maxwidth=200,
+        )
 
-        bui.buttonwidget(parent=win, position=(60, 20), size=(80, 30),
-                         label='OK', color=(0.4, 0.7, 1), textcolor=(1, 1, 1), on_activate_call=save_new)
+        bui.buttonwidget(
+            parent=win,
+            position=(60, 20),
+            size=(80, 30),
+            label='OK',
+            color=(0.4, 0.7, 1),
+            textcolor=(1, 1, 1),
+            on_activate_call=save_new,
+        )
 
-        bui.buttonwidget(parent=win, position=(160, 20), size=(80, 30),
-                         label='Cancel', color=(0.4, 0.7, 1), textcolor=(1, 1, 1),
-                         on_activate_call=lambda: bui.containerwidget(edit=win, transition='out_scale'))
+        bui.buttonwidget(
+            parent=win,
+            position=(160, 20),
+            size=(80, 30),
+            label='Cancel',
+            color=(0.4, 0.7, 1),
+            textcolor=(1, 1, 1),
+            on_activate_call=lambda: bui.containerwidget(
+                edit=win, transition='out_scale'
+            ),
+        )
 
     def _remove_message(self, parent):
         msgs = load_messages()
@@ -139,8 +198,16 @@ class QuickChatPartyWindow(bauiv1lib.party.PartyWindow):
 
         h = 50 + len(msgs) * 45
         h = min(h, 300)
-        win = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'), size=(300, h), transition='in_scale', scale=1.2, color=(
-            0, 0, 0), on_outside_click_call=lambda: bui.containerwidget(edit=win, transition='out_scale'))
+        win = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, h),
+            transition='in_scale',
+            scale=1.2,
+            color=(0, 0, 0),
+            on_outside_click_call=lambda: bui.containerwidget(
+                edit=win, transition='out_scale'
+            ),
+        )
         col = bui.columnwidget(parent=win)
 
         bui.buttonwidget(
@@ -149,7 +216,9 @@ class QuickChatPartyWindow(bauiv1lib.party.PartyWindow):
             size=(260, 40),
             textcolor=(1, 1, 1),
             color=(1, 0.2, 0.2),
-            on_activate_call=lambda: bui.containerwidget(edit=win, transition='out_scale')
+            on_activate_call=lambda: bui.containerwidget(
+                edit=win, transition='out_scale'
+            ),
         )
         for msg in msgs:
             bui.buttonwidget(
@@ -158,7 +227,9 @@ class QuickChatPartyWindow(bauiv1lib.party.PartyWindow):
                 size=(260, 40),
                 textcolor=(1, 1, 1),
                 color=(0.4, 0.7, 1),
-                on_activate_call=lambda m=msg: self._confirm_delete(m, win, parent)
+                on_activate_call=lambda m=msg: self._confirm_delete(
+                    m, win, parent
+                ),
             )
 
     def _confirm_delete(self, msg, win, parent):

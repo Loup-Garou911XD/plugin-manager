@@ -18,8 +18,7 @@ from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
-    from typing import (Any, Type, Tuple, List, Sequence, Optional, Dict,
-                        Union)
+    from typing import Any, Type, Tuple, List, Sequence, Optional, Dict, Union
     from bascenev1lib.actor.onscreentimer import OnScreenTimer
 
 
@@ -33,14 +32,19 @@ class ThePadDefs:
     points['race_point4'] = (-6.4441, 4.5011, -8.88703) + (1.083, 4.673, 1.076)
     points['race_point5'] = (-6.31128, 4.5011, 2.82669) + (0.894, 4.673, 0.941)
     boxes['area_of_interest_bounds'] = (
-        0.3544110667, 4.493562578, -2.518391331) + (
-        0.0, 0.0, 0.0) + (16.64754831, 8.06138989, 18.5029888)
+        (0.3544110667, 4.493562578, -2.518391331)
+        + (0.0, 0.0, 0.0)
+        + (16.64754831, 8.06138989, 18.5029888)
+    )
     points['ffa_spawn1'] = (-0, 5, 2.5)
     points['flag1'] = (-7.026110145, 4.308759233, -6.302807727)
     points['flag2'] = (7.632557137, 4.366002373, -6.287969342)
     points['flagDefault'] = (0.4611826686, 4.382076338, 3.680881802)
-    boxes['map_bounds'] = (0.2608783669, 4.899663734, -3.543675157) + (
-        0.0, 0.0, 0.0) + (29.23565494, 14.19991443, 29.92689344)
+    boxes['map_bounds'] = (
+        (0.2608783669, 4.899663734, -3.543675157)
+        + (0.0, 0.0, 0.0)
+        + (29.23565494, 14.19991443, 29.92689344)
+    )
     points['powerup_spawn1'] = (-4.166594349, 5.281834349, -6.427493781)
     points['powerup_spawn2'] = (4.426873526, 5.342460464, -6.329745237)
     points['powerup_spawn3'] = (-4.201686731, 5.123385835, 0.4400721376)
@@ -77,7 +81,7 @@ class ThePadMapb(bs.Map):
             'bgmesh': bs.getmesh('thePadBG'),
             'railing_collision_mesh': bs.getcollisionmesh('thePadLevelBumper'),
             'vr_fill_mound_mesh': bs.getmesh('thePadVRFillMound'),
-            'vr_fill_mound_tex': bs.gettexture('vrFillMound')
+            'vr_fill_mound_tex': bs.gettexture('vrFillMound'),
         }
         # fixme should chop this into vr/non-vr sections for efficiency
         return data
@@ -92,38 +96,45 @@ class ThePadMapb(bs.Map):
                 'collision_mesh': self.preloaddata['collision_mesh'],
                 'mesh': self.preloaddata['mesh'],
                 'color_texture': self.preloaddata['tex'],
-                'materials': [shared.footing_material]
-            })
-        self.bottom = bs.newnode('terrain',
-                                 attrs={
-                                     'mesh': self.preloaddata['bottom_mesh'],
-                                     'lighting': False,
-                                     'color_texture': self.preloaddata['tex']
-                                 })
+                'materials': [shared.footing_material],
+            },
+        )
+        self.bottom = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['bottom_mesh'],
+                'lighting': False,
+                'color_texture': self.preloaddata['tex'],
+            },
+        )
         self.background = bs.newnode(
             'terrain',
             attrs={
                 'mesh': self.preloaddata['bgmesh'],
                 'lighting': False,
                 'background': True,
-                'color_texture': self.preloaddata['bgtex']
-            })
+                'color_texture': self.preloaddata['bgtex'],
+            },
+        )
         self.railing = bs.newnode(
             'terrain',
             attrs={
                 'collision_mesh': self.preloaddata['railing_collision_mesh'],
                 'materials': [shared.railing_material],
-                'bumper': True
-            })
-        bs.newnode('terrain',
-                   attrs={
-                       'mesh': self.preloaddata['vr_fill_mound_mesh'],
-                       'lighting': False,
-                       'vr_only': True,
-                       'color': (0.56, 0.55, 0.47),
-                       'background': True,
-                       'color_texture': self.preloaddata['vr_fill_mound_tex']
-                   })
+                'bumper': True,
+            },
+        )
+        bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['vr_fill_mound_mesh'],
+                'lighting': False,
+                'vr_only': True,
+                'color': (0.56, 0.55, 0.47),
+                'background': True,
+                'color_texture': self.preloaddata['vr_fill_mound_tex'],
+            },
+        )
         gnode = bs.getactivity().globalsnode
         gnode.tint = (1.1, 1.1, 1.0)
         gnode.ambient_color = (1.1, 1.1, 1.0)
@@ -141,14 +152,16 @@ class NewMap(babase.Plugin):
 
 class NewBlast(Blast):
 
-    def __init__(self,
-                 position: Sequence[float] = (0.0, 1.0, 0.0),
-                 velocity: Sequence[float] = (0.0, 0.0, 0.0),
-                 blast_radius: float = 2.0,
-                 blast_type: str = 'normal',
-                 source_player: bs.Player = None,
-                 hit_type: str = 'explosion',
-                 hit_subtype: str = 'normal'):
+    def __init__(
+        self,
+        position: Sequence[float] = (0.0, 1.0, 0.0),
+        velocity: Sequence[float] = (0.0, 0.0, 0.0),
+        blast_radius: float = 2.0,
+        blast_type: str = 'normal',
+        source_player: bs.Player = None,
+        hit_type: str = 'explosion',
+        hit_subtype: str = 'normal',
+    ):
         bs.Actor.__init__(self)
 
         shared = SharedObjects.get()
@@ -169,7 +182,7 @@ class NewBlast(Blast):
                 'position': (position[0], position[1] - 0.1, position[2]),
                 'scale': (self.radius, self.radius, self.radius),
                 'type': 'sphere',
-                'materials': rmats
+                'materials': rmats,
             },
         )
 
@@ -177,44 +190,54 @@ class NewBlast(Blast):
 
         # Throw in an explosion and flash.
         evel = (velocity[0], max(-1.0, velocity[1]), velocity[2])
-        explosion = bs.newnode('explosion',
-                               attrs={
-                                   'position': position,
-                                   'velocity': evel,
-                                   'radius': self.radius,
-                                   'big': (self.blast_type == 'tnt')
-                               })
+        explosion = bs.newnode(
+            'explosion',
+            attrs={
+                'position': position,
+                'velocity': evel,
+                'radius': self.radius,
+                'big': (self.blast_type == 'tnt'),
+            },
+        )
         if self.blast_type == 'ice':
             explosion.color = (0, 0.05, 0.4)
 
         bs.timer(1.0, explosion.delete)
 
         if self.blast_type != 'ice':
-            bs.emitfx(position=position,
-                      velocity=velocity,
-                      count=int(1.0 + random.random() * 4),
-                      emit_type='tendrils',
-                      tendril_type='thin_smoke')
-        bs.emitfx(position=position,
-                  velocity=velocity,
-                  count=int(4.0 + random.random() * 4),
-                  emit_type='tendrils',
-                  tendril_type='ice' if self.blast_type == 'ice' else 'smoke')
-        bs.emitfx(position=position,
-                  emit_type='distortion',
-                  spread=1.0 if self.blast_type == 'tnt' else 2.0)
+            bs.emitfx(
+                position=position,
+                velocity=velocity,
+                count=int(1.0 + random.random() * 4),
+                emit_type='tendrils',
+                tendril_type='thin_smoke',
+            )
+        bs.emitfx(
+            position=position,
+            velocity=velocity,
+            count=int(4.0 + random.random() * 4),
+            emit_type='tendrils',
+            tendril_type='ice' if self.blast_type == 'ice' else 'smoke',
+        )
+        bs.emitfx(
+            position=position,
+            emit_type='distortion',
+            spread=1.0 if self.blast_type == 'tnt' else 2.0,
+        )
 
         # And emit some shrapnel.
         if self.blast_type == 'ice':
 
             def emit() -> None:
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=30,
-                          spread=2.0,
-                          scale=0.4,
-                          chunk_type='ice',
-                          emit_type='stickers')
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=30,
+                    spread=2.0,
+                    scale=0.4,
+                    chunk_type='ice',
+                    emit_type='stickers',
+                )
 
             # It looks better if we delay a bit.
             bs.timer(0.05, emit)
@@ -222,35 +245,45 @@ class NewBlast(Blast):
         elif self.blast_type == 'sticky':
 
             def emit() -> None:
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=int(4.0 + random.random() * 8),
-                          spread=0.7,
-                          chunk_type='slime')
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=int(4.0 + random.random() * 8),
-                          scale=0.5,
-                          spread=0.7,
-                          chunk_type='slime')
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=15,
-                          scale=0.6,
-                          chunk_type='slime',
-                          emit_type='stickers')
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=20,
-                          scale=0.7,
-                          chunk_type='spark',
-                          emit_type='stickers')
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=int(6.0 + random.random() * 12),
-                          scale=0.8,
-                          spread=1.5,
-                          chunk_type='spark')
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(4.0 + random.random() * 8),
+                    spread=0.7,
+                    chunk_type='slime',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(4.0 + random.random() * 8),
+                    scale=0.5,
+                    spread=0.7,
+                    chunk_type='slime',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=15,
+                    scale=0.6,
+                    chunk_type='slime',
+                    emit_type='stickers',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=20,
+                    scale=0.7,
+                    chunk_type='spark',
+                    emit_type='stickers',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(6.0 + random.random() * 12),
+                    scale=0.8,
+                    spread=1.5,
+                    chunk_type='spark',
+                )
 
             # It looks better if we delay a bit.
             bs.timer(0.05, emit)
@@ -258,28 +291,36 @@ class NewBlast(Blast):
         elif self.blast_type == 'impact':
 
             def emit() -> None:
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=int(4.0 + random.random() * 8),
-                          scale=0.8,
-                          chunk_type='metal')
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=int(4.0 + random.random() * 8),
-                          scale=0.4,
-                          chunk_type='metal')
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=20,
-                          scale=0.7,
-                          chunk_type='spark',
-                          emit_type='stickers')
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=int(8.0 + random.random() * 15),
-                          scale=0.8,
-                          spread=1.5,
-                          chunk_type='spark')
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(4.0 + random.random() * 8),
+                    scale=0.8,
+                    chunk_type='metal',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(4.0 + random.random() * 8),
+                    scale=0.4,
+                    chunk_type='metal',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=20,
+                    scale=0.7,
+                    chunk_type='spark',
+                    emit_type='stickers',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(8.0 + random.random() * 15),
+                    scale=0.8,
+                    spread=1.5,
+                    chunk_type='spark',
+                )
 
             # It looks better if we delay a bit.
             bs.timer(0.05, emit)
@@ -288,38 +329,48 @@ class NewBlast(Blast):
 
             def emit() -> None:
                 if self.blast_type != 'tnt':
-                    bs.emitfx(position=position,
-                              velocity=velocity,
-                              count=int(4.0 + random.random() * 8),
-                              chunk_type='rock')
-                    bs.emitfx(position=position,
-                              velocity=velocity,
-                              count=int(4.0 + random.random() * 8),
-                              scale=0.5,
-                              chunk_type='rock')
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=30,
-                          scale=1.0 if self.blast_type == 'tnt' else 0.7,
-                          chunk_type='spark',
-                          emit_type='stickers')
-                bs.emitfx(position=position,
-                          velocity=velocity,
-                          count=int(18.0 + random.random() * 20),
-                          scale=1.0 if self.blast_type == 'tnt' else 0.8,
-                          spread=1.5,
-                          chunk_type='spark')
+                    bs.emitfx(
+                        position=position,
+                        velocity=velocity,
+                        count=int(4.0 + random.random() * 8),
+                        chunk_type='rock',
+                    )
+                    bs.emitfx(
+                        position=position,
+                        velocity=velocity,
+                        count=int(4.0 + random.random() * 8),
+                        scale=0.5,
+                        chunk_type='rock',
+                    )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=30,
+                    scale=1.0 if self.blast_type == 'tnt' else 0.7,
+                    chunk_type='spark',
+                    emit_type='stickers',
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=velocity,
+                    count=int(18.0 + random.random() * 20),
+                    scale=1.0 if self.blast_type == 'tnt' else 0.8,
+                    spread=1.5,
+                    chunk_type='spark',
+                )
 
                 # TNT throws splintery chunks.
                 if self.blast_type == 'tnt':
 
                     def emit_splinters() -> None:
-                        bs.emitfx(position=position,
-                                  velocity=velocity,
-                                  count=int(20.0 + random.random() * 25),
-                                  scale=0.8,
-                                  spread=1.0,
-                                  chunk_type='splinter')
+                        bs.emitfx(
+                            position=position,
+                            velocity=velocity,
+                            count=int(20.0 + random.random() * 25),
+                            scale=0.8,
+                            spread=1.0,
+                            chunk_type='splinter',
+                        )
 
                     bs.timer(0.01, emit_splinters)
 
@@ -327,26 +378,29 @@ class NewBlast(Blast):
                 if self.blast_type == 'tnt' or random.random() < 0.1:
 
                     def emit_extra_sparks() -> None:
-                        bs.emitfx(position=position,
-                                  velocity=velocity,
-                                  count=int(10.0 + random.random() * 20),
-                                  scale=0.8,
-                                  spread=1.5,
-                                  chunk_type='spark')
+                        bs.emitfx(
+                            position=position,
+                            velocity=velocity,
+                            count=int(10.0 + random.random() * 20),
+                            scale=0.8,
+                            spread=1.5,
+                            chunk_type='spark',
+                        )
 
                     bs.timer(0.02, emit_extra_sparks)
 
             # It looks better if we delay a bit.
             bs.timer(0.05, emit)
 
-        lcolor = ((0.6, 0.6, 1.0) if self.blast_type == 'ice' else
-                  (1, 0.3, 0.1))
-        light = bs.newnode('light',
-                           attrs={
-                               'position': position,
-                               'volume_intensity_scale': 10.0,
-                               'color': lcolor
-                           })
+        lcolor = (0.6, 0.6, 1.0) if self.blast_type == 'ice' else (1, 0.3, 0.1)
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': position,
+                'volume_intensity_scale': 10.0,
+                'color': lcolor,
+            },
+        )
 
         scl = random.uniform(0.6, 0.9)
         scorch_radius = light_radius = self.radius
@@ -357,7 +411,9 @@ class NewBlast(Blast):
 
         iscale = 1.6
         bs.animate(
-            light, 'intensity', {
+            light,
+            'intensity',
+            {
                 0: 2.0 * iscale,
                 scl * 0.02: 0.1 * iscale,
                 scl * 0.025: 0.2 * iscale,
@@ -366,25 +422,31 @@ class NewBlast(Blast):
                 scl * 0.08: 4.0 * iscale,
                 scl * 0.2: 0.6 * iscale,
                 scl * 2.0: 0.00 * iscale,
-                scl * 3.0: 0.0
-            })
+                scl * 3.0: 0.0,
+            },
+        )
         bs.animate(
-            light, 'radius', {
+            light,
+            'radius',
+            {
                 0: light_radius * 0.2,
                 scl * 0.05: light_radius * 0.55,
                 scl * 0.1: light_radius * 0.3,
                 scl * 0.3: light_radius * 0.15,
-                scl * 1.0: light_radius * 0.05
-            })
+                scl * 1.0: light_radius * 0.05,
+            },
+        )
         bs.timer(scl * 3.0, light.delete)
 
         # Make a scorch that fades over time.
-        scorch = bs.newnode('scorch',
-                            attrs={
-                                'position': position,
-                                'size': scorch_radius * 0.5,
-                                'big': (self.blast_type == 'tnt')
-                            })
+        scorch = bs.newnode(
+            'scorch',
+            attrs={
+                'position': position,
+                'size': scorch_radius * 0.5,
+                'big': (self.blast_type == 'tnt'),
+            },
+        )
         if self.blast_type == 'ice':
             scorch.color = (1, 1, 1.5)
 
@@ -424,13 +486,15 @@ class NewBomb(Bomb):
             return
         self._exploded = True
         if self.node:
-            blast = NewBlast(position=self.node.position,
-                             velocity=self.node.velocity,
-                             blast_radius=self.blast_radius,
-                             blast_type=self.bomb_type,
-                             source_player=babase.existing(self._source_player),
-                             hit_type=self.hit_type,
-                             hit_subtype=self.hit_subtype).autoretain()
+            blast = NewBlast(
+                position=self.node.position,
+                velocity=self.node.velocity,
+                blast_radius=self.blast_radius,
+                blast_type=self.bomb_type,
+                source_player=babase.existing(self._source_player),
+                hit_type=self.hit_type,
+                hit_subtype=self.hit_subtype,
+            ).autoretain()
             for callback in self._explode_callbacks:
                 callback(self, blast)
 
@@ -441,11 +505,13 @@ class NewBomb(Bomb):
 
 class TNT(bs.Actor):
 
-    def __init__(self,
-                 position: Sequence[float] = (0.0, 1.0, 0.0),
-                 velocity: Sequence[float] = (0.0, 0.0, 0.0),
-                 tnt_scale: float = 1.0,
-                 teleport: bool = True):
+    def __init__(
+        self,
+        position: Sequence[float] = (0.0, 1.0, 0.0),
+        velocity: Sequence[float] = (0.0, 0.0, 0.0),
+        tnt_scale: float = 1.0,
+        teleport: bool = True,
+    ):
         super().__init__()
         self.position = position
         self.teleport = teleport
@@ -476,8 +542,8 @@ class TNT(bs.Actor):
                 'body_scale': tnt_scale,
                 'density': 2.0,
                 'gravity_scale': 2.0,
-                'materials': [collide]
-            }
+                'materials': [collide],
+            },
         )
         if not teleport:
             bs.timer(0.1, self._collide)
@@ -512,8 +578,9 @@ class RaceRegion(bs.Actor):
                 'position': pt[:3],
                 'scale': (pt[3] * 2.0, pt[4] * 2.0, pt[5] * 2.0),
                 'type': 'box',
-                'materials': [activity.race_region_material]
-            })
+                'materials': [activity.race_region_material],
+            },
+        )
 
 
 # MINIGAME
@@ -544,13 +611,14 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
 
     name = 'Hyper Race'
     description = 'Creado Por Cebolla!!'
-    scoreconfig = bs.ScoreConfig(label='Time',
-                                 lower_is_better=True,
-                                 scoretype=bs.ScoreType.MILLISECONDS)
+    scoreconfig = bs.ScoreConfig(
+        label='Time', lower_is_better=True, scoretype=bs.ScoreType.MILLISECONDS
+    )
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]
+    ) -> List[babase.Setting]:
         settings = [
             bs.IntSetting('Laps', min_value=1, default=3, increment=1),
             bs.IntChoiceSetting(
@@ -571,7 +639,8 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         # We have some specific settings in teams mode.
         if issubclass(sessiontype, bs.DualTeamSession):
             settings.append(
-                bs.BoolSetting('Entire Team Must Finish', default=False))
+                bs.BoolSetting('Entire Team Must Finish', default=False)
+            )
         return settings
 
     @classmethod
@@ -605,25 +674,31 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         self._start_lights: Optional[List[bs.Node]] = None
         self._laps = int(settings['Laps'])
         self._entire_team_must_finish = bool(
-            settings.get('Entire Team Must Finish', False))
+            settings.get('Entire Team Must Finish', False)
+        )
         self._time_limit = float(settings['Time Limit'])
         self._epic_mode = bool(settings['Epic Mode'])
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC_RACE
-                              if self._epic_mode else bs.MusicType.RACE)
+        self.default_music = (
+            bs.MusicType.EPIC_RACE if self._epic_mode else bs.MusicType.RACE
+        )
 
         self._safe_region_material = bs.Material()
         self._safe_region_material.add_actions(
             conditions=('they_have_material', shared.player_material),
-            actions=(('modify_part_collision', 'collide', True),
-                     ('modify_part_collision', 'physical', True))
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', True),
+            ),
         )
 
     def get_instance_description(self) -> Union[str, Sequence]:
-        if (isinstance(self.session, bs.DualTeamSession)
-                and self._entire_team_must_finish):
+        if (
+            isinstance(self.session, bs.DualTeamSession)
+            and self._entire_team_must_finish
+        ):
             t_str = ' Your entire team has to finish.'
         else:
             t_str = ''
@@ -642,14 +717,14 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         shared = SharedObjects.get()
         pts = self.map.get_def_points('race_point')
         mat = self.race_region_material = bs.Material()
-        mat.add_actions(conditions=('they_have_material',
-                                    shared.player_material),
-                        actions=(
-                            ('modify_part_collision', 'collide', True),
-                            ('modify_part_collision', 'physical', False),
-                            ('call', 'at_connect',
-                             self._handle_race_point_collide),
-        ))
+        mat.add_actions(
+            conditions=('they_have_material', shared.player_material),
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', False),
+                ('call', 'at_connect', self._handle_race_point_collide),
+            ),
+        )
         for rpt in pts:
             self._regions.append(RaceRegion(rpt, len(self._regions)))
 
@@ -659,21 +734,23 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                 'position': (0.3, 4.044276501, -2.9),
                 'scale': (11.7, 15, 9.5),
                 'type': 'box',
-                'materials': [self._safe_region_material]
-            }
+                'materials': [self._safe_region_material],
+            },
         )
 
     def _flash_player(self, player: Player, scale: float) -> None:
         assert isinstance(player.actor, PlayerSpaz)
         assert player.actor.node
         pos = player.actor.node.position
-        light = bs.newnode('light',
-                           attrs={
-                               'position': pos,
-                               'color': (1, 1, 0),
-                               'height_attenuated': False,
-                               'radius': 0.4
-                           })
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': pos,
+                'color': (1, 1, 0),
+                'height_attenuated': False,
+                'radius': 0.4,
+            },
+        )
         bs.timer(0.5, light.delete)
         bs.animate(light, 'intensity', {0: 0, 0.1: 1.0 * scale, 0.5: 0})
 
@@ -709,11 +786,17 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                 if player.is_alive():
                     assert player.actor
                     player.actor.handlemessage(bs.DieMessage())
-                    bs.broadcastmessage(babase.Lstr(
-                        translate=('statements', 'Killing ${NAME} for'
-                                   ' skipping part of the track!'),
-                        subs=[('${NAME}', player.getname(full=True))]),
-                        color=(1, 0, 0))
+                    bs.broadcastmessage(
+                        babase.Lstr(
+                            translate=(
+                                'statements',
+                                'Killing ${NAME} for'
+                                ' skipping part of the track!',
+                            ),
+                            subs=[('${NAME}', player.getname(full=True))],
+                        ),
+                        color=(1, 0, 0),
+                    )
             else:
                 # If this player is in first, note that this is the
                 # front-most race-point.
@@ -728,8 +811,10 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                     # In teams mode with all-must-finish on, the team lap
                     # value is the min of all team players.
                     # Otherwise its the max.
-                    if isinstance(self.session, bs.DualTeamSession
-                                  ) and self._entire_team_must_finish:
+                    if (
+                        isinstance(self.session, bs.DualTeamSession)
+                        and self._entire_team_must_finish
+                    ):
                         team.lap = min([p.lap for p in team.players])
                     else:
                         team.lap = max([p.lap for p in team.players])
@@ -742,9 +827,11 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                         if isinstance(self.session, bs.DualTeamSession):
                             assert self._team_finish_pts is not None
                             if self._team_finish_pts > 0:
-                                self.stats.player_scored(player,
-                                                         self._team_finish_pts,
-                                                         screenmessage=False)
+                                self.stats.player_scored(
+                                    player,
+                                    self._team_finish_pts,
+                                    screenmessage=False,
+                                )
                             self._team_finish_pts -= 25
 
                         # Flash where the player is.
@@ -752,7 +839,8 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                         player.finished = True
                         assert player.actor
                         player.actor.handlemessage(
-                            bs.DieMessage(immediate=True))
+                            bs.DieMessage(immediate=True)
+                        )
 
                         # Makes sure noone behind them passes them in rank
                         # while finishing.
@@ -779,35 +867,41 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                         # Print their lap number over their head.
                         try:
                             assert isinstance(player.actor, PlayerSpaz)
-                            mathnode = bs.newnode('math',
-                                                  owner=player.actor.node,
-                                                  attrs={
-                                                      'input1': (0, 1.9, 0),
-                                                      'operation': 'add'
-                                                  })
+                            mathnode = bs.newnode(
+                                'math',
+                                owner=player.actor.node,
+                                attrs={
+                                    'input1': (0, 1.9, 0),
+                                    'operation': 'add',
+                                },
+                            )
                             player.actor.node.connectattr(
-                                'torso_position', mathnode, 'input2')
-                            tstr = babase.Lstr(resource='lapNumberText',
-                                               subs=[('${CURRENT}',
-                                                      str(player.lap + 1)),
-                                                     ('${TOTAL}', str(self._laps))
-                                                     ])
-                            txtnode = bs.newnode('text',
-                                                 owner=mathnode,
-                                                 attrs={
-                                                     'text': tstr,
-                                                     'in_world': True,
-                                                     'color': (1, 1, 0, 1),
-                                                     'scale': 0.015,
-                                                     'h_align': 'center'
-                                                 })
+                                'torso_position', mathnode, 'input2'
+                            )
+                            tstr = babase.Lstr(
+                                resource='lapNumberText',
+                                subs=[
+                                    ('${CURRENT}', str(player.lap + 1)),
+                                    ('${TOTAL}', str(self._laps)),
+                                ],
+                            )
+                            txtnode = bs.newnode(
+                                'text',
+                                owner=mathnode,
+                                attrs={
+                                    'text': tstr,
+                                    'in_world': True,
+                                    'color': (1, 1, 0, 1),
+                                    'scale': 0.015,
+                                    'h_align': 'center',
+                                },
+                            )
                             mathnode.connectattr('output', txtnode, 'position')
-                            bs.animate(txtnode, 'scale', {
-                                0.0: 0,
-                                0.2: 0.019,
-                                2.0: 0.019,
-                                2.2: 0
-                            })
+                            bs.animate(
+                                txtnode,
+                                'scale',
+                                {0.0: 0, 0.2: 0.019, 2.0: 0.019, 2.2: 0},
+                            )
                             bs.timer(2.3, mathnode.delete)
                         except Exception:
                             babase.print_exception('Error printing lap.')
@@ -821,14 +915,23 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         # A player leaving disqualifies the team if 'Entire Team Must Finish'
         # is on (otherwise in teams mode everyone could just leave except the
         # leading player to win).
-        if (isinstance(self.session, bs.DualTeamSession)
-                and self._entire_team_must_finish):
-            bs.broadcastmessage(babase.Lstr(
-                translate=('statements',
-                           '${TEAM} is disqualified because ${PLAYER} left'),
-                subs=[('${TEAM}', player.team.name),
-                      ('${PLAYER}', player.getname(full=True))]),
-                color=(1, 1, 0))
+        if (
+            isinstance(self.session, bs.DualTeamSession)
+            and self._entire_team_must_finish
+        ):
+            bs.broadcastmessage(
+                babase.Lstr(
+                    translate=(
+                        'statements',
+                        '${TEAM} is disqualified because ${PLAYER} left',
+                    ),
+                    subs=[
+                        ('${TEAM}', player.team.name),
+                        ('${PLAYER}', player.getname(full=True)),
+                    ],
+                ),
+                color=(1, 1, 0),
+            )
             player.team.finished = True
             player.team.time = None
             player.team.lap = 0
@@ -851,8 +954,10 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
             if not distances:
                 teams_dist = 0.0
             else:
-                if (isinstance(self.session, bs.DualTeamSession)
-                        and self._entire_team_must_finish):
+                if (
+                    isinstance(self.session, bs.DualTeamSession)
+                    and self._entire_team_must_finish
+                ):
                     teams_dist = min(distances)
                 else:
                     teams_dist = max(distances)
@@ -861,10 +966,12 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                 teams_dist,
                 self._laps,
                 flash=(teams_dist >= float(self._laps)),
-                show_value=False)
+                show_value=False,
+            )
 
     def on_begin(self) -> None:
         from bascenev1lib.actor.onscreentimer import OnScreenTimer
+
         super().on_begin()
         self.setup_standard_time_limit(self._time_limit)
         # self.setup_standard_powerup_drops()
@@ -872,26 +979,29 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
 
         # Throw a timer up on-screen.
         self._time_text = bs.NodeActor(
-            bs.newnode('text',
-                       attrs={
-                           'v_attach': 'top',
-                           'h_attach': 'center',
-                           'h_align': 'center',
-                           'color': (1, 1, 0.5, 1),
-                           'flatness': 0.5,
-                           'shadow': 0.5,
-                           'position': (0, -50),
-                           'scale': 1.4,
-                           'text': ''
-                       }))
+            bs.newnode(
+                'text',
+                attrs={
+                    'v_attach': 'top',
+                    'h_attach': 'center',
+                    'h_align': 'center',
+                    'color': (1, 1, 0.5, 1),
+                    'flatness': 0.5,
+                    'shadow': 0.5,
+                    'position': (0, -50),
+                    'scale': 1.4,
+                    'text': '',
+                },
+            )
+        )
         self._timer = OnScreenTimer()
 
-        self._scoreboard_timer = bs.Timer(0.25,
-                                          self._update_scoreboard,
-                                          repeat=True)
-        self._player_order_update_timer = bs.Timer(0.25,
-                                                   self._update_player_order,
-                                                   repeat=True)
+        self._scoreboard_timer = bs.Timer(
+            0.25, self._update_scoreboard, repeat=True
+        )
+        self._player_order_update_timer = bs.Timer(
+            0.25, self._update_player_order, repeat=True
+        )
 
         if self.slow_motion:
             t_scale = 0.4
@@ -909,22 +1019,27 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
 
         self._start_lights = []
         for i in range(4):
-            lnub = bs.newnode('image',
-                              attrs={
-                                  'texture': bs.gettexture('nub'),
-                                  'opacity': 1.0,
-                                  'absolute_scale': True,
-                                  'position': (-75 + i * 50, light_y),
-                                  'scale': (50, 50),
-                                  'attach': 'center'
-                              })
+            lnub = bs.newnode(
+                'image',
+                attrs={
+                    'texture': bs.gettexture('nub'),
+                    'opacity': 1.0,
+                    'absolute_scale': True,
+                    'position': (-75 + i * 50, light_y),
+                    'scale': (50, 50),
+                    'attach': 'center',
+                },
+            )
             bs.animate(
-                lnub, 'opacity', {
+                lnub,
+                'opacity',
+                {
                     4.0 * t_scale: 0,
                     5.0 * t_scale: 1.0,
                     12.0 * t_scale: 1.0,
-                    12.5 * t_scale: 0.0
-                })
+                    12.5 * t_scale: 0.0,
+                },
+            )
             bs.timer(13.0 * t_scale, lnub.delete)
             self._start_lights.append(lnub)
 
@@ -941,8 +1056,8 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                     'color': (0, 1, 0),
                     'opacity': 1.0,
                     'draw_beauty': False,
-                    'additive': True
-                }
+                    'additive': True,
+                },
             )
 
     def _obstacles(self) -> None:
@@ -966,97 +1081,216 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         self._tnt((-7, 5, -1), (0, 0, 0), 1.3)
         self._tnt((-6, 5, 1), (0, 0, 0), 1.3)
 
-        bs.timer(0.1, bs.WeakCall(self._tnt, (-3.2, 5, 1),
-                                  (0, 0, 0), 1.0, (0, 20, 60)), repeat=True)
+        bs.timer(
+            0.1,
+            bs.WeakCall(self._tnt, (-3.2, 5, 1), (0, 0, 0), 1.0, (0, 20, 60)),
+            repeat=True,
+        )
 
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (6, 7, 1), (0, 0, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (6.8, 7, 1), (0, 0, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (7.6, 7, 1), (0, 0, 0), 1.0, 1.0), repeat=True)
+        bs.timer(
+            1.6,
+            bs.WeakCall(self._bomb, 'impact', (6, 7, 1), (0, 0, 0), 1.0, 1.0),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(self._bomb, 'impact', (6.8, 7, 1), (0, 0, 0), 1.0, 1.0),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(self._bomb, 'impact', (7.6, 7, 1), (0, 0, 0), 1.0, 1.0),
+            repeat=True,
+        )
 
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (6, 7, -2.2), (0, 0, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (6.8, 7, -2.2), (0, 0, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (7.6, 7, -2.2), (0, 0, 0), 1.0, 1.0), repeat=True)
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'impact', (6, 7, -2.2), (0, 0, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'impact', (6.8, 7, -2.2), (0, 0, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'impact', (7.6, 7, -2.2), (0, 0, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
 
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (6, 7, -5.2), (0, 0, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (6.8, 7, -5.2), (0, 0, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (7.6, 7, -5.2), (0, 0, 0), 1.0, 1.0), repeat=True)
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'impact', (6, 7, -5.2), (0, 0, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'impact', (6.8, 7, -5.2), (0, 0, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'impact', (7.6, 7, -5.2), (0, 0, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
 
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (6, 7, -8), (0, 0, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (6.8, 7, -8), (0, 0, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (7.6, 7, -8), (0, 0, 0), 1.0, 1.0), repeat=True)
+        bs.timer(
+            1.6,
+            bs.WeakCall(self._bomb, 'impact', (6, 7, -8), (0, 0, 0), 1.0, 1.0),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'impact', (6.8, 7, -8), (0, 0, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'impact', (7.6, 7, -8), (0, 0, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
 
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (-5, 5, 0), (0, 0, 0), 1.0, 1.0, (0, 20, 3)), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'impact',
-                                  (-1.5, 5, 0), (0, 0, 0), 1.0, 1.0, (0, 20, 3)), repeat=True)
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb,
+                'impact',
+                (-5, 5, 0),
+                (0, 0, 0),
+                1.0,
+                1.0,
+                (0, 20, 3),
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb,
+                'impact',
+                (-1.5, 5, 0),
+                (0, 0, 0),
+                1.0,
+                1.0,
+                (0, 20, 3),
+            ),
+            repeat=True,
+        )
 
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'sticky',
-                                  (-1, 5, -8), (0, 10, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'sticky',
-                                  (-1, 5, -9), (0, 10, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'sticky',
-                                  (-1, 5, -10), (0, 10, 0), 1.0, 1.0), repeat=True)
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'sticky', (-1, 5, -8), (0, 10, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'sticky', (-1, 5, -9), (0, 10, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'sticky', (-1, 5, -10), (0, 10, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
 
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'sticky',
-                                  (-4.6, 5, -8), (0, 10, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'sticky',
-                                  (-4.6, 5, -9), (0, 10, 0), 1.0, 1.0), repeat=True)
-        bs.timer(1.6, bs.WeakCall(self._bomb, 'sticky',
-                                  (-4.6, 5, -10), (0, 10, 0), 1.0, 1.0), repeat=True)
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'sticky', (-4.6, 5, -8), (0, 10, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'sticky', (-4.6, 5, -9), (0, 10, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(
+                self._bomb, 'sticky', (-4.6, 5, -10), (0, 10, 0), 1.0, 1.0
+            ),
+            repeat=True,
+        )
 
-        bs.timer(1.6, bs.WeakCall(
-            self._powerup, (2, 5, -5), 'curse', (0, 20, -3)), repeat=True)
-        bs.timer(1.6, bs.WeakCall(
-            self._powerup, (4, 5, -5), 'curse', (0, 20, -3)), repeat=True)
+        bs.timer(
+            1.6,
+            bs.WeakCall(self._powerup, (2, 5, -5), 'curse', (0, 20, -3)),
+            repeat=True,
+        )
+        bs.timer(
+            1.6,
+            bs.WeakCall(self._powerup, (4, 5, -5), 'curse', (0, 20, -3)),
+            repeat=True,
+        )
 
-    def _tnt(self,
-             position: float,
-             velocity: float,
-             tnt_scale: float,
-             extra_acceleration: float = None) -> None:
+    def _tnt(
+        self,
+        position: float,
+        velocity: float,
+        tnt_scale: float,
+        extra_acceleration: float = None,
+    ) -> None:
         if extra_acceleration:
-            TNT(position, velocity, tnt_scale, False).autoretain(
-            ).node.extra_acceleration = extra_acceleration
+            TNT(
+                position, velocity, tnt_scale, False
+            ).autoretain().node.extra_acceleration = extra_acceleration
         else:
             TNT(position, velocity, tnt_scale).autoretain()
 
-    def _bomb(self,
-              type: str,
-              position: float,
-              velocity: float,
-              mesh_scale: float,
-              body_scale: float,
-              extra_acceleration: float = None) -> None:
+    def _bomb(
+        self,
+        type: str,
+        position: float,
+        velocity: float,
+        mesh_scale: float,
+        body_scale: float,
+        extra_acceleration: float = None,
+    ) -> None:
         if extra_acceleration:
-            NewBomb(position=position,
-                    velocity=velocity,
-                    bomb_type=type).autoretain(
-            ).node.extra_acceleration = extra_acceleration
+            NewBomb(
+                position=position, velocity=velocity, bomb_type=type
+            ).autoretain().node.extra_acceleration = extra_acceleration
         else:
-            NewBomb(position=position,
-                    velocity=velocity,
-                    bomb_type=type).autoretain()
+            NewBomb(
+                position=position, velocity=velocity, bomb_type=type
+            ).autoretain()
 
-    def _powerup(self,
-                 position: float,
-                 poweruptype: str,
-                 extra_acceleration: float = None) -> None:
+    def _powerup(
+        self,
+        position: float,
+        poweruptype: str,
+        extra_acceleration: float = None,
+    ) -> None:
         if extra_acceleration:
-            PowerupBox(position=position,
-                       poweruptype=poweruptype).autoretain(
-            ).node.extra_acceleration = extra_acceleration
+            PowerupBox(
+                position=position, poweruptype=poweruptype
+            ).autoretain().node.extra_acceleration = extra_acceleration
         else:
             PowerupBox(position=position, poweruptype=poweruptype).autoretain()
 
@@ -1104,8 +1338,11 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                 r_index = player.last_region
                 rg1 = self._regions[r_index]
                 r1pt = babase.Vec3(rg1.pos[:3])
-                rg2 = self._regions[0] if r_index == len(
-                    self._regions) - 1 else self._regions[r_index + 1]
+                rg2 = (
+                    self._regions[0]
+                    if r_index == len(self._regions) - 1
+                    else self._regions[r_index + 1]
+                )
                 r2pt = babase.Vec3(rg2.pos[:3])
                 r2dist = (pos - r2pt).length()
                 amt = 1.0 - (r2dist / (r2pt - r1pt).length())
@@ -1134,37 +1371,48 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
 
         # Don't use the full region so we're less likely to spawn off a cliff.
         region_scale = 0.8
-        x_range = ((-0.5, 0.5) if pos[3] == 0 else
-                   (-region_scale * pos[3], region_scale * pos[3]))
-        z_range = ((-0.5, 0.5) if pos[5] == 0 else
-                   (-region_scale * pos[5], region_scale * pos[5]))
-        pos = (pos[0] + random.uniform(*x_range), pos[1],
-               pos[2] + random.uniform(*z_range))
+        x_range = (
+            (-0.5, 0.5)
+            if pos[3] == 0
+            else (-region_scale * pos[3], region_scale * pos[3])
+        )
+        z_range = (
+            (-0.5, 0.5)
+            if pos[5] == 0
+            else (-region_scale * pos[5], region_scale * pos[5])
+        )
+        pos = (
+            pos[0] + random.uniform(*x_range),
+            pos[1],
+            pos[2] + random.uniform(*z_range),
+        )
         spaz = self.spawn_player_spaz(
-            player, position=pos, angle=90 if not self._race_started else None)
+            player, position=pos, angle=90 if not self._race_started else None
+        )
         assert spaz.node
 
         # Prevent controlling of characters before the start of the race.
         if not self._race_started:
             spaz.disconnect_controls_from_player()
 
-        mathnode = bs.newnode('math',
-                              owner=spaz.node,
-                              attrs={
-                                  'input1': (0, 1.4, 0),
-                                  'operation': 'add'
-                              })
+        mathnode = bs.newnode(
+            'math',
+            owner=spaz.node,
+            attrs={'input1': (0, 1.4, 0), 'operation': 'add'},
+        )
         spaz.node.connectattr('torso_position', mathnode, 'input2')
 
-        distance_txt = bs.newnode('text',
-                                  owner=spaz.node,
-                                  attrs={
-                                      'text': '',
-                                      'in_world': True,
-                                      'color': (1, 1, 0.4),
-                                      'scale': 0.02,
-                                      'h_align': 'center'
-                                  })
+        distance_txt = bs.newnode(
+            'text',
+            owner=spaz.node,
+            attrs={
+                'text': '',
+                'in_world': True,
+                'color': (1, 1, 0.4),
+                'scale': 0.02,
+                'h_align': 'center',
+            },
+        )
         player.distance_txt = distance_txt
         mathnode.connectattr('output', distance_txt, 'position')
         return spaz
@@ -1179,7 +1427,8 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
 
         # Count the number of teams that have completed the race.
         teams_completed = len(
-            [t for t in self.teams if t.finished and t.time is not None])
+            [t for t in self.teams if t.finished and t.time is not None]
+        )
 
         if teams_completed > 0:
             session = self.session
@@ -1208,8 +1457,12 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         assert self._timer is not None
         if self._timer.has_started():
             self._timer.stop(
-                endtime=None if self._last_team_time is None else (
-                    self._timer.getstarttime() + self._last_team_time))
+                endtime=(
+                    None
+                    if self._last_team_time is None
+                    else (self._timer.getstarttime() + self._last_team_time)
+                )
+            )
 
         results = bs.GameResults()
 
@@ -1223,9 +1476,10 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         # We don't announce a winner in ffa mode since its probably been a
         # while since the first place guy crossed the finish line so it seems
         # odd to be announcing that now.
-        self.end(results=results,
-                 announce_winning_team=isinstance(self.session,
-                                                  bs.DualTeamSession))
+        self.end(
+            results=results,
+            announce_winning_team=isinstance(self.session, bs.DualTeamSession),
+        )
 
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, bs.PlayerDiedMessage):

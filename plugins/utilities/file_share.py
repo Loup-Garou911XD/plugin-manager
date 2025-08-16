@@ -29,18 +29,23 @@ import logging
 from babase._general import Call
 from typing import TYPE_CHECKING
 from baenv import TARGET_BALLISTICA_BUILD
+
 if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
 
 app = _babase.app
 
 
-MODS_DIR = app.python_directory_user if TARGET_BALLISTICA_BUILD < 21282 else app.env.python_directory_user
+MODS_DIR = (
+    app.python_directory_user
+    if TARGET_BALLISTICA_BUILD < 21282
+    else app.env.python_directory_user
+)
 REPLAYS_DIR = bui.get_replays_dir()
 HEADERS = {
     'accept': 'application/json',
     'Content-Type': 'application/octet-stream',
-    'User-Agent': 'BombSquad Client'
+    'User-Agent': 'BombSquad Client',
 }
 
 
@@ -53,10 +58,13 @@ class UploadConfirmation(ConfirmWindow):
         ok_text="",
         action: Callable[[], Any] | None = None,
         origin_widget: bui.Widget | None = None,
-
     ):
-        super().__init__(text=text, action=action,
-                         origin_widget=origin_widget, ok_text=ok_text)
+        super().__init__(
+            text=text,
+            action=action,
+            origin_widget=origin_widget,
+            ok_text=ok_text,
+        )
         self.status = status
         self.file_path = file_path
 
@@ -64,7 +72,8 @@ class UploadConfirmation(ConfirmWindow):
         if self.status == "init":
             self._cancel()
             UploadConfirmation(
-                "", "uploading", text="Uploading file wait !", ok_text="Wait")
+                "", "uploading", text="Uploading file wait !", ok_text="Wait"
+            )
             self._upload_file()
 
         elif self.status == "uploading":
@@ -75,20 +84,33 @@ class UploadConfirmation(ConfirmWindow):
     def _upload_file(self):
         self.status = "uploading"
         # print(self.root_widget)
-        thread = Thread(target=handle_upload, args=(
-            self.file_path, self.uploaded, self.root_widget,))
+        thread = Thread(
+            target=handle_upload,
+            args=(
+                self.file_path,
+                self.uploaded,
+                self.root_widget,
+            ),
+        )
         thread.start()
 
     def uploaded(self, url, root_widget):
         self.status = "uploaded"
         from bauiv1lib.url import ShowURLWindow
+
         ShowURLWindow(url)
 
 
 class InputWindow(SendInfoWindow):
     def __init__(
-            self, modal: bool = True, origin_widget: bui.Widget | None = None, path=None):
-        super().__init__(modal=modal, legacy_code_mode=True, origin_widget=origin_widget)
+        self,
+        modal: bool = True,
+        origin_widget: bui.Widget | None = None,
+        path=None,
+    ):
+        super().__init__(
+            modal=modal, legacy_code_mode=True, origin_widget=origin_widget
+        )
         bui.textwidget(edit=self._text_field, max_chars=300)
         self._path = path
         self.message_widget = bui.textwidget(
@@ -103,15 +125,24 @@ class InputWindow(SendInfoWindow):
     def _do_enter(self):
         url = bui.textwidget(query=self._text_field)
         if self._path and self._path != "/bombsquad":
-            bui.textwidget(edit=self.message_widget,
-                           text="downloading.... wait...")
+            bui.textwidget(
+                edit=self.message_widget, text="downloading.... wait..."
+            )
             bui.screenmessage("Downloading started")
-            thread = Thread(target=handle_download, args=(
-                url, self._path, self.on_download,))
+            thread = Thread(
+                target=handle_download,
+                args=(
+                    url,
+                    self._path,
+                    self.on_download,
+                ),
+            )
             thread.start()
         else:
-            bui.textwidget(edit=self.message_widget,
-                           text="First select folder were to save file.")
+            bui.textwidget(
+                edit=self.message_widget,
+                text="First select folder were to save file.",
+            )
         self.close()
 
     def on_download(self, output_path):
@@ -135,8 +166,13 @@ class FileSelectorExtended(FileSelectorWindow):
         valid_file_extensions: Sequence[str] | None = None,
         allow_folders: bool = False,
     ):
-        super().__init__(path, callback=callback, show_base_path=show_base_path,
-                         valid_file_extensions=valid_file_extensions, allow_folders=allow_folders)
+        super().__init__(
+            path,
+            callback=callback,
+            show_base_path=show_base_path,
+            valid_file_extensions=valid_file_extensions,
+            allow_folders=allow_folders,
+        )
         self._import_button = bui.buttonwidget(
             parent=self._root_widget,
             button_type='square',
@@ -225,34 +261,38 @@ class MultiPartForm:
 
     def get_content_type(self):
         return 'multipart/form-data; boundary={}'.format(
-            self.boundary.decode('utf-8'))
+            self.boundary.decode('utf-8')
+        )
 
     def add_field(self, name, value):
         """Add a simple field to the form data."""
         self.form_fields.append((name, value))
 
-    def add_file(self, fieldname, filename, fileHandle,
-                 mimetype=None):
+    def add_file(self, fieldname, filename, fileHandle, mimetype=None):
         """Add a file to be uploaded."""
         body = fileHandle.read()
         if mimetype is None:
             mimetype = (
-                mimetypes.guess_type(filename)[0] or
-                'application/octet-stream'
+                mimetypes.guess_type(filename)[0] or 'application/octet-stream'
             )
         self.files.append((fieldname, filename, mimetype, body))
         return
 
     @staticmethod
     def _form_data(name):
-        return ('Content-Disposition: form-data; '
-                'name="{}"\r\n').format(name).encode('utf-8')
+        return (
+            ('Content-Disposition: form-data; ' 'name="{}"\r\n')
+            .format(name)
+            .encode('utf-8')
+        )
 
     @staticmethod
     def _attached_file(name, filename):
-        return ('Content-Disposition: form-data; '
-                'name="{}"; filename="{}"\r\n').format(
-                    name, filename).encode('utf-8')
+        return (
+            ('Content-Disposition: form-data; ' 'name="{}"; filename="{}"\r\n')
+            .format(name, filename)
+            .encode('utf-8')
+        )
 
     @staticmethod
     def _content_type(ct):
@@ -292,9 +332,7 @@ def handle_upload(file, callback, root_widget):
         file_content = f.read()
     bui.screenmessage("Uploading file, wait !")
     form = MultiPartForm()
-    form.add_file(
-        'file', file_name,
-        fileHandle=io.BytesIO(file_content))
+    form.add_file('file', file_name, fileHandle=io.BytesIO(file_content))
 
     # Build the request, including the byte-string
     # for the data to be posted.
@@ -308,11 +346,18 @@ def handle_upload(file, callback, root_widget):
         with urllib.request.urlopen(r) as response:
             if response.getcode() == 200:
                 #    callback(json.loads(response.read().decode('utf-8'))["link"])
-                _babase.pushcall(Call(callback, json.loads(response.read().decode(
-                    'utf-8'))["link"], root_widget), from_other_thread=True)
+                _babase.pushcall(
+                    Call(
+                        callback,
+                        json.loads(response.read().decode('utf-8'))["link"],
+                        root_widget,
+                    ),
+                    from_other_thread=True,
+                )
             else:
                 bui.screenmessage(
-                    f"Failed to Upload file. Status code: {response.getcode()}")
+                    f"Failed to Upload file. Status code: {response.getcode()}"
+                )
     except urllib.error.URLError as e:
         bui.screenmessage(f"Error occurred: {e}")
 
@@ -325,28 +370,33 @@ def handle_download(url, path, callback):
                 # Read the filename from the Content-Disposition header
                 filename = None
                 content_disposition = response.headers.get(
-                    'Content-Disposition', '')
+                    'Content-Disposition', ''
+                )
 
                 match = re.search(r'filename\*?=(.+)', content_disposition)
 
                 if match:
                     filename = urllib.parse.unquote(
-                        match.group(1), encoding='utf-8')
+                        match.group(1), encoding='utf-8'
+                    )
                     filename = filename.replace("UTF-8''", '')
 
                 output_path = os.path.join(path, filename)
 
                 with open(output_path, 'wb') as file:
                     file.write(response.read())
-                _babase.pushcall(Call(callback, output_path),
-                                 from_other_thread=True)
+                _babase.pushcall(
+                    Call(callback, output_path), from_other_thread=True
+                )
                 print(f"File downloaded and saved to: {output_path}")
             else:
                 print(
-                    f"Failed to download file. Status code: {response.getcode()}")
+                    f"Failed to download file. Status code: {response.getcode()}"
+                )
     except urllib.error.URLError as e:
         # bui.screenmessage(f'Error occured {e}')
         print(f"Error occurred: {e}")
+
 
 # ba_meta export babase.Plugin
 
@@ -364,13 +414,15 @@ class bySmoothy(babase.Plugin):
             virtual_directory_path,
             callback=self.fileSelected,
             show_base_path=False,
-            valid_file_extensions=[
-                "txt", "py", "json", "brp"
-            ],
+            valid_file_extensions=["txt", "py", "json", "brp"],
             allow_folders=False,
         ).get_root_widget()
 
     def fileSelected(self, path):
         if path:
-            UploadConfirmation(path, "init", text="You want to upload " +
-                               path.split("/")[-1], ok_text="Upload")
+            UploadConfirmation(
+                path,
+                "init",
+                text="You want to upload " + path.split("/")[-1],
+                ok_text="Upload",
+            )

@@ -3,7 +3,10 @@ import _babase as _ba  # music control
 from bauiv1lib.ingamemenu import InGameMenuWindow as igm
 import bauiv1 as bui
 import bascenev1 as bs
-from bascenev1 import broadcastmessage as push, get_foreground_host_activity as ga
+from bascenev1 import (
+    broadcastmessage as push,
+    get_foreground_host_activity as ga,
+)
 from bauiv1lib import popup  # Pickers
 from typing import Any, cast, Sequence, Optional, Callable  # UI control
 import math  # floating name
@@ -40,19 +43,47 @@ def var(s, v=None):
     cfg = bui.app.config
     if v is None:
         try:
-            return cfg['sb_'+s]
+            return cfg['sb_' + s]
         except:
             return 0
     else:
-        cfg['sb_'+s] = v
+        cfg['sb_' + s] = v
         cfg.commit()
 
 
 class Nice(igm):
     # config, trash code ik
-    def_attrs = [False, "Spaz", 2.0, 0.0, 1.0, 0.4, (1, 1, 1), 3, "normal", False, False,
-                 (1, 1, 1), 0.5, False, 0.0, False, False, 9.0, 5.0, 1.0, 0.7, True, False,
-                 False, False, False, False, '$', (1, 1, 1)]
+    def_attrs = [
+        False,
+        "Spaz",
+        2.0,
+        0.0,
+        1.0,
+        0.4,
+        (1, 1, 1),
+        3,
+        "normal",
+        False,
+        False,
+        (1, 1, 1),
+        0.5,
+        False,
+        0.0,
+        False,
+        False,
+        9.0,
+        5.0,
+        1.0,
+        0.7,
+        True,
+        False,
+        False,
+        False,
+        False,
+        False,
+        '$',
+        (1, 1, 1),
+    ]
     a = var('do_ding')
     do_ding = a if isinstance(a, bool) else True
     a = var('while_control')
@@ -125,12 +156,14 @@ class Nice(igm):
         if str(ga()) != old_ga:
             s.on_ga_change()
         if call_sand:
-            root_widget = s._rw = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                                      size=(s._width, s._height),
-                                                      color=cola,
-                                                      transition=s.anim_in,
-                                                      stack_offset=s.soff,
-                                                      scale=s.scale)
+            root_widget = s._rw = bui.containerwidget(
+                parent=bui.get_special_widget('overlay_stack'),
+                size=(s._width, s._height),
+                color=cola,
+                transition=s.anim_in,
+                stack_offset=s.soff,
+                scale=s.scale,
+            )
 
         def pos():
             s._pos = 0 if s._pos else 1
@@ -145,10 +178,12 @@ class Nice(igm):
             s.anim_in = 'in_left'
             s.anim_inv = 'in_right'
             s.soff = (-s.howoff, 0)
-            bui.containerwidget(edit=s._rw,
-                                transition=None,
-                                position=(0, 150),
-                                stack_offset=(-s.howoff, 0))
+            bui.containerwidget(
+                edit=s._rw,
+                transition=None,
+                position=(0, 150),
+                stack_offset=(-s.howoff, 0),
+            )
             bui.containerwidget(edit=s._rw, transition='in_left')
             bui.buttonwidget(edit=s._LR, label='Right')
             bui.buttonwidget(edit=s.center_btn, position=(395, 250))
@@ -159,10 +194,12 @@ class Nice(igm):
             s.anim_in = 'in_right'
             s.anim_inv = 'in_left'
             s.soff = (s.howoff, 0)
-            bui.containerwidget(edit=s._rw,
-                                transition=None,
-                                position=(930, 140),
-                                stack_offset=(s.howoff, 0))
+            bui.containerwidget(
+                edit=s._rw,
+                transition=None,
+                position=(930, 140),
+                stack_offset=(s.howoff, 0),
+            )
             bui.containerwidget(edit=s._rw, transition='in_right')
             bui.buttonwidget(edit=s._LR, label='Left')
             bui.buttonwidget(edit=s.center_btn, position=(30, 250))
@@ -176,100 +213,119 @@ class Nice(igm):
             position=(395, 30),
             color=colb,
             textcolor=wht,
-            on_activate_call=bs.Call(pos))
+            on_activate_call=bs.Call(pos),
+        )
 
-        bui.textwidget(parent=root_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Sandbox',
-                       position=(200, 250))
+        bui.textwidget(
+            parent=root_widget,
+            color=(0.1, 0.7, 1),
+            text='Sandbox',
+            position=(200, 250),
+        )
 
-        bui.buttonwidget(parent=root_widget,
-                         label='Spawn',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("cuteSpaz"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(40, 185),
-                         on_activate_call=bs.Call(s.spawn_window))
+        bui.buttonwidget(
+            parent=root_widget,
+            label='Spawn',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("cuteSpaz"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(40, 185),
+            on_activate_call=bs.Call(s.spawn_window),
+        )
 
-        bui.buttonwidget(parent=root_widget,
-                         label='Control',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("controllerIcon"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(180, 185),
-                         on_activate_call=bs.Call(s.control_window))
+        bui.buttonwidget(
+            parent=root_widget,
+            label='Control',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("controllerIcon"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(180, 185),
+            on_activate_call=bs.Call(s.control_window),
+        )
 
-        bui.buttonwidget(parent=root_widget,
-                         label='Tune',
-                         color=colb,
-                         icon=bui.gettexture("settingsIcon"),
-                         iconscale=s.scale,
-                         size=(130, 50),
-                         textcolor=wht,
-                         button_type='square',
-                         position=(320, 185),
-                         on_activate_call=bs.Call(s.config_window))
+        bui.buttonwidget(
+            parent=root_widget,
+            label='Tune',
+            color=colb,
+            icon=bui.gettexture("settingsIcon"),
+            iconscale=s.scale,
+            size=(130, 50),
+            textcolor=wht,
+            button_type='square',
+            position=(320, 185),
+            on_activate_call=bs.Call(s.config_window),
+        )
 
-        bui.buttonwidget(parent=root_widget,
-                         label='Modify',
-                         color=colb,
-                         size=(130, 50),
-                         icon=bui.gettexture("advancedIcon"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(40, 125),
-                         on_activate_call=bs.Call(s.mod_window))
+        bui.buttonwidget(
+            parent=root_widget,
+            label='Modify',
+            color=colb,
+            size=(130, 50),
+            icon=bui.gettexture("advancedIcon"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(40, 125),
+            on_activate_call=bs.Call(s.mod_window),
+        )
 
-        bui.buttonwidget(parent=root_widget,
-                         label='Effect',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("graphicsIcon"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(180, 125),
-                         on_activate_call=bs.Call(s.effect_window))
+        bui.buttonwidget(
+            parent=root_widget,
+            label='Effect',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("graphicsIcon"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(180, 125),
+            on_activate_call=bs.Call(s.effect_window),
+        )
 
-        bui.buttonwidget(parent=root_widget,
-                         label='Listen',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("audioIcon"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(320, 125),
-                         on_activate_call=bs.Call(s.listen_window))
+        bui.buttonwidget(
+            parent=root_widget,
+            label='Listen',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("audioIcon"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(320, 125),
+            on_activate_call=bs.Call(s.listen_window),
+        )
 
-        bui.buttonwidget(parent=root_widget,
-                         label='Deploy',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("star"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(40, 65),
-                         on_activate_call=bs.Call(s.drop_window))
+        bui.buttonwidget(
+            parent=root_widget,
+            label='Deploy',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("star"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(40, 65),
+            on_activate_call=bs.Call(s.drop_window),
+        )
 
-        bui.buttonwidget(parent=root_widget,
-                         label='Tweak',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("menuIcon"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(180, 65),
-                         on_activate_call=bs.Call(s.tweak_window))
+        bui.buttonwidget(
+            parent=root_widget,
+            label='Tweak',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("menuIcon"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(180, 65),
+            on_activate_call=bs.Call(s.tweak_window),
+        )
 
         bacc = bui.buttonwidget(
             parent=root_widget,
@@ -280,7 +336,8 @@ class Nice(igm):
             position=(30, 30),
             color=colb,
             textcolor=wht,
-            on_activate_call=bs.Call(s.back))
+            on_activate_call=bs.Call(s.back),
+        )
         bui.containerwidget(edit=root_widget, cancel_button=bacc)
 
         s.center_btn = bui.buttonwidget(
@@ -292,18 +349,21 @@ class Nice(igm):
             position=(30, 250),  # (395, 250) if left
             color=colb,
             textcolor=wht,
-            on_activate_call=bs.Call(s.center))
+            on_activate_call=bs.Call(s.center),
+        )
 
-        bui.buttonwidget(parent=root_widget,
-                         label='More',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("storeIcon"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(320, 65),
-                         on_activate_call=bs.Call(s.lol_window))
+        bui.buttonwidget(
+            parent=root_widget,
+            label='More',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("storeIcon"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(320, 65),
+            on_activate_call=bs.Call(s.lol_window),
+        )
 
     def center(s):
         if s.soff == (0, 0):
@@ -311,7 +371,9 @@ class Nice(igm):
             return
         s.soff = (0, 0)
         bui.containerwidget(edit=s._rw, transition=None)
-        bui.containerwidget(edit=s._rw, position=(s.center_pos[0] + s.howoff, s.center_pos[1]))
+        bui.containerwidget(
+            edit=s._rw, position=(s.center_pos[0] + s.howoff, s.center_pos[1])
+        )
         bui.containerwidget(edit=s._rw, stack_offset=s.soff)
         bui.containerwidget(edit=s._rw, transition='in_scale')
 
@@ -321,8 +383,12 @@ class Nice(igm):
 
     def kill(s, wosh=False, who=None, keep_hl=False, anim=True, rev=False):
         try:
-            bui.containerwidget(edit=who, transition=(
-                s._anim_out if not rev else s._anim_outv) if anim else None)
+            bui.containerwidget(
+                edit=who,
+                transition=(
+                    (s._anim_out if not rev else s._anim_outv) if anim else None
+                ),
+            )
         except:
             pass
         if wosh:
@@ -334,83 +400,99 @@ class Nice(igm):
         if ga() is None:
             push("no MORE for you bud,\nyou are not the host.", color=(1, 1, 0))
             return
-        s.lol_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                           size=(500, 240),
-                                           stack_offset=s.soff,
-                                           color=cola,
-                                           transition=s.anim_in,
-                                           scale=s.scale)
+        s.lol_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 240),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=s.lol_widget,
-                       color=(0.1, 0.7, 1),
-                       text='More',
-                       position=(210, 190))
+        bui.textwidget(
+            parent=s.lol_widget,
+            color=(0.1, 0.7, 1),
+            text='More',
+            position=(210, 190),
+        )
 
-        bui.buttonwidget(parent=s.lol_widget,
-                         label='Gather',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("achievementTeamPlayer"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(40, 125),
-                         on_activate_call=bs.Call(s.lol_teams_window))
+        bui.buttonwidget(
+            parent=s.lol_widget,
+            label='Gather',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("achievementTeamPlayer"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(40, 125),
+            on_activate_call=bs.Call(s.lol_teams_window),
+        )
 
-        bui.buttonwidget(parent=s.lol_widget,
-                         label='Epic',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("nextLevelIcon"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(180, 125),
-                         on_activate_call=bs.Call(s.epic_window))
+        bui.buttonwidget(
+            parent=s.lol_widget,
+            label='Epic',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("nextLevelIcon"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(180, 125),
+            on_activate_call=bs.Call(s.epic_window),
+        )
 
-        bui.buttonwidget(parent=s.lol_widget,
-                         label='Tint',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("achievementRunaround"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(320, 125),
-                         on_activate_call=bs.Call(s.light_window))
+        bui.buttonwidget(
+            parent=s.lol_widget,
+            label='Tint',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("achievementRunaround"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(320, 125),
+            on_activate_call=bs.Call(s.light_window),
+        )
 
-        bui.buttonwidget(parent=s.lol_widget,
-                         label='Dim',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("shadow"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(40, 65),
-                         on_activate_call=bs.Call(s.dim_window))
+        bui.buttonwidget(
+            parent=s.lol_widget,
+            label='Dim',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("shadow"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(40, 65),
+            on_activate_call=bs.Call(s.dim_window),
+        )
 
-        bui.buttonwidget(parent=s.lol_widget,
-                         label='Load',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("inventoryIcon"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(180, 65),
-                         on_activate_call=bs.Call(s.load_window))
+        bui.buttonwidget(
+            parent=s.lol_widget,
+            label='Load',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("inventoryIcon"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(180, 65),
+            on_activate_call=bs.Call(s.load_window),
+        )
 
-        bui.buttonwidget(parent=s.lol_widget,
-                         label='About',
-                         size=(130, 50),
-                         color=colb,
-                         icon=bui.gettexture("heart"),
-                         iconscale=s.scale,
-                         textcolor=wht,
-                         button_type='square',
-                         position=(320, 65),
-                         on_activate_call=bs.Call(s.about_window))
+        bui.buttonwidget(
+            parent=s.lol_widget,
+            label='About',
+            size=(130, 50),
+            color=colb,
+            icon=bui.gettexture("heart"),
+            iconscale=s.scale,
+            textcolor=wht,
+            button_type='square',
+            position=(320, 65),
+            on_activate_call=bs.Call(s.about_window),
+        )
 
         bacc = bui.buttonwidget(
             parent=s.lol_widget,
@@ -420,41 +502,52 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.lol_widget))
+            on_activate_call=bs.Call(s.kill, True, s.lol_widget),
+        )
         bui.containerwidget(edit=s.lol_widget, cancel_button=bacc)
 
-        bui.textwidget(parent=s.lol_widget,
-                       color=(0.7, 0.7, 0.7),
-                       scale=s.scale/3,
-                       text="* Not advanced enough? tweak 'globals' at Tweak menu,\n   it holds the activity node which is basically everything.",
-                       position=(180, 30))
+        bui.textwidget(
+            parent=s.lol_widget,
+            color=(0.7, 0.7, 0.7),
+            scale=s.scale / 3,
+            text="* Not advanced enough? tweak 'globals' at Tweak menu,\n   it holds the activity node which is basically everything.",
+            position=(180, 30),
+        )
 
     def about_window(s):
-        about_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                           size=(500, 450),
-                                           stack_offset=s.soff,
-                                           color=cola,
-                                           transition=s.anim_in,
-                                           scale=s.scale)
+        about_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 450),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        txt = "SandBox v1.2 BETA\nThe mod which does almost everything in the game.\n\n" \
-              "Made this mod for myself to test future mods freely, though you are\n" \
-              "free to use it too!\n\nSorry if you found any bugs, I did my best to fix all existing bugs\n" \
-              "and excepted a lot of lines, if I found more bugs I'm gonna fix them asap.\n\n" \
-              "Coded using Galaxy A14 (4/64) using GNU Nano on Termux!" \
-              "\n\nBig thanks to:\nYOU for trying this mod!"
+        txt = (
+            "SandBox v1.2 BETA\nThe mod which does almost everything in the game.\n\n"
+            "Made this mod for myself to test future mods freely, though you are\n"
+            "free to use it too!\n\nSorry if you found any bugs, I did my best to fix all existing bugs\n"
+            "and excepted a lot of lines, if I found more bugs I'm gonna fix them asap.\n\n"
+            "Coded using Galaxy A14 (4/64) using GNU Nano on Termux!"
+            "\n\nBig thanks to:\nYOU for trying this mod!"
+        )
 
-        s.about_preview_text = bui.textwidget(parent=about_widget,
-                                              text=txt,
-                                              scale=s.scale,
-                                              maxwidth=450,
-                                              position=(30, 350))
+        s.about_preview_text = bui.textwidget(
+            parent=about_widget,
+            text=txt,
+            scale=s.scale,
+            maxwidth=450,
+            position=(30, 350),
+        )
 
-        bui.textwidget(parent=about_widget,
-                       color=(0.1, 0.7, 1),
-                       text='About',
-                       position=(200, 400),
-                       maxwidth=150)
+        bui.textwidget(
+            parent=about_widget,
+            color=(0.1, 0.7, 1),
+            text='About',
+            position=(200, 400),
+            maxwidth=150,
+        )
 
         bacc = bui.buttonwidget(
             parent=about_widget,
@@ -464,7 +557,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, about_widget))
+            on_activate_call=bs.Call(s.kill, True, about_widget),
+        )
         bui.containerwidget(edit=about_widget, cancel_button=bacc)
 
     def load_window(s):
@@ -472,25 +566,31 @@ class Nice(igm):
             error("Cannot use Load Window while game is paused")
             return
         s.load_dux = None
-        load_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                          size=(500, 300),
-                                          stack_offset=s.soff,
-                                          color=cola,
-                                          transition=s.anim_in,
-                                          scale=s.scale)
+        load_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        s.load_preview_text = bui.textwidget(parent=load_widget,
-                                             text='',
-                                             size=(50, 50),
-                                             scale=s.scale/1.4,
-                                             maxwidth=200,
-                                             position=(280, 175))
+        s.load_preview_text = bui.textwidget(
+            parent=load_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.4,
+            maxwidth=200,
+            position=(280, 175),
+        )
 
-        bui.textwidget(parent=load_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Load',
-                       position=(200, 250),
-                       maxwidth=150)
+        bui.textwidget(
+            parent=load_widget,
+            color=(0.1, 0.7, 1),
+            text='Load',
+            position=(200, 250),
+            maxwidth=150,
+        )
 
         bui.buttonwidget(
             parent=load_widget,
@@ -501,20 +601,25 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(370, 30),
-            on_activate_call=bs.Call(s.do_load))
+            on_activate_call=bs.Call(s.do_load),
+        )
 
-        load_scroll = bui.scrollwidget(parent=load_widget,
-                                       position=(30, 80),
-                                       claims_up_down=False,
-                                       claims_left_right=True,
-                                       autoselect=True,
-                                       size=(250, 150))
+        load_scroll = bui.scrollwidget(
+            parent=load_widget,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(250, 150),
+        )
 
-        load_sub = bui.containerwidget(parent=load_scroll,
-                                       background=False,
-                                       size=(190, len(load_name)*26),
-                                       color=(0.3, 0.3, 0.3),
-                                       scale=s.scale)
+        load_sub = bui.containerwidget(
+            parent=load_scroll,
+            background=False,
+            size=(190, len(load_name) * 26),
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
 
         bacc = bui.buttonwidget(
             parent=load_widget,
@@ -524,24 +629,27 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, load_widget))
+            on_activate_call=bs.Call(s.kill, True, load_widget),
+        )
         bui.containerwidget(edit=load_widget, cancel_button=bacc)
         bui.textwidget(edit=s.load_preview_text, text="Preset Name")
 
         for i in range(len(load_name)):
-            j = len(load_name)-1-i
-            bui.textwidget(parent=load_sub,
-                           scale=s.scale/2,
-                           text=(load_name[j]),
-                           h_align='left',
-                           v_align='center',
-                           color=(1, 1, 1),
-                           on_activate_call=bs.Call(s.load_preview, j),
-                           selectable=True,
-                           autoselect=True,
-                           click_activate=True,
-                           size=(180, 29),
-                           position=(-30, (20 * i)))
+            j = len(load_name) - 1 - i
+            bui.textwidget(
+                parent=load_sub,
+                scale=s.scale / 2,
+                text=(load_name[j]),
+                h_align='left',
+                v_align='center',
+                color=(1, 1, 1),
+                on_activate_call=bs.Call(s.load_preview, j),
+                selectable=True,
+                autoselect=True,
+                click_activate=True,
+                size=(180, 29),
+                position=(-30, (20 * i)),
+            )
 
     def load_preview(s, i):
         bui.textwidget(edit=s.load_preview_text, text=load_name[i])
@@ -649,38 +757,46 @@ class Nice(igm):
             s.drop_window()
 
     def dim_window(s):
-        s.dim_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                           size=(300, 250),
-                                           color=cola,
-                                           stack_offset=s.soff,
-                                           transition=s.anim_in,
-                                           scale=s.scale)
+        s.dim_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.buttonwidget(parent=s.dim_widget,
-                         size=(200, 50),
-                         label="Inner",
-                         textcolor=wht,
-                         scale=s.scale,
-                         color=colb,
-                         position=(20, 125),
-                         on_activate_call=s.switch_dim)
+        bui.buttonwidget(
+            parent=s.dim_widget,
+            size=(200, 50),
+            label="Inner",
+            textcolor=wht,
+            scale=s.scale,
+            color=colb,
+            position=(20, 125),
+            on_activate_call=s.switch_dim,
+        )
 
-        bui.textwidget(parent=s.dim_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Which Vignette?',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        bui.textwidget(
+            parent=s.dim_widget,
+            color=(0.1, 0.7, 1),
+            text='Which Vignette?',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
 
-        bui.buttonwidget(parent=s.dim_widget,
-                         size=(200, 50),
-                         label="Outer",
-                         scale=s.scale,
-                         color=colb,
-                         textcolor=wht,
-                         position=(20, 60),
-                         on_activate_call=bs.Call(s.switch_dim, 1))
+        bui.buttonwidget(
+            parent=s.dim_widget,
+            size=(200, 50),
+            label="Outer",
+            scale=s.scale,
+            color=colb,
+            textcolor=wht,
+            position=(20, 60),
+            on_activate_call=bs.Call(s.switch_dim, 1),
+        )
 
         bacc = bui.buttonwidget(
             parent=s.dim_widget,
@@ -690,27 +806,32 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.dim_widget))
+            on_activate_call=bs.Call(s.kill, True, s.dim_widget),
+        )
         bui.containerwidget(edit=s.dim_widget, cancel_button=bacc)
 
     def switch_dim(s, t=0):
         s.kill(True, s.dim_widget)
         title = "Outer" if t else "Inner"
-        title = title+"  Vignette"
-        s.switch_dim_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                                  size=(300, 250),
-                                                  color=cola,
-                                                  stack_offset=s.soff,
-                                                  transition=s.anim_in,
-                                                  scale=s.scale)
+        title = title + "  Vignette"
+        s.switch_dim_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=s.switch_dim_widget,
-                       color=(0.1, 0.7, 1),
-                       text=title,
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        bui.textwidget(
+            parent=s.switch_dim_widget,
+            color=(0.1, 0.7, 1),
+            text=title,
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
 
         p = ga().globalsnode
         p = p.vignette_outer if t else p.vignette_inner
@@ -721,7 +842,8 @@ class Nice(igm):
             size=(200, 25),
             h_align='center',
             v_align='center',
-            position=(55, 150))
+            position=(55, 150),
+        )
         y = bui.textwidget(
             parent=s.switch_dim_widget,
             size=(200, 25),
@@ -729,7 +851,8 @@ class Nice(igm):
             editable=True,
             h_align='center',
             v_align='center',
-            position=(55, 120))
+            position=(55, 120),
+        )
         z = bui.textwidget(
             parent=s.switch_dim_widget,
             size=(200, 25),
@@ -737,7 +860,8 @@ class Nice(igm):
             editable=True,
             h_align='center',
             v_align='center',
-            position=(55, 90))
+            position=(55, 90),
+        )
 
         bui.buttonwidget(
             parent=s.switch_dim_widget,
@@ -747,11 +871,13 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(200, 30),
-            on_activate_call=bs.Call(s.collect_dim, x, y, z, t))
+            on_activate_call=bs.Call(s.collect_dim, x, y, z, t),
+        )
 
         def back(s):
             s.kill(True, s.switch_dim_widget, keep_hl=True)
             s.dim_window()
+
         bacc = bui.buttonwidget(
             parent=s.switch_dim_widget,
             size=(60, 20),
@@ -760,7 +886,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(back, s))
+            on_activate_call=bs.Call(back, s),
+        )
         bui.containerwidget(edit=s.switch_dim_widget, cancel_button=bacc)
 
     def gettext(s, w):
@@ -788,29 +915,35 @@ class Nice(igm):
         ding("Dim updated!")
 
     def epic_window(s):
-        s.epic_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                            size=(300, 200),
-                                            color=cola,
-                                            stack_offset=s.soff,
-                                            transition=s.anim_in,
-                                            scale=s.scale)
+        s.epic_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 200),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=s.epic_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Epic',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 150))
+        bui.textwidget(
+            parent=s.epic_widget,
+            color=(0.1, 0.7, 1),
+            text='Epic',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 150),
+        )
 
-        s.epic_pick = bui.buttonwidget(parent=s.epic_widget,
-                                       size=(200, 50),
-                                       label="Make Fast" if ga().globalsnode.slow_motion else "Make Epic",
-                                       textcolor=wht,
-                                       color=cola,
-                                       scale=s.scale,
-                                       position=(20, 75),
-                                       on_activate_call=s.switch_epic)
+        s.epic_pick = bui.buttonwidget(
+            parent=s.epic_widget,
+            size=(200, 50),
+            label="Make Fast" if ga().globalsnode.slow_motion else "Make Epic",
+            textcolor=wht,
+            color=cola,
+            scale=s.scale,
+            position=(20, 75),
+            on_activate_call=s.switch_epic,
+        )
 
         bacc = bui.buttonwidget(
             parent=s.epic_widget,
@@ -820,41 +953,50 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.epic_widget))
+            on_activate_call=bs.Call(s.kill, True, s.epic_widget),
+        )
         bui.containerwidget(edit=s.epic_widget, cancel_button=bacc)
 
     def switch_epic(s):
         b = not ga().globalsnode.slow_motion
         ga().globalsnode.slow_motion = b
         s.do_your_thing(b)
-        bui.buttonwidget(edit=s.epic_pick, label=("Make Fast" if b else "Make Epic"))
+        bui.buttonwidget(
+            edit=s.epic_pick, label=("Make Fast" if b else "Make Epic")
+        )
 
     def light_window(s):
-        s.light_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                             size=(300, 250),
-                                             color=cola,
-                                             stack_offset=s.soff,
-                                             transition=s.anim_in,
-                                             scale=s.scale)
+        s.light_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=s.light_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Tint',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        bui.textwidget(
+            parent=s.light_widget,
+            color=(0.1, 0.7, 1),
+            text='Tint',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
 
         global light_pick
         tent = ga().globalsnode.tint
         ntent = s.negate(tent)
-        light_pick = bui.buttonwidget(parent=s.light_widget,
-                                      size=(200, 50),
-                                      label="Change Color",
-                                      textcolor=wht,
-                                      scale=s.scale,
-                                      position=(20, 125),
-                                      on_activate_call=bs.Call(PickerLight, tent))
+        light_pick = bui.buttonwidget(
+            parent=s.light_widget,
+            size=(200, 50),
+            label="Change Color",
+            textcolor=wht,
+            scale=s.scale,
+            position=(20, 125),
+            on_activate_call=bs.Call(PickerLight, tent),
+        )
         bui.buttonwidget(edit=light_pick, color=tent, textcolor=ntent)
 
         bui.buttonwidget(
@@ -865,7 +1007,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(200, 70),
-            on_activate_call=bs.Call(s.mult))
+            on_activate_call=bs.Call(s.mult),
+        )
 
         bui.buttonwidget(
             parent=s.light_widget,
@@ -875,7 +1018,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 70),
-            on_activate_call=bs.Call(s.mult, 1))
+            on_activate_call=bs.Call(s.mult, 1),
+        )
 
         bui.buttonwidget(
             parent=s.light_widget,
@@ -885,7 +1029,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(200, 30),
-            on_activate_call=bs.Call(s.collect_light))
+            on_activate_call=bs.Call(s.collect_light),
+        )
 
         bacc = bui.buttonwidget(
             parent=s.light_widget,
@@ -895,16 +1040,19 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.light_widget))
+            on_activate_call=bs.Call(s.kill, True, s.light_widget),
+        )
         bui.containerwidget(edit=s.light_widget, cancel_button=bacc)
 
     def mult(s, i=0):
         c = Nice.ga_tint
-        x = 1.1 if i else (1/(1.1))
-        Nice.ga_tint = c = (c[0]*x, c[1]*x, c[2]*x)
+        x = 1.1 if i else (1 / (1.1))
+        Nice.ga_tint = c = (c[0] * x, c[1] * x, c[2] * x)
         bui.buttonwidget(edit=light_pick, color=c)
         bui.buttonwidget(edit=light_pick, textcolor=Nice.negate(Nice, c))
-        bui.buttonwidget(edit=light_pick, on_activate_call=bs.Call(PickerLight, c))
+        bui.buttonwidget(
+            edit=light_pick, on_activate_call=bs.Call(PickerLight, c)
+        )
 
     def collect_light(s):
         ding("Success!")
@@ -912,39 +1060,47 @@ class Nice(igm):
         ga().globalsnode.tint = Nice.ga_tint
 
     def lol_teams_window(s):
-        s.LTW = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                    size=(300, 250),
-                                    color=cola,
-                                    stack_offset=s.soff,
-                                    transition=s.anim_in,
-                                    scale=s.scale)
-        bui.buttonwidget(parent=s.LTW,
-                         size=(200, 50),
-                         label="Add",
-                         textcolor=wht,
-                         scale=s.scale,
-                         color=colb,
-                         icon=bui.gettexture("powerupHealth"),
-                         position=(20, 125),
-                         on_activate_call=s.lol_teams_window_add)
+        s.LTW = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
+        bui.buttonwidget(
+            parent=s.LTW,
+            size=(200, 50),
+            label="Add",
+            textcolor=wht,
+            scale=s.scale,
+            color=colb,
+            icon=bui.gettexture("powerupHealth"),
+            position=(20, 125),
+            on_activate_call=s.lol_teams_window_add,
+        )
 
-        bui.textwidget(parent=s.LTW,
-                       color=(0.1, 0.7, 1),
-                       text='What To Do?',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        bui.textwidget(
+            parent=s.LTW,
+            color=(0.1, 0.7, 1),
+            text='What To Do?',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
 
-        bui.buttonwidget(parent=s.LTW,
-                         size=(200, 50),
-                         label="Nuke",
-                         scale=s.scale,
-                         color=colb,
-                         icon=bui.gettexture("powerupCurse"),
-                         textcolor=wht,
-                         position=(20, 60),
-                         on_activate_call=bs.Call(s.lol_teams_window_nuke))
+        bui.buttonwidget(
+            parent=s.LTW,
+            size=(200, 50),
+            label="Nuke",
+            scale=s.scale,
+            color=colb,
+            icon=bui.gettexture("powerupCurse"),
+            textcolor=wht,
+            position=(20, 60),
+            on_activate_call=bs.Call(s.lol_teams_window_nuke),
+        )
 
         bacc = bui.buttonwidget(
             parent=s.LTW,
@@ -954,22 +1110,27 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.LTW))
+            on_activate_call=bs.Call(s.kill, True, s.LTW),
+        )
         bui.containerwidget(edit=s.LTW, cancel_button=bacc)
 
     def lol_teams_window_nuke(s):
-        s.LTWN = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                     size=(500, 300),
-                                     stack_offset=s.soff,
-                                     color=cola,
-                                     transition=s.anim_in,
-                                     scale=s.scale)
+        s.LTWN = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=s.LTWN,
-                       color=(0.1, 0.7, 1),
-                       text='Nuke',
-                       position=(200, 250),
-                       maxwidth=250)
+        bui.textwidget(
+            parent=s.LTWN,
+            color=(0.1, 0.7, 1),
+            text='Nuke',
+            position=(200, 250),
+            maxwidth=250,
+        )
 
         bui.buttonwidget(
             parent=s.LTWN,
@@ -980,27 +1141,34 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(370, 30),
-            on_activate_call=bs.Call(s.do_nuke))
+            on_activate_call=bs.Call(s.do_nuke),
+        )
 
-        LTWNS = bui.scrollwidget(parent=s.LTWN,
-                                 position=(30, 80),
-                                 claims_up_down=False,
-                                 claims_left_right=True,
-                                 autoselect=True,
-                                 size=(300, 150))
+        LTWNS = bui.scrollwidget(
+            parent=s.LTWN,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(300, 150),
+        )
 
-        s.LTWN_sub = bui.containerwidget(parent=LTWNS,
-                                         background=False,
-                                         size=(300, len(Nice.lmao_teams)*26),
-                                         color=(0.3, 0.3, 0.3),
-                                         scale=s.scale)
-        s.LTWNP = bui.textwidget(parent=s.LTWN,
-                                 text='Team Name',
-                                 size=(50, 50),
-                                 scale=s.scale/1.4,
-                                 maxwidth=115,
-                                 color=wht,
-                                 position=(340, 175))
+        s.LTWN_sub = bui.containerwidget(
+            parent=LTWNS,
+            background=False,
+            size=(300, len(Nice.lmao_teams) * 26),
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
+        s.LTWNP = bui.textwidget(
+            parent=s.LTWN,
+            text='Team Name',
+            size=(50, 50),
+            scale=s.scale / 1.4,
+            maxwidth=115,
+            color=wht,
+            position=(340, 175),
+        )
 
         bacc = bui.buttonwidget(
             parent=s.LTWN,
@@ -1010,7 +1178,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.LTWN))
+            on_activate_call=bs.Call(s.kill, True, s.LTWN),
+        )
         bui.containerwidget(edit=s.LTWN, cancel_button=bacc)
 
         s.LTWN_load_teams()
@@ -1019,20 +1188,22 @@ class Nice(igm):
         for w in s.LTWN_sub.get_children():
             w.delete()
         for i in range(len(Nice.lmao_teams)):
-            i = len(Nice.lmao_teams)-1-i
+            i = len(Nice.lmao_teams) - 1 - i
             t = Nice.lmao_teams[i]
-            bui.textwidget(parent=s.LTWN_sub,
-                           scale=s.scale/2,
-                           text=t.name,
-                           h_align='left',
-                           v_align='center',
-                           color=t.color,
-                           on_activate_call=bs.Call(s.LTWN_prev, i),
-                           selectable=True,
-                           autoselect=True,
-                           click_activate=True,
-                           size=(180, 29),
-                           position=(-30, (20 * i)))
+            bui.textwidget(
+                parent=s.LTWN_sub,
+                scale=s.scale / 2,
+                text=t.name,
+                h_align='left',
+                v_align='center',
+                color=t.color,
+                on_activate_call=bs.Call(s.LTWN_prev, i),
+                selectable=True,
+                autoselect=True,
+                click_activate=True,
+                size=(180, 29),
+                position=(-30, (20 * i)),
+            )
 
     def LTWN_prev(s, i):
         t = Nice.lmao_teams[i]
@@ -1051,16 +1222,20 @@ class Nice(igm):
         ga().remove_team(t)
         ding(f"Removed '{t.name}'")
         Nice.lmao_teams.remove(t)
-        bui.containerwidget(edit=s.LTWN_sub, size=(300, len(Nice.lmao_teams)*26))
+        bui.containerwidget(
+            edit=s.LTWN_sub, size=(300, len(Nice.lmao_teams) * 26)
+        )
         s.LTWN_load_teams()
 
     def lol_teams_window_add(s):
-        s.LTWA = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                     size=(450, 230),
-                                     stack_offset=s.soff,
-                                     color=cola,
-                                     transition=s.anim_in,
-                                     scale=s.scale)
+        s.LTWA = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(450, 230),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
         bacc = bui.buttonwidget(
             parent=s.LTWA,
             size=(60, 20),
@@ -1069,37 +1244,43 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.LTWA))
+            on_activate_call=bs.Call(s.kill, True, s.LTWA),
+        )
         bui.containerwidget(edit=s.LTWA, cancel_button=bacc)
 
-        bui.textwidget(parent=s.LTWA,
-                       color=(0.1, 0.7, 1),
-                       text='Add',
-                       position=(200, 180))
+        bui.textwidget(
+            parent=s.LTWA, color=(0.1, 0.7, 1), text='Add', position=(200, 180)
+        )
 
-        bui.textwidget(parent=s.LTWA,
-                       color=wht,
-                       text="Team Name:",
-                       scale=s.scale/1.6,
-                       position=(30, 160),
-                       h_align="left",
-                       maxwidth=400)
+        bui.textwidget(
+            parent=s.LTWA,
+            color=wht,
+            text="Team Name:",
+            scale=s.scale / 1.6,
+            position=(30, 160),
+            h_align="left",
+            maxwidth=400,
+        )
 
-        s.LTWA_box = bui.textwidget(parent=s.LTWA,
-                                    editable=True,
-                                    description="Enter team name:",
-                                    position=(30, 130),
-                                    size=(400, 30),
-                                    h_align="left",
-                                    maxwidth=400)
+        s.LTWA_box = bui.textwidget(
+            parent=s.LTWA,
+            editable=True,
+            description="Enter team name:",
+            position=(30, 130),
+            size=(400, 30),
+            h_align="left",
+            maxwidth=400,
+        )
 
-        bui.textwidget(parent=s.LTWA,
-                       color=wht,
-                       text="Team Color:",
-                       scale=s.scale/1.6,
-                       position=(30, 100),
-                       h_align="left",
-                       maxwidth=400)
+        bui.textwidget(
+            parent=s.LTWA,
+            color=wht,
+            text="Team Color:",
+            scale=s.scale / 1.6,
+            position=(30, 100),
+            h_align="left",
+            maxwidth=400,
+        )
 
         global LTWAB
         LTWAB = bui.buttonwidget(
@@ -1110,7 +1291,8 @@ class Nice(igm):
             textcolor=s.negate(Nice.LTWAC),
             position=(30, 70),
             color=Nice.LTWAC,
-            on_activate_call=bs.Call(PickerLol, Nice.LTWAC))
+            on_activate_call=bs.Call(PickerLol, Nice.LTWAC),
+        )
 
         s.LTWA_ran = bui.buttonwidget(
             parent=s.LTWA,
@@ -1121,7 +1303,8 @@ class Nice(igm):
             textcolor=wht,
             button_type="square",
             position=(340, 70),
-            on_activate_call=bs.Call(s.LTWA_random))
+            on_activate_call=bs.Call(s.LTWA_random),
+        )
 
         bui.buttonwidget(
             parent=s.LTWA,
@@ -1131,9 +1314,11 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(340, 30),
-            on_activate_call=bs.Call(s.lol_teams_window_done))
+            on_activate_call=bs.Call(s.lol_teams_window_done),
+        )
 
-    def negate(s, c): return (1-c[0], 1-c[1], 1-c[2])
+    def negate(s, c):
+        return (1 - c[0], 1 - c[1], 1 - c[2])
 
     def LTWA_random(s):
         global LTWAB
@@ -1156,7 +1341,10 @@ class Nice(igm):
 
     def tweak_window(s):
         if ga() is None:
-            push("You don't meet the minimum requirements\nto use BorddTweaker: BEING THE HOST.", color=(1, 1, 0))
+            push(
+                "You don't meet the minimum requirements\nto use BorddTweaker: BEING THE HOST.",
+                color=(1, 1, 0),
+            )
             return
         p = s.brobordd.node.position
         with ga().context:
@@ -1193,20 +1381,22 @@ class Nice(igm):
         for n in range(len(s.nodes)):
             obj = " ~" if s.nodes[n][2] is not None else ""
             try:
-                s.tweak_name.append(str(s.nodes[n][1].getnodetype())+f" {n}"+obj)
+                s.tweak_name.append(
+                    str(s.nodes[n][1].getnodetype()) + f" {n}" + obj
+                )
             except:
-                s.tweak_name.append(f"idk {n}"+obj)
+                s.tweak_name.append(f"idk {n}" + obj)
             try:
                 t = str(s.nodes[n][1].color_texture)
                 on = t.find('"')
-                off = t.find('"', on+1)
-                s.tweak_texture.append(bui.gettexture(t[on+1:off]))
+                off = t.find('"', on + 1)
+                s.tweak_texture.append(bui.gettexture(t[on + 1 : off]))
             except:
                 try:
                     t = str(s.nodes[n][1].texture)
                     on = t.find('"')
-                    off = t.find('"', on+1)
-                    s.tweak_texture.append(bui.gettexture(t[on+1:off]))
+                    off = t.find('"', on + 1)
+                    s.tweak_texture.append(bui.gettexture(t[on + 1 : off]))
                 except:
                     try:
                         s.tweak_texture.append(str(s.nodes[n][1].text))
@@ -1216,27 +1406,29 @@ class Nice(igm):
                 thing = s.what_is(s.nodes[n][1].mesh)
             except:
                 continue
-            s.tweak_name[-1] = s.tweak_name[-1]+thing
+            s.tweak_name[-1] = s.tweak_name[-1] + thing
         # fill up 2D names and pics too
         s.tweak_name_2d = []
         s.tweak_texture_2d = []
         for n in range(len(s.nodes_2d)):
             obj = " ~" if s.nodes_2d[n][2] is not None else ""
             try:
-                s.tweak_name_2d.append(str(s.nodes_2d[n][1].getnodetype())+f" {n}"+obj)
+                s.tweak_name_2d.append(
+                    str(s.nodes_2d[n][1].getnodetype()) + f" {n}" + obj
+                )
             except:
-                s.tweak_name_2d.append(f"idk {n}"+obj)
+                s.tweak_name_2d.append(f"idk {n}" + obj)
             try:
                 t = str(s.nodes_2d[n][1].color_texture)
                 on = t.find('"')
-                off = t.find('"', on+1)
-                s.tweak_texture_2d.append(bui.gettexture(t[on+1:off]))
+                off = t.find('"', on + 1)
+                s.tweak_texture_2d.append(bui.gettexture(t[on + 1 : off]))
             except:
                 try:
                     t = str(s.nodes_2d[n][1].texture)
                     on = t.find('"')
-                    off = t.find('"', on+1)
-                    s.tweak_texture_2d.append(bui.gettexture(t[on+1:off]))
+                    off = t.find('"', on + 1)
+                    s.tweak_texture_2d.append(bui.gettexture(t[on + 1 : off]))
                 except:
                     try:
                         s.tweak_texture_2d.append(str(s.nodes_2d[n][1].text))
@@ -1246,42 +1438,52 @@ class Nice(igm):
                 thing = s.what_is(s.nodes_2d[n][1].mesh)
             except:
                 continue
-            s.tweak_name_2d[-1] = s.tweak_name_2d[-1]+thing
+            s.tweak_name_2d[-1] = s.tweak_name_2d[-1] + thing
 
-        s.tweak_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                             size=(500, 300),
-                                             stack_offset=s.soff,
-                                             color=cola,
-                                             transition=s.anim_in,
-                                             scale=s.scale)
+        s.tweak_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        s.tweak_preview_image = bui.buttonwidget(parent=s.tweak_widget,
-                                                 label='',
-                                                 size=(50, 50),
-                                                 position=(300, 175),
-                                                 button_type='square',
-                                                 color=colb,
-                                                 mask_texture=bui.gettexture('characterIconMask'))
+        s.tweak_preview_image = bui.buttonwidget(
+            parent=s.tweak_widget,
+            label='',
+            size=(50, 50),
+            position=(300, 175),
+            button_type='square',
+            color=colb,
+            mask_texture=bui.gettexture('characterIconMask'),
+        )
 
-        s.tweak_preview_text = bui.textwidget(parent=s.tweak_widget,
-                                              text='',
-                                              size=(50, 50),
-                                              scale=s.scale/1.4,
-                                              maxwidth=115,
-                                              position=(365, 175))
+        s.tweak_preview_text = bui.textwidget(
+            parent=s.tweak_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.4,
+            maxwidth=115,
+            position=(365, 175),
+        )
 
-        s.tweak_preview_text2 = bui.textwidget(parent=s.tweak_widget,
-                                               text='',
-                                               size=(50, 50),
-                                               scale=s.scale/1.8,
-                                               maxwidth=115,
-                                               position=(360, 155))
+        s.tweak_preview_text2 = bui.textwidget(
+            parent=s.tweak_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.8,
+            maxwidth=115,
+            position=(360, 155),
+        )
 
-        bui.textwidget(parent=s.tweak_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Tweak',
-                       position=(300, 240),
-                       maxwidth=150)
+        bui.textwidget(
+            parent=s.tweak_widget,
+            color=(0.1, 0.7, 1),
+            text='Tweak',
+            position=(300, 240),
+            maxwidth=150,
+        )
 
         bui.buttonwidget(
             parent=s.tweak_widget,
@@ -1292,19 +1494,24 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(370, 30),
-            on_activate_call=bs.Call(s.do_tweak))
+            on_activate_call=bs.Call(s.do_tweak),
+        )
 
-        tweak_scroll = bui.scrollwidget(parent=s.tweak_widget,
-                                        position=(30, 80),
-                                        claims_up_down=False,
-                                        claims_left_right=True,
-                                        autoselect=True,
-                                        size=(250, 150))
+        tweak_scroll = bui.scrollwidget(
+            parent=s.tweak_widget,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(250, 150),
+        )
 
-        s.tweak_sub = bui.containerwidget(parent=tweak_scroll,
-                                          background=False,
-                                          color=(0.3, 0.3, 0.3),
-                                          scale=s.scale)
+        s.tweak_sub = bui.containerwidget(
+            parent=tweak_scroll,
+            background=False,
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
 
         tabdefs = [('3d', '3D Nodes'), ('2d', "2D Nodes")]
 
@@ -1313,7 +1520,8 @@ class Nice(igm):
             tabdefs,
             pos=(30, 230),
             size=(250, 0),
-            on_select_call=s.switch_tweak_tab)
+            on_select_call=s.switch_tweak_tab,
+        )
 
         # the right order
         s.tweak_tab.update_appearance('3d')
@@ -1328,17 +1536,19 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.tweak_widget))
+            on_activate_call=bs.Call(s.kill, True, s.tweak_widget),
+        )
         bui.containerwidget(edit=s.tweak_widget, cancel_button=bacc)
 
         bui.textwidget(
             parent=s.tweak_widget,
             size=(60, 20),
             text='~ has an object, 3d sorted by how close node is.',
-            scale=s.scale/2,
+            scale=s.scale / 2,
             color=wht,
             maxwidth=250,
-            position=(19, 60))
+            position=(19, 60),
+        )
 
     def what_is(s, t):
         t = str(t).split('"')[1]
@@ -1360,43 +1570,59 @@ class Nice(igm):
         for c in s.tweak_sub.get_children():
             c.delete()
         bui.textwidget(edit=s.tweak_preview_text, text="Node Type")
-        bui.buttonwidget(edit=s.tweak_preview_image, texture=bui.gettexture("tv"), color=(1, 1, 1))
-        bui.containerwidget(edit=s.tweak_sub, size=(190, len(alex)*25.6))
+        bui.buttonwidget(
+            edit=s.tweak_preview_image,
+            texture=bui.gettexture("tv"),
+            color=(1, 1, 1),
+        )
+        bui.containerwidget(edit=s.tweak_sub, size=(190, len(alex) * 25.6))
         s.tweak_dux = None
         s.tweak_2d = False
 
         for i in range(len(alex)):
-            bui.textwidget(parent=s.tweak_sub,
-                           scale=s.scale/2,
-                           text=(tn[i]),
-                           h_align='left',
-                           v_align='center',
-                           color=(1, 1, 1),
-                           on_activate_call=bs.Call(s.tweak_preview, i, t),
-                           selectable=True,
-                           autoselect=True,
-                           click_activate=True,
-                           size=(180, 29),
-                           position=(-30, (20 * len(alex)) - (20 * i) - 30))
+            bui.textwidget(
+                parent=s.tweak_sub,
+                scale=s.scale / 2,
+                text=(tn[i]),
+                h_align='left',
+                v_align='center',
+                color=(1, 1, 1),
+                on_activate_call=bs.Call(s.tweak_preview, i, t),
+                selectable=True,
+                autoselect=True,
+                click_activate=True,
+                size=(180, 29),
+                position=(-30, (20 * len(alex)) - (20 * i) - 30),
+            )
 
     def tweak_preview(s, i, b):
         s.tweak_dux = i
         s.tweak_2d = not b
         tn = s.tweak_name if b else s.tweak_name_2d
         tt = s.tweak_texture if b else s.tweak_texture_2d
-#        nud = s.nodes[i] if b else s.nodes_2d[i]
-#        try: s.draw_locator(nud[1].position)
-#        except Exception as e: error(str(e))
+        #        nud = s.nodes[i] if b else s.nodes_2d[i]
+        #        try: s.draw_locator(nud[1].position)
+        #        except Exception as e: error(str(e))
         bui.textwidget(edit=s.tweak_preview_text, text=tn[s.tweak_dux])
         k = tt[s.tweak_dux]
         bui.textwidget(edit=s.tweak_preview_text2, text="")
         if isinstance(k, str):
-            bui.textwidget(edit=s.tweak_preview_text2,
-                           text=tt[s.tweak_dux], color=s.get_type_color("str"))
-            bui.buttonwidget(edit=s.tweak_preview_image,
-                             texture=bui.gettexture("tv"), color=(1, 1, 1))
+            bui.textwidget(
+                edit=s.tweak_preview_text2,
+                text=tt[s.tweak_dux],
+                color=s.get_type_color("str"),
+            )
+            bui.buttonwidget(
+                edit=s.tweak_preview_image,
+                texture=bui.gettexture("tv"),
+                color=(1, 1, 1),
+            )
         else:
-            bui.buttonwidget(edit=s.tweak_preview_image, texture=tt[s.tweak_dux], color=(1, 1, 1))
+            bui.buttonwidget(
+                edit=s.tweak_preview_image,
+                texture=tt[s.tweak_dux],
+                color=(1, 1, 1),
+            )
 
     def connect_dots(s, pos1, pos2):
         spacing = 5
@@ -1419,13 +1645,16 @@ class Nice(igm):
 
     def draw_char(s, char, pos, color=(0, 1, 1)):
         with ga().context:
-            n = bs.newnode("text", attrs={
-                           "text": char,
-                           "flatness": 1.0,
-                           "scale": 1,
-                           "position": pos,
-                           "color": color
-                           })
+            n = bs.newnode(
+                "text",
+                attrs={
+                    "text": char,
+                    "flatness": 1.0,
+                    "scale": 1,
+                    "position": pos,
+                    "color": color,
+                },
+            )
             s.royna.append(n)
             return n
 
@@ -1453,32 +1682,40 @@ class Nice(igm):
             return
         name = s.tweak_name_2d[i] if b else s.tweak_name[i]
         s.tweakz_current_name = name
-        s.tweakz_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                              size=(500, 300),
-                                              stack_offset=s.soff,
-                                              color=cola,
-                                              transition=s.anim_in,
-                                              scale=s.scale)
+        s.tweakz_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        s.tweakz_preview_text = bui.textwidget(parent=s.tweakz_widget,
-                                               text='',
-                                               size=(50, 50),
-                                               scale=s.scale/1.4,
-                                               maxwidth=170,
-                                               position=(290, 175))
+        s.tweakz_preview_text = bui.textwidget(
+            parent=s.tweakz_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.4,
+            maxwidth=170,
+            position=(290, 175),
+        )
 
-        s.tweakz_preview_text2 = bui.textwidget(parent=s.tweakz_widget,
-                                                text='',
-                                                size=(50, 50),
-                                                scale=s.scale/1.8,
-                                                maxwidth=170,
-                                                position=(290, 150))
+        s.tweakz_preview_text2 = bui.textwidget(
+            parent=s.tweakz_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.8,
+            maxwidth=170,
+            position=(290, 150),
+        )
 
-        bui.textwidget(parent=s.tweakz_widget,
-                       color=(0.1, 0.7, 1),
-                       text=f'Tweak {name}',
-                       position=(300, 240),
-                       maxwidth=150)
+        bui.textwidget(
+            parent=s.tweakz_widget,
+            color=(0.1, 0.7, 1),
+            text=f'Tweak {name}',
+            position=(300, 240),
+            maxwidth=150,
+        )
 
         bui.buttonwidget(
             parent=s.tweakz_widget,
@@ -1489,7 +1726,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(370, 30),
-            on_activate_call=s.tweak_this)
+            on_activate_call=s.tweak_this,
+        )
 
         bui.buttonwidget(
             parent=s.tweakz_widget,
@@ -1500,19 +1738,24 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(260, 30),
-            on_activate_call=s.call_this)
+            on_activate_call=s.call_this,
+        )
 
-        tweakz_scroll = bui.scrollwidget(parent=s.tweakz_widget,
-                                         position=(30, 80),
-                                         claims_up_down=False,
-                                         claims_left_right=True,
-                                         autoselect=True,
-                                         size=(250, 150))
+        tweakz_scroll = bui.scrollwidget(
+            parent=s.tweakz_widget,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(250, 150),
+        )
 
-        s.tweakz_sub = bui.containerwidget(parent=tweakz_scroll,
-                                           background=False,
-                                           color=(0.3, 0.3, 0.3),
-                                           scale=s.scale)
+        s.tweakz_sub = bui.containerwidget(
+            parent=tweakz_scroll,
+            background=False,
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
 
         tabdefs = [('node', 'Node'), ('obj', "Object")]
 
@@ -1521,7 +1764,8 @@ class Nice(igm):
             tabdefs,
             pos=(30, 230),
             size=(250, 0),
-            on_select_call=bs.Call(s.switch_tweakz_tab, node))
+            on_select_call=bs.Call(s.switch_tweakz_tab, node),
+        )
 
         # the right order
         s.tweakz_tab.update_appearance('node')
@@ -1536,7 +1780,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.tweakz_widget))
+            on_activate_call=bs.Call(s.kill, True, s.tweakz_widget),
+        )
         bui.containerwidget(edit=s.tweakz_widget, cancel_button=bacc)
 
     def switch_tweakz_tab(s, node, t):
@@ -1558,9 +1803,17 @@ class Nice(igm):
         for i in dir(blex):
             tn.append(i)
             try:
-                attr = getattr(blex, i) if i not in [
-                    # gay
-                    "punch_position", "punch_velocity", "punch_momentum_linear"] else (0, 0, 0)
+                attr = (
+                    getattr(blex, i)
+                    if i
+                    not in [
+                        # gay
+                        "punch_position",
+                        "punch_velocity",
+                        "punch_momentum_linear",
+                    ]
+                    else (0, 0, 0)
+                )
             except:
                 attr = None
             typez.append(str(type(attr).__name__))
@@ -1575,7 +1828,7 @@ class Nice(igm):
             c.delete()
         bui.textwidget(edit=s.tweakz_preview_text, text="Attribute")
         bui.textwidget(edit=s.tweakz_preview_text2, text="Type")
-        bui.containerwidget(edit=s.tweakz_sub, size=(190, len(tn)*25.9))
+        bui.containerwidget(edit=s.tweakz_sub, size=(190, len(tn) * 25.9))
         s.tweakz_dux = None
         for i in range(len(typez)):
             t = typez[i]
@@ -1584,18 +1837,20 @@ class Nice(igm):
         typez.append("byBordd")
 
         for i in range(len(tn)):
-            bui.textwidget(parent=s.tweakz_sub,
-                           scale=s.scale/2,
-                           text=(tn[i]),
-                           color=col[i],
-                           h_align='left',
-                           v_align='center',
-                           on_activate_call=bs.Call(s.tweakz_preview, i, t),
-                           selectable=True,
-                           autoselect=True,
-                           click_activate=True,
-                           size=(210, 29),
-                           position=(-30, (20 * len(tn)) - (20 * i) - 30))
+            bui.textwidget(
+                parent=s.tweakz_sub,
+                scale=s.scale / 2,
+                text=(tn[i]),
+                color=col[i],
+                h_align='left',
+                v_align='center',
+                on_activate_call=bs.Call(s.tweakz_preview, i, t),
+                selectable=True,
+                autoselect=True,
+                click_activate=True,
+                size=(210, 29),
+                position=(-30, (20 * len(tn)) - (20 * i) - 30),
+            )
 
     def get_type_color(s, t):
         c = (1, 0.5, 0)  # unknown orange
@@ -1619,13 +1874,15 @@ class Nice(igm):
         typez = s.tweakz_type
         bui.textwidget(edit=s.tweakz_preview_text, text=tn[i])
         bui.textwidget(edit=s.tweakz_preview_text2, text=typez[i])
-        bui.textwidget(edit=s.tweakz_preview_text2, color=s.get_type_color(typez[i]))
+        bui.textwidget(
+            edit=s.tweakz_preview_text2, color=s.get_type_color(typez[i])
+        )
 
     def tweak_this(s):
         i = s.tweakz_dux
         mode = 0
         try:
-            name = s.tweakz_current_name.split(" ")[0]+"."+s.tweakz_name[i]
+            name = s.tweakz_current_name.split(" ")[0] + "." + s.tweakz_name[i]
         except TypeError:
             error("Select an attribute bruh")
             return
@@ -1646,60 +1903,74 @@ class Nice(igm):
         if typ == "tuple" and str(value).startswith("(<"):
             error("This tuple is not tweakable!")
             return
-        s.TTW = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                    size=(450, 200),
-                                    stack_offset=s.soff,
-                                    color=cola,
-                                    transition=s.anim_in,
-                                    scale=s.scale)
+        s.TTW = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(450, 200),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=s.TTW,
-                       color=(0.1, 0.7, 1),
-                       text=f"Tweak {name}",
-                       position=(205, 150),
-                       h_align="center",
-                       maxwidth=400)
+        bui.textwidget(
+            parent=s.TTW,
+            color=(0.1, 0.7, 1),
+            text=f"Tweak {name}",
+            position=(205, 150),
+            h_align="center",
+            maxwidth=400,
+        )
 
-        bui.textwidget(parent=s.TTW,
-                       color=s.get_type_color(typ),
-                       text=typ,
-                       scale=s.scale/1.6,
-                       position=(205, 127),
-                       h_align="center",
-                       maxwidth=400)
+        bui.textwidget(
+            parent=s.TTW,
+            color=s.get_type_color(typ),
+            text=typ,
+            scale=s.scale / 1.6,
+            position=(205, 127),
+            h_align="center",
+            maxwidth=400,
+        )
 
-        bui.textwidget(parent=s.TTW,
-                       color=wht,
-                       text="Default old value since the tweak window was opened:",
-                       scale=s.scale/1.6,
-                       position=(205, 100),
-                       h_align="center",
-                       maxwidth=400)
+        bui.textwidget(
+            parent=s.TTW,
+            color=wht,
+            text="Default old value since the tweak window was opened:",
+            scale=s.scale / 1.6,
+            position=(205, 100),
+            h_align="center",
+            maxwidth=400,
+        )
 
         if not mode:
-            s.tweakz_box = bui.textwidget(parent=s.TTW,
-                                          text=str(value),
-                                          editable=True,
-                                          position=(30, 75),
-                                          size=(400, 30),
-                                          h_align="center",
-                                          maxwidth=400)
+            s.tweakz_box = bui.textwidget(
+                parent=s.TTW,
+                text=str(value),
+                editable=True,
+                position=(30, 75),
+                size=(400, 30),
+                h_align="center",
+                maxwidth=400,
+            )
         elif mode == 1:
             global THE_TB
-            s.tweakz_box = THE_TB = bui.textwidget(parent=s.TTW,
-                                                   text=str(value).split('"')[1],
-                                                   position=(30, 75),
-                                                   size=(400, 30),
-                                                   editable=True,
-                                                   h_align="center",
-                                                   maxwidth=400)
-            bui.buttonwidget(parent=s.TTW,
-                             label="Pick Texture",
-                             color=cola,
-                             textcolor=wht,
-                             position=(150, 35),
-                             size=(150, 30),
-                             on_activate_call=TexturePicker)
+            s.tweakz_box = THE_TB = bui.textwidget(
+                parent=s.TTW,
+                text=str(value).split('"')[1],
+                position=(30, 75),
+                size=(400, 30),
+                editable=True,
+                h_align="center",
+                maxwidth=400,
+            )
+            bui.buttonwidget(
+                parent=s.TTW,
+                label="Pick Texture",
+                color=cola,
+                textcolor=wht,
+                position=(150, 35),
+                size=(150, 30),
+                on_activate_call=TexturePicker,
+            )
         bui.textwidget(edit=s.tweakz_box, color=s.get_type_color(typ))
 
         bui.buttonwidget(
@@ -1710,7 +1981,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.TTW))
+            on_activate_call=bs.Call(s.kill, True, s.TTW),
+        )
 
         bui.buttonwidget(
             parent=s.TTW,
@@ -1720,7 +1992,10 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(340, 30),
-            on_activate_call=bs.Call(s.gather_tweakz, s.tweakz_name[i], typ, mode))
+            on_activate_call=bs.Call(
+                s.gather_tweakz, s.tweakz_name[i], typ, mode
+            ),
+        )
 
     def gather_tweakz(s, name, typ, mode):
         value = cast(str, bui.textwidget(query=s.tweakz_box))
@@ -1738,13 +2013,17 @@ class Nice(igm):
             try:
                 v = float(value)
             except:
-                error("float must be a number (decimal), not '{}'".format(value))
+                error(
+                    "float must be a number (decimal), not '{}'".format(value)
+                )
                 return
         elif typ == "int":
             try:
                 v = int(value)
             except:
-                error("int must be a number (no decimals), not '{}'".format(value))
+                error(
+                    "int must be a number (no decimals), not '{}'".format(value)
+                )
                 return
         elif typ == "tuple":
             try:
@@ -1752,13 +2031,16 @@ class Nice(igm):
                 v = e if type(e) is tuple else bro
             except:
                 error(
-                    f"tuple must be a goddamn tuple, not '{value}'\nlike this: (1.23, 1.91, 0.69)")
+                    f"tuple must be a goddamn tuple, not '{value}'\nlike this: (1.23, 1.91, 0.69)"
+                )
                 return
         elif typ == "str":
             v = value  # string anything u like
         elif typ == "Texture":
             if value not in all_texture:
-                error(f"Unknown texture '{value}',\nuse 'white', 'black' or 'null' for empty ones")
+                error(
+                    f"Unknown texture '{value}',\nuse 'white', 'black' or 'null' for empty ones"
+                )
                 return
             with ga().context:
                 v = bs.gettexture(value)
@@ -1767,7 +2049,11 @@ class Nice(igm):
             with ga().context:
                 setattr(node[1 if s.tweakz_is_node else 2], name, v)
         except Exception as e:
-            error(str(e) if str(e).strip() else f"No error info, repr(e):\n{repr(e)}")
+            error(
+                str(e)
+                if str(e).strip()
+                else f"No error info, repr(e):\n{repr(e)}"
+            )
         else:
             ding(f"Tweaked!")
         s.kill(True, s.TTW)
@@ -1780,24 +2066,33 @@ class Nice(igm):
             error("You better call a doctor instead,\nno attribute is selected")
             return
         try:
-            attr = getattr(s.tweakz_current_node[1 if s.tweakz_is_node else 2], name)
+            attr = getattr(
+                s.tweakz_current_node[1 if s.tweakz_is_node else 2], name
+            )
         except AttributeError as e:
-            error("Node no longer exists\nwhat are you doing here?" if "No object lol" not in str(
-                e) else "Sure, equip a brain first")
+            error(
+                "Node no longer exists\nwhat are you doing here?"
+                if "No object lol" not in str(e)
+                else "Sure, equip a brain first"
+            )
             return
-        s.CTW = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                    size=(450, 200),
-                                    stack_offset=s.soff,
-                                    color=cola,
-                                    transition=s.anim_in,
-                                    scale=s.scale)
+        s.CTW = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(450, 200),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=s.CTW,
-                       color=(0.1, 0.7, 1),
-                       text=f"Call {name}",
-                       position=(205, 150),
-                       h_align="center",
-                       maxwidth=400)
+        bui.textwidget(
+            parent=s.CTW,
+            color=(0.1, 0.7, 1),
+            text=f"Call {name}",
+            position=(205, 150),
+            h_align="center",
+            maxwidth=400,
+        )
 
         bui.buttonwidget(
             parent=s.CTW,
@@ -1807,7 +2102,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.CTW))
+            on_activate_call=bs.Call(s.kill, True, s.CTW),
+        )
 
         bui.buttonwidget(
             parent=s.CTW,
@@ -1817,25 +2113,30 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(340, 30),
-            on_activate_call=bs.Call(s.do_call_this, attr, name))
+            on_activate_call=bs.Call(s.do_call_this, attr, name),
+        )
 
-        s.call_this_box = bui.textwidget(parent=s.CTW,
-                                         color=(0.1, 0.7, 1),
-                                         text="",
-                                         description="Leave blank to call with no args, args example:\n14.2, True, 'Yes', ...\nenter",
-                                         editable=True,
-                                         position=(30, 75),
-                                         size=(400, 30),
-                                         h_align="center",
-                                         maxwidth=400)
+        s.call_this_box = bui.textwidget(
+            parent=s.CTW,
+            color=(0.1, 0.7, 1),
+            text="",
+            description="Leave blank to call with no args, args example:\n14.2, True, 'Yes', ...\nenter",
+            editable=True,
+            position=(30, 75),
+            size=(400, 30),
+            h_align="center",
+            maxwidth=400,
+        )
 
-        bui.textwidget(parent=s.CTW,
-                       color=wht,
-                       text="Enter arguments separated by a comma (optional):",
-                       scale=s.scale/1.6,
-                       position=(205, 100),
-                       h_align="center",
-                       maxwidth=400)
+        bui.textwidget(
+            parent=s.CTW,
+            color=wht,
+            text="Enter arguments separated by a comma (optional):",
+            scale=s.scale / 1.6,
+            position=(205, 100),
+            h_align="center",
+            maxwidth=400,
+        )
 
     def do_call_this(s, attr, name):
         t = cast(str, bui.textwidget(query=s.call_this_box))
@@ -1852,84 +2153,111 @@ class Nice(igm):
             with ga().context:
                 out = attr(*args)
             ding(
-                f"Success! calling '{name}' (dumped to terminal)\nwith arguments {args}\noutputted: {out}")
+                f"Success! calling '{name}' (dumped to terminal)\nwith arguments {args}\noutputted: {out}"
+            )
             s.kill(True, s.CTW)
         except Exception as e:
-            error(str(e) if str(e).strip() else f"No error info, repr(e):\n{repr(e)}")
+            error(
+                str(e)
+                if str(e).strip()
+                else f"No error info, repr(e):\n{repr(e)}"
+            )
         else:
             print(f"SandBox.ByBordd: calling '{name}' outputted:\n{out}")
 
     def drop_window(s):
         if ga() is None:
-            push("Drop? looks like you dropped your brain somewhere,\nyou are not the host.", color=(1, 1, 0))
+            push(
+                "Drop? looks like you dropped your brain somewhere,\nyou are not the host.",
+                color=(1, 1, 0),
+            )
             return
-        s.drop_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                            size=(500, 300),
-                                            stack_offset=s.soff,
-                                            color=cola,
-                                            transition=s.anim_in,
-                                            scale=s.scale)
+        s.drop_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=s.drop_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Deploy',
-                       position=(210, 250),
-                       maxwidth=250)
+        bui.textwidget(
+            parent=s.drop_widget,
+            color=(0.1, 0.7, 1),
+            text='Deploy',
+            position=(210, 250),
+            maxwidth=250,
+        )
 
-        Nice.drop_view = bui.buttonwidget(parent=s.drop_widget,
-                                          label='',
-                                          size=(100, 100),
-                                          position=(40, 120),
-                                          button_type='square',
-                                          color=(1, 1, 1),
-                                          texture=bui.gettexture(drop_texture[Nice.drop_indox]),
-                                          mask_texture=bui.gettexture('characterIconMask'),
-                                          on_activate_call=bs.Call(Picker, 69))
+        Nice.drop_view = bui.buttonwidget(
+            parent=s.drop_widget,
+            label='',
+            size=(100, 100),
+            position=(40, 120),
+            button_type='square',
+            color=(1, 1, 1),
+            texture=bui.gettexture(drop_texture[Nice.drop_indox]),
+            mask_texture=bui.gettexture('characterIconMask'),
+            on_activate_call=bs.Call(Picker, 69),
+        )
 
-        s.drop_where = bui.buttonwidget(parent=s.drop_widget,
-                                        label='',  # Where To Deploy?
-                                        color=cola,
-                                        textcolor=wht,
-                                        size=(150, 100),
-                                        position=(170, 120),
-                                        button_type='square',
-                                        on_activate_call=s.where_to_drop)
+        s.drop_where = bui.buttonwidget(
+            parent=s.drop_widget,
+            label='',  # Where To Deploy?
+            color=cola,
+            textcolor=wht,
+            size=(150, 100),
+            position=(170, 120),
+            button_type='square',
+            on_activate_call=s.where_to_drop,
+        )
         s.update_cords_view(69)
 
-        bui.buttonwidget(parent=s.drop_widget,
-                         label='Edit\nAttrs',
-                         color=cola,
-                         textcolor=wht,
-                         size=(100, 100),
-                         position=(350, 120),
-                         button_type='square',
-                         on_activate_call=s.edit_drop_attrs)
+        bui.buttonwidget(
+            parent=s.drop_widget,
+            label='Edit\nAttrs',
+            color=cola,
+            textcolor=wht,
+            size=(100, 100),
+            position=(350, 120),
+            button_type='square',
+            on_activate_call=s.edit_drop_attrs,
+        )
 
-        bui.buttonwidget(parent=s.drop_widget,
-                         label='Locate position',
-                         size=(120, 25),
-                         position=(180, 85),
-                         color=colb,
-                         textcolor=wht,
-                         button_type='square',
-                         on_activate_call=bs.Call(s.show_in_game, 0, 69))
+        bui.buttonwidget(
+            parent=s.drop_widget,
+            label='Locate position',
+            size=(120, 25),
+            position=(180, 85),
+            color=colb,
+            textcolor=wht,
+            button_type='square',
+            on_activate_call=bs.Call(s.show_in_game, 0, 69),
+        )
 
-        bui.buttonwidget(parent=s.drop_widget,
-                         label='Draw a line',
-                         size=(120, 25),
-                         position=(180, 50),
-                         button_type='square',
-                         color=colb,
-                         textcolor=wht,
-                         on_activate_call=bs.Call(s.show_in_game, 1, 69))
+        bui.buttonwidget(
+            parent=s.drop_widget,
+            label='Draw a line',
+            size=(120, 25),
+            position=(180, 50),
+            button_type='square',
+            color=colb,
+            textcolor=wht,
+            on_activate_call=bs.Call(s.show_in_game, 1, 69),
+        )
 
-        Nice.drop_name = bui.textwidget(parent=s.drop_widget,
-                                        text=drop_name[Nice.drop_indox],
-                                        h_align='center',
-                                        v_align='center',
-                                        position=(65, 85))
+        Nice.drop_name = bui.textwidget(
+            parent=s.drop_widget,
+            text=drop_name[Nice.drop_indox],
+            h_align='center',
+            v_align='center',
+            position=(65, 85),
+        )
 
-        def back(): s.kill(True, s.drop_widget, True); Nice.pending2 = []
+        def back():
+            s.kill(True, s.drop_widget, True)
+            Nice.pending2 = []
+
         bacc = bui.buttonwidget(
             parent=s.drop_widget,
             size=(60, 20),
@@ -1938,7 +2266,8 @@ class Nice(igm):
             scale=s.scale,
             color=colb,
             position=(30, 30),
-            on_activate_call=back)
+            on_activate_call=back,
+        )
         bui.containerwidget(edit=s.drop_widget, cancel_button=bacc)
 
         bui.buttonwidget(
@@ -1949,109 +2278,134 @@ class Nice(igm):
             scale=s.scale,
             textcolor=wht,
             position=(350, 30),
-            on_activate_call=bs.Call(s.do_drop))
+            on_activate_call=bs.Call(s.do_drop),
+        )
 
     def edit_drop_attrs(s):
-        s.edit_drop_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                                 size=(300, 350),
-                                                 stack_offset=s.soff,
-                                                 color=cola,
-                                                 transition=s.anim_in,
-                                                 scale=s.scale)
+        s.edit_drop_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 350),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=s.edit_drop_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Edit Attributes',
-                       position=(70, 300),
-                       maxwidth=250)
+        bui.textwidget(
+            parent=s.edit_drop_widget,
+            color=(0.1, 0.7, 1),
+            text='Edit Attributes',
+            position=(70, 300),
+            maxwidth=250,
+        )
 
-        bui.textwidget(parent=s.edit_drop_widget,
-                       color=wht,
-                       position=(30, 250),
-                       size=(150, 30),
-                       text="gravity_scale",
-                       click_activate=True,
-                       selectable=True,
-                       on_activate_call=bs.Call(s.welp, -1))
+        bui.textwidget(
+            parent=s.edit_drop_widget,
+            color=wht,
+            position=(30, 250),
+            size=(150, 30),
+            text="gravity_scale",
+            click_activate=True,
+            selectable=True,
+            on_activate_call=bs.Call(s.welp, -1),
+        )
 
-        bui.textwidget(parent=s.edit_drop_widget,
-                       color=wht,
-                       position=(30, 220),
-                       size=(150, 30),
-                       text="sticky",
-                       click_activate=True,
-                       selectable=True,
-                       on_activate_call=bs.Call(s.welp, -2))
+        bui.textwidget(
+            parent=s.edit_drop_widget,
+            color=wht,
+            position=(30, 220),
+            size=(150, 30),
+            text="sticky",
+            click_activate=True,
+            selectable=True,
+            on_activate_call=bs.Call(s.welp, -2),
+        )
 
-        bui.textwidget(parent=s.edit_drop_widget,
-                       color=wht,
-                       position=(30, 190),
-                       size=(150, 30),
-                       text="reflection='powerup'",
-                       maxwidth=190,
-                       click_activate=True,
-                       selectable=True,
-                       on_activate_call=bs.Call(s.welp, -3))
+        bui.textwidget(
+            parent=s.edit_drop_widget,
+            color=wht,
+            position=(30, 190),
+            size=(150, 30),
+            text="reflection='powerup'",
+            maxwidth=190,
+            click_activate=True,
+            selectable=True,
+            on_activate_call=bs.Call(s.welp, -3),
+        )
 
-        bui.textwidget(parent=s.edit_drop_widget,
-                       color=wht,
-                       position=(30, 160),
-                       size=(150, 30),
-                       text="reflection='soft'",
-                       maxwidth=190,
-                       click_activate=True,
-                       selectable=True,
-                       on_activate_call=bs.Call(s.welp, -4))
+        bui.textwidget(
+            parent=s.edit_drop_widget,
+            color=wht,
+            position=(30, 160),
+            size=(150, 30),
+            text="reflection='soft'",
+            maxwidth=190,
+            click_activate=True,
+            selectable=True,
+            on_activate_call=bs.Call(s.welp, -4),
+        )
 
-        bui.textwidget(parent=s.edit_drop_widget,
-                       color=wht,
-                       position=(30, 130),
-                       size=(150, 30),
-                       text="reflection_scale",
-                       maxwidth=190,
-                       click_activate=True,
-                       selectable=True,
-                       on_activate_call=bs.Call(s.welp, -5))
+        bui.textwidget(
+            parent=s.edit_drop_widget,
+            color=wht,
+            position=(30, 130),
+            size=(150, 30),
+            text="reflection_scale",
+            maxwidth=190,
+            click_activate=True,
+            selectable=True,
+            on_activate_call=bs.Call(s.welp, -5),
+        )
 
-        s.drop_attr1 = bui.textwidget(parent=s.edit_drop_widget,
-                                      color=wht,
-                                      position=(220, 250),
-                                      editable=True,
-                                      size=(70, 30),
-                                      text=str(Nice.node_gravity_scale),
-                                      description="Default: 1.0, More: Heavier, Less: Lighter, Enter")
+        s.drop_attr1 = bui.textwidget(
+            parent=s.edit_drop_widget,
+            color=wht,
+            position=(220, 250),
+            editable=True,
+            size=(70, 30),
+            text=str(Nice.node_gravity_scale),
+            description="Default: 1.0, More: Heavier, Less: Lighter, Enter",
+        )
 
-        bui.checkboxwidget(parent=s.edit_drop_widget,
-                           value=s.node_sticky,
-                           text="",
-                           color=colb,
-                           scale=s.scale/1.3,
-                           on_value_change_call=bs.Call(s.check_drop_attrs, 0),
-                           position=(225, 220))
+        bui.checkboxwidget(
+            parent=s.edit_drop_widget,
+            value=s.node_sticky,
+            text="",
+            color=colb,
+            scale=s.scale / 1.3,
+            on_value_change_call=bs.Call(s.check_drop_attrs, 0),
+            position=(225, 220),
+        )
 
-        s.drop_radio1 = bui.checkboxwidget(parent=s.edit_drop_widget,
-                                           value=s.node_reflect,
-                                           text="",
-                                           color=colb,
-                                           scale=s.scale/1.3,
-                                           on_value_change_call=bs.Call(s.check_drop_attrs, 1),
-                                           position=(225, 190))
+        s.drop_radio1 = bui.checkboxwidget(
+            parent=s.edit_drop_widget,
+            value=s.node_reflect,
+            text="",
+            color=colb,
+            scale=s.scale / 1.3,
+            on_value_change_call=bs.Call(s.check_drop_attrs, 1),
+            position=(225, 190),
+        )
 
-        s.drop_radio2 = bui.checkboxwidget(parent=s.edit_drop_widget,
-                                           value=s.node_reflect2,
-                                           text="",
-                                           color=colb,
-                                           scale=s.scale/1.3,
-                                           on_value_change_call=bs.Call(s.check_drop_attrs, 2),
-                                           position=(225, 160))
+        s.drop_radio2 = bui.checkboxwidget(
+            parent=s.edit_drop_widget,
+            value=s.node_reflect2,
+            text="",
+            color=colb,
+            scale=s.scale / 1.3,
+            on_value_change_call=bs.Call(s.check_drop_attrs, 2),
+            position=(225, 160),
+        )
 
-        s.drop_attr2 = bui.textwidget(parent=s.edit_drop_widget,
-                                      color=wht,
-                                      position=(220, 130),
-                                      editable=True,
-                                      size=(70, 30),
-                                      text=str(Nice.node_reflection_scale[0]),
-                                      description="Default: 1.2, More: more shiny! while Less: more plain, Enter")
+        s.drop_attr2 = bui.textwidget(
+            parent=s.edit_drop_widget,
+            color=wht,
+            position=(220, 130),
+            editable=True,
+            size=(70, 30),
+            text=str(Nice.node_reflection_scale[0]),
+            description="Default: 1.2, More: more shiny! while Less: more plain, Enter",
+        )
 
         bacc = bui.buttonwidget(
             parent=s.edit_drop_widget,
@@ -2061,7 +2415,8 @@ class Nice(igm):
             scale=s.scale,
             color=colb,
             position=(30, 30),
-            on_activate_call=bs.Call(s.collect_drop_attrs))
+            on_activate_call=bs.Call(s.collect_drop_attrs),
+        )
         bui.containerwidget(edit=s.edit_drop_widget, cancel_button=bacc)
 
         bui.buttonwidget(
@@ -2072,7 +2427,8 @@ class Nice(igm):
             textcolor=wht,
             scale=s.scale,
             position=(200, 30),
-            on_activate_call=bs.Call(s.welp, 69123))
+            on_activate_call=bs.Call(s.welp, 69123),
+        )
 
     def collect_drop_attrs(s):
         t1 = cast(str, bui.textwidget(query=s.drop_attr1))
@@ -2080,16 +2436,22 @@ class Nice(igm):
         try:
             v1 = float(t1)
         except:
-            error(f"Invalid gravity_scale value '{t1}'\nrequired value: float\nexample: 6.89")
+            error(
+                f"Invalid gravity_scale value '{t1}'\nrequired value: float\nexample: 6.89"
+            )
             return
         try:
             v2 = float(t2)
         except:
-            error(f"Invalid reflection_scale value '{t2}'\nrequired value: float\nexample: 6.89")
+            error(
+                f"Invalid reflection_scale value '{t2}'\nrequired value: float\nexample: 6.89"
+            )
             return
         s.kill(True, s.edit_drop_widget, True)
         Nice.node_gravity_scale = v1
-        Nice.node_reflection_scale = [float(cast(str, bui.textwidget(query=s.drop_attr2)))]
+        Nice.node_reflection_scale = [
+            float(cast(str, bui.textwidget(query=s.drop_attr2)))
+        ]
 
     def check_drop_attrs(s, i, b):
         if not i:
@@ -2124,41 +2486,64 @@ class Nice(igm):
                     bss = 2.5
                     br = 12.5
                 if i == 9:  # TNT
-                    n = Bomb(position=p, bomb_type='tnt', bomb_scale=bss,
-                             blast_radius=br).autoretain()
+                    n = Bomb(
+                        position=p,
+                        bomb_type='tnt',
+                        bomb_scale=bss,
+                        blast_radius=br,
+                    ).autoretain()
                     n = n.node
                 if i == 10:  # Peaceful Mine
-                    n = Bomb(position=p, bomb_type='land_mine',
-                             bomb_scale=bss, blast_radius=br).autoretain()
+                    n = Bomb(
+                        position=p,
+                        bomb_type='land_mine',
+                        bomb_scale=bss,
+                        blast_radius=br,
+                    ).autoretain()
                     n = n.node
                 if i == 11:  # Lit Mine
-                    n = Bomb(position=p, bomb_type='land_mine', bomb_scale=bss,
-                             blast_radius=br).autoretain()
+                    n = Bomb(
+                        position=p,
+                        bomb_type='land_mine',
+                        bomb_scale=bss,
+                        blast_radius=br,
+                    ).autoretain()
                     n.arm()  # returns None
                     n = n.node
                 if i > 11 and i < 17:  # Eggs
                     from bascenev1lib.gameutils import SharedObjects
+
                     shared = SharedObjects.get()
                     num = i - 11
-                    tex = f"eggTex{i - 11}" if i < 15 else "white" if i < 16 else "empty"
-                    n = bs.newnode('prop',
-                                   delegate=s,
-                                   attrs={
-                                       'mesh': bs.getmesh("egg"),
-                                       'color_texture': bs.gettexture(tex),
-                                       'body': 'capsule',
-                                       'reflection': 'soft',
-                                       'mesh_scale': 0.5,
-                                       'body_scale': 0.6,
-                                       'density': 4.0,
-                                       'reflection_scale': [0.15],
-                                       'shadow_size': 0.6,
-                                       'position': p,
-                                       'materials': [shared.object_material, bs.Material()],
-                                   },
-                                   )
+                    tex = (
+                        f"eggTex{i - 11}"
+                        if i < 15
+                        else "white" if i < 16 else "empty"
+                    )
+                    n = bs.newnode(
+                        'prop',
+                        delegate=s,
+                        attrs={
+                            'mesh': bs.getmesh("egg"),
+                            'color_texture': bs.gettexture(tex),
+                            'body': 'capsule',
+                            'reflection': 'soft',
+                            'mesh_scale': 0.5,
+                            'body_scale': 0.6,
+                            'density': 4.0,
+                            'reflection_scale': [0.15],
+                            'shadow_size': 0.6,
+                            'position': p,
+                            'materials': [
+                                shared.object_material,
+                                bs.Material(),
+                            ],
+                        },
+                    )
                 if i > 16 and i < 21:
-                    n = Bomb(position=p, bomb_type=bomb_type[i - 17]).autoretain()
+                    n = Bomb(
+                        position=p, bomb_type=bomb_type[i - 17]
+                    ).autoretain()
                     n = n.node
             # apply configs
             n.gravity_scale = Nice.node_gravity_scale
@@ -2172,37 +2557,45 @@ class Nice(igm):
                 n.fuse_length = 5
 
     def where_to_drop(s):
-        s.where_drop_widget = s.DW = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                                         size=(300, 250),
-                                                         color=cola,
-                                                         stack_offset=s.soff,
-                                                         transition=s.anim_in,
-                                                         scale=s.scale)
-        bui.buttonwidget(parent=s.DW,
-                         size=(200, 50),
-                         label="Current Position",
-                         textcolor=wht,
-                         scale=s.scale,
-                         color=colb,
-                         position=(20, 125),
-                         on_activate_call=bs.Call(s.use_my_pos, 69))
+        s.where_drop_widget = s.DW = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
+        bui.buttonwidget(
+            parent=s.DW,
+            size=(200, 50),
+            label="Current Position",
+            textcolor=wht,
+            scale=s.scale,
+            color=colb,
+            position=(20, 125),
+            on_activate_call=bs.Call(s.use_my_pos, 69),
+        )
 
-        bui.textwidget(parent=s.DW,
-                       color=(0.1, 0.7, 1),
-                       text='Where to deploy?',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        bui.textwidget(
+            parent=s.DW,
+            color=(0.1, 0.7, 1),
+            text='Where to deploy?',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
 
-        bui.buttonwidget(parent=s.DW,
-                         size=(200, 50),
-                         label="Custom Position",
-                         scale=s.scale,
-                         color=colb,
-                         textcolor=wht,
-                         position=(20, 60),
-                         on_activate_call=bs.Call(s.custom_drop_window))
+        bui.buttonwidget(
+            parent=s.DW,
+            size=(200, 50),
+            label="Custom Position",
+            scale=s.scale,
+            color=colb,
+            textcolor=wht,
+            position=(20, 60),
+            on_activate_call=bs.Call(s.custom_drop_window),
+        )
 
         bacc = bui.buttonwidget(
             parent=s.DW,
@@ -2212,25 +2605,30 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, s.DW))
+            on_activate_call=bs.Call(s.kill, True, s.DW),
+        )
         bui.containerwidget(edit=s.DW, cancel_button=bacc)
 
     # custom position
     def custom_drop_window(s):
         s.kill(True, s.DW)
-        custom_drop_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                                 size=(300, 250),
-                                                 color=cola,
-                                                 stack_offset=s.soff,
-                                                 transition=s.anim_in,
-                                                 scale=s.scale)
-        bui.textwidget(parent=custom_drop_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Custom Position',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        custom_drop_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
+        bui.textwidget(
+            parent=custom_drop_widget,
+            color=(0.1, 0.7, 1),
+            text='Custom Position',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
         txt = str(Nice.drop_cords[0])
         x = bui.textwidget(
             parent=custom_drop_widget,
@@ -2239,7 +2637,8 @@ class Nice(igm):
             size=(200, 25),
             h_align='center',
             v_align='center',
-            position=(55, 150))
+            position=(55, 150),
+        )
         y = bui.textwidget(
             parent=custom_drop_widget,
             size=(200, 25),
@@ -2247,7 +2646,8 @@ class Nice(igm):
             editable=True,
             h_align='center',
             v_align='center',
-            position=(55, 120))
+            position=(55, 120),
+        )
         z = bui.textwidget(
             parent=custom_drop_widget,
             size=(200, 25),
@@ -2255,7 +2655,8 @@ class Nice(igm):
             editable=True,
             h_align='center',
             v_align='center',
-            position=(55, 90))
+            position=(55, 90),
+        )
 
         def collect(s):
             w = x
@@ -2264,7 +2665,11 @@ class Nice(igm):
                 try:
                     a.append(float(cast(str, bui.textwidget(query=w))))
                 except:
-                    error("Invalid "+("Z" if w == z else "Y" if w == y else "X")+" Cordinate!")
+                    error(
+                        "Invalid "
+                        + ("Z" if w == z else "Y" if w == y else "X")
+                        + " Cordinate!"
+                    )
                     return
                 w = z if i else y
             s.kill(True, custom_drop_widget)
@@ -2284,7 +2689,8 @@ class Nice(igm):
             textcolor=wht,
             scale=s.scale,
             position=(190, 30),
-            on_activate_call=bs.Call(collect, s))
+            on_activate_call=bs.Call(collect, s),
+        )
 
         bacc = bui.buttonwidget(
             parent=custom_drop_widget,
@@ -2294,7 +2700,8 @@ class Nice(igm):
             textcolor=wht,
             color=colb,
             position=(30, 30),
-            on_activate_call=bs.Call(back, s))
+            on_activate_call=bs.Call(back, s),
+        )
         bui.containerwidget(edit=custom_drop_widget, cancel_button=bacc)
 
     def spawn_window(s):
@@ -2302,50 +2709,67 @@ class Nice(igm):
             push('Spawning requires you to be the host!', color=(1, 1, 0))
             return
         global spawn_widget, nice_name, nice_view, cords_view, title_node
-        spawn_widget = s._sw = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                                   size=(500, 300),
-                                                   color=cola,
-                                                   stack_offset=s.soff,
-                                                   transition=s.anim_in,
-                                                   scale=s.scale)
-        bui.textwidget(parent=spawn_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Spawn',
-                       position=(200, 250),
-                       maxwidth=250)
+        spawn_widget = s._sw = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
+        bui.textwidget(
+            parent=spawn_widget,
+            color=(0.1, 0.7, 1),
+            text='Spawn',
+            position=(200, 250),
+            maxwidth=250,
+        )
 
-        nice_view = bui.buttonwidget(parent=spawn_widget,
-                                     label='',
-                                     size=(100, 100),
-                                     position=(30, 120),
-                                     button_type='square',
-                                     color=(1, 1, 1),
-                                     texture=bui.gettexture(bot_texture[Nice.indox]+'Icon'),
-                                     mask_texture=bui.gettexture('characterIconMask'),
-                                     on_activate_call=Picker)
+        nice_view = bui.buttonwidget(
+            parent=spawn_widget,
+            label='',
+            size=(100, 100),
+            position=(30, 120),
+            button_type='square',
+            color=(1, 1, 1),
+            texture=bui.gettexture(bot_texture[Nice.indox] + 'Icon'),
+            mask_texture=bui.gettexture('characterIconMask'),
+            on_activate_call=Picker,
+        )
 
-        bui.buttonwidget(edit=nice_view, tint_texture=bui.gettexture(
-            bot_texture[bot_name.index(Nice.val_attrs[1])]+'IconColorMask'))
         bui.buttonwidget(
-            edit=nice_view, tint_color=Nice.val_attrs[6], tint2_color=Nice.val_attrs[11])
+            edit=nice_view,
+            tint_texture=bui.gettexture(
+                bot_texture[bot_name.index(Nice.val_attrs[1])] + 'IconColorMask'
+            ),
+        )
+        bui.buttonwidget(
+            edit=nice_view,
+            tint_color=Nice.val_attrs[6],
+            tint2_color=Nice.val_attrs[11],
+        )
 
-        cords_view = bui.buttonwidget(parent=spawn_widget,
-                                      label='Where To\nSpawn?',
-                                      color=colb,
-                                      textcolor=wht,
-                                      size=(180, 100),
-                                      position=(150, 120),
-                                      button_type='square',
-                                      on_activate_call=bs.Call(s.cords_window))
+        cords_view = bui.buttonwidget(
+            parent=spawn_widget,
+            label='Where To\nSpawn?',
+            color=colb,
+            textcolor=wht,
+            size=(180, 100),
+            position=(150, 120),
+            button_type='square',
+            on_activate_call=bs.Call(s.cords_window),
+        )
 
-        attr_view = bui.buttonwidget(parent=spawn_widget,
-                                     label='Edit\nAttrs',
-                                     color=colb,
-                                     size=(100, 100),
-                                     textcolor=wht,
-                                     position=(350, 120),
-                                     button_type='square',
-                                     on_activate_call=bs.Call(s.attr_window))
+        attr_view = bui.buttonwidget(
+            parent=spawn_widget,
+            label='Edit\nAttrs',
+            color=colb,
+            size=(100, 100),
+            textcolor=wht,
+            position=(350, 120),
+            button_type='square',
+            on_activate_call=bs.Call(s.attr_window),
+        )
 
         try:
             if cords[0] != 69123:
@@ -2353,33 +2777,40 @@ class Nice(igm):
         except TypeError:
             error('No coordinates set')
 
-        nice_name = bui.textwidget(parent=spawn_widget,
-                                   text=bot_name[Nice.indox],
-                                   h_align='center',
-                                   v_align='center',
-                                   position=(50, 85))
+        nice_name = bui.textwidget(
+            parent=spawn_widget,
+            text=bot_name[Nice.indox],
+            h_align='center',
+            v_align='center',
+            position=(50, 85),
+        )
 
-        bui.buttonwidget(parent=spawn_widget,
-                         label='Locate position',
-                         size=(120, 25),
-                         position=(180, 85),
-                         color=colb,
-                         textcolor=wht,
-                         button_type='square',
-                         on_activate_call=bs.Call(s.show_in_game))
+        bui.buttonwidget(
+            parent=spawn_widget,
+            label='Locate position',
+            size=(120, 25),
+            position=(180, 85),
+            color=colb,
+            textcolor=wht,
+            button_type='square',
+            on_activate_call=bs.Call(s.show_in_game),
+        )
 
-        bui.buttonwidget(parent=spawn_widget,
-                         label='Draw a line',
-                         size=(120, 25),
-                         position=(180, 50),
-                         button_type='square',
-                         color=colb,
-                         textcolor=wht,
-                         on_activate_call=bs.Call(s.show_in_game, 1))
+        bui.buttonwidget(
+            parent=spawn_widget,
+            label='Draw a line',
+            size=(120, 25),
+            position=(180, 50),
+            button_type='square',
+            color=colb,
+            textcolor=wht,
+            on_activate_call=bs.Call(s.show_in_game, 1),
+        )
 
         def back(s):
             s.kill(True, spawn_widget)
             Nice.pending = []
+
         bacc = bui.buttonwidget(
             parent=spawn_widget,
             size=(60, 20),
@@ -2388,7 +2819,8 @@ class Nice(igm):
             scale=s.scale,
             color=colb,
             position=(30, 30),
-            on_activate_call=bs.Call(back, s))
+            on_activate_call=bs.Call(back, s),
+        )
         bui.containerwidget(edit=s._sw, cancel_button=bacc)
 
         bui.buttonwidget(
@@ -2399,21 +2831,27 @@ class Nice(igm):
             scale=s.scale,
             textcolor=wht,
             position=(350, 30),
-            on_activate_call=bs.Call(s.do_spawn))
+            on_activate_call=bs.Call(s.do_spawn),
+        )
 
     """Button, my little wrappie"""
+
     def Button(s):
         def lmao(self):
             Nice()
             self._resume()
 
         def openBox(self):
-            bui.buttonwidget(edit=self.sbox, icon=bui.gettexture('chestOpenIcon'))
+            bui.buttonwidget(
+                edit=self.sbox, icon=bui.gettexture('chestOpenIcon')
+            )
             bs.apptimer(0.6, bs.Call(closeBox, self))
 
         def closeBox(self):
             if self.sbox.exists():
-                bui.buttonwidget(edit=self.sbox, icon=bui.gettexture('chestIcon'))
+                bui.buttonwidget(
+                    edit=self.sbox, icon=bui.gettexture('chestIcon')
+                )
 
         def wrap(self=igm._refresh_in_game, *args, **kwargs):
             r = s(self, *args, **kwargs)
@@ -2430,44 +2868,54 @@ class Nice(igm):
                 icon=bui.gettexture('chestIcon'),
                 iconscale=0.8,
                 on_select_call=bs.Call(openBox, self),
-                on_activate_call=bs.Call(lmao, self))
+                on_activate_call=bs.Call(lmao, self),
+            )
             return r
+
         return wrap
 
     # coordinates
     def cords_window(s):
         global cords_widget
-        cords_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                           size=(300, 250),
-                                           color=cola,
-                                           stack_offset=s.soff,
-                                           transition=s.anim_in,
-                                           scale=s.scale)
-        bui.buttonwidget(parent=cords_widget,
-                         size=(200, 50),
-                         label="Current Position",
-                         textcolor=wht,
-                         scale=s.scale,
-                         color=colb,
-                         position=(20, 125),
-                         on_activate_call=bs.Call(s.use_my_pos))
+        cords_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
+        bui.buttonwidget(
+            parent=cords_widget,
+            size=(200, 50),
+            label="Current Position",
+            textcolor=wht,
+            scale=s.scale,
+            color=colb,
+            position=(20, 125),
+            on_activate_call=bs.Call(s.use_my_pos),
+        )
 
-        bui.textwidget(parent=cords_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Where to spawn?',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        bui.textwidget(
+            parent=cords_widget,
+            color=(0.1, 0.7, 1),
+            text='Where to spawn?',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
 
-        bui.buttonwidget(parent=cords_widget,
-                         size=(200, 50),
-                         label="Custom Position",
-                         scale=s.scale,
-                         color=colb,
-                         textcolor=wht,
-                         position=(20, 60),
-                         on_activate_call=bs.Call(s.custom_window))
+        bui.buttonwidget(
+            parent=cords_widget,
+            size=(200, 50),
+            label="Custom Position",
+            scale=s.scale,
+            color=colb,
+            textcolor=wht,
+            position=(20, 60),
+            on_activate_call=bs.Call(s.custom_window),
+        )
 
         bacc = bui.buttonwidget(
             parent=cords_widget,
@@ -2477,7 +2925,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, cords_widget))
+            on_activate_call=bs.Call(s.kill, True, cords_widget),
+        )
         bui.containerwidget(edit=cords_widget, cancel_button=bacc)
 
     # custom position
@@ -2489,19 +2938,23 @@ class Nice(igm):
         except TypeError:
             cords = (0, 0, 0)
             txt = "0"
-        custom_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                            size=(300, 250),
-                                            color=cola,
-                                            stack_offset=s.soff,
-                                            transition=s.anim_in,
-                                            scale=s.scale)
-        bui.textwidget(parent=custom_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Custom Position',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        custom_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
+        bui.textwidget(
+            parent=custom_widget,
+            color=(0.1, 0.7, 1),
+            text='Custom Position',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
 
         x = bui.textwidget(
             parent=custom_widget,
@@ -2510,7 +2963,8 @@ class Nice(igm):
             size=(200, 25),
             h_align='center',
             v_align='center',
-            position=(55, 150))
+            position=(55, 150),
+        )
         y = bui.textwidget(
             parent=custom_widget,
             size=(200, 25),
@@ -2518,7 +2972,8 @@ class Nice(igm):
             editable=True,
             h_align='center',
             v_align='center',
-            position=(55, 120))
+            position=(55, 120),
+        )
         z = bui.textwidget(
             parent=custom_widget,
             size=(200, 25),
@@ -2526,7 +2981,8 @@ class Nice(igm):
             editable=True,
             h_align='center',
             v_align='center',
-            position=(55, 90))
+            position=(55, 90),
+        )
 
         def collect(s):
             global cords
@@ -2536,7 +2992,11 @@ class Nice(igm):
                 try:
                     a.append(float(cast(str, bui.textwidget(query=w))))
                 except:
-                    error("Invalid "+("Z" if w == z else "Y" if w == y else "X")+" Cordinate!")
+                    error(
+                        "Invalid "
+                        + ("Z" if w == z else "Y" if w == y else "X")
+                        + " Cordinate!"
+                    )
                     return
                 w = z if i else y
             s.kill(True, custom_widget)
@@ -2556,7 +3016,8 @@ class Nice(igm):
             textcolor=wht,
             scale=s.scale,
             position=(190, 30),
-            on_activate_call=bs.Call(collect, s))
+            on_activate_call=bs.Call(collect, s),
+        )
 
         bacc = bui.buttonwidget(
             parent=custom_widget,
@@ -2566,32 +3027,39 @@ class Nice(igm):
             textcolor=wht,
             color=colb,
             position=(30, 30),
-            on_activate_call=bs.Call(back, s))
+            on_activate_call=bs.Call(back, s),
+        )
         bui.containerwidget(edit=custom_widget, cancel_button=bacc)
 
     def attr_window(s):
         global attr_widget
-        attr_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                          size=(400, 500),
-                                          color=cola,
-                                          stack_offset=(-s.soff[0], -s.soff[1]),
-                                          transition=s.anim_inv,
-                                          scale=s.scale)
+        attr_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(400, 500),
+            color=cola,
+            stack_offset=(-s.soff[0], -s.soff[1]),
+            transition=s.anim_inv,
+            scale=s.scale,
+        )
 
-        attr_scroll = bui.scrollwidget(parent=attr_widget,
-                                       position=(30, 80),
-                                       claims_up_down=False,
-                                       claims_left_right=True,
-                                       autoselect=True,
-                                       size=(350, 370))
+        attr_scroll = bui.scrollwidget(
+            parent=attr_widget,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(350, 370),
+        )
 
-        bui.textwidget(parent=attr_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Edit Attributes',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(180, 460))
+        bui.textwidget(
+            parent=attr_widget,
+            color=(0.1, 0.7, 1),
+            text='Edit Attributes',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(180, 460),
+        )
 
         bacc = bui.buttonwidget(
             parent=attr_widget,
@@ -2601,7 +3069,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 45),
-            on_activate_call=s.gather)
+            on_activate_call=s.gather,
+        )
         bui.containerwidget(edit=attr_widget, cancel_button=bacc)
 
         bui.buttonwidget(
@@ -2612,7 +3081,8 @@ class Nice(igm):
             textcolor=wht,
             scale=s.scale,
             position=(290, 45),
-            on_activate_call=bs.Call(s.welp, 69123))
+            on_activate_call=bs.Call(s.welp, 69123),
+        )
 
         bui.buttonwidget(
             parent=attr_widget,
@@ -2622,7 +3092,8 @@ class Nice(igm):
             scale=s.scale,
             color=colb,
             position=(150, 45),
-            on_activate_call=bs.Call(s.gather, True))
+            on_activate_call=bs.Call(s.gather, True),
+        )
 
         bui.checkboxwidget(
             parent=attr_widget,
@@ -2631,9 +3102,10 @@ class Nice(igm):
             text="Ran auto spawn",
             color=cola,
             textcolor=(1, 1, 1),
-            scale=s.scale/2,
+            scale=s.scale / 2,
             value=s.auto_spawn_on_random,
-            on_value_change_call=bs.Call(s.tick, 0))
+            on_value_change_call=bs.Call(s.tick, 0),
+        )
 
         bui.checkboxwidget(
             parent=attr_widget,
@@ -2642,9 +3114,10 @@ class Nice(igm):
             text="Ran peace",
             color=cola,
             textcolor=(1, 1, 1),
-            scale=s.scale/2,
+            scale=s.scale / 2,
             value=s.random_peace,
-            on_value_change_call=bs.Call(s.tick, 1))
+            on_value_change_call=bs.Call(s.tick, 1),
+        )
 
         # -> no = 23
         # -> cw = 595 (+26)
@@ -2655,54 +3128,64 @@ class Nice(igm):
         tw = 553
 
         et = tw
-        attr_sub = bui.containerwidget(parent=attr_scroll,
-                                       background=False,
-                                       size=(190, cw),
-                                       color=(0.3, 0.3, 0.3),
-                                       scale=s.scale)
+        attr_sub = bui.containerwidget(
+            parent=attr_scroll,
+            background=False,
+            size=(190, cw),
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
         global ins
         ins = []
         for i in range(len(attrs)):
-            bui.textwidget(parent=attr_sub,
-                           text=attrs[i],
-                           scale=s.scale/2,
-                           h_align='left',
-                           v_align='center',
-                           on_activate_call=bs.Call(s.welp, i),
-                           selectable=True,
-                           autoselect=True,
-                           click_activate=True,
-                           size=(180, 29),
-                           position=(-30, tw - (20 * i)))
+            bui.textwidget(
+                parent=attr_sub,
+                text=attrs[i],
+                scale=s.scale / 2,
+                h_align='left',
+                v_align='center',
+                on_activate_call=bs.Call(s.welp, i),
+                selectable=True,
+                autoselect=True,
+                click_activate=True,
+                size=(180, 29),
+                position=(-30, tw - (20 * i)),
+            )
             a = Nice.val_attrs[i]
             if isinstance(a, bool):
-                l = bui.checkboxwidget(parent=attr_sub,
-                                       value=a,
-                                       text="",
-                                       color=colb,
-                                       scale=s.scale/2,
-                                       on_value_change_call=bs.Call(s.check, i),
-                                       position=(180, cb - (20 * i)))
+                l = bui.checkboxwidget(
+                    parent=attr_sub,
+                    value=a,
+                    text="",
+                    color=colb,
+                    scale=s.scale / 2,
+                    on_value_change_call=bs.Call(s.check, i),
+                    position=(180, cb - (20 * i)),
+                )
             elif isinstance(a, tuple) or i == 6 or i == 11 or i == 28:
                 k = Nice.val_attrs[i]
-                l = bui.buttonwidget(parent=attr_sub,
-                                     label=f"{str(a[0]+0.01)[:3]} {str(a[1]+0.01)[:3]}, {str(a[2]+0.01)[:3]}",
-                                     scale=s.scale,
-                                     size=(30, 12),
-                                     color=k,
-                                     textcolor=(1-k[0], 1-k[1], 1-k[2]),  # invert
-                                     on_activate_call=bs.Call(NicePick, s, a, i),
-                                     position=(180, cb - (20 * i)))
+                l = bui.buttonwidget(
+                    parent=attr_sub,
+                    label=f"{str(a[0]+0.01)[:3]} {str(a[1]+0.01)[:3]}, {str(a[2]+0.01)[:3]}",
+                    scale=s.scale,
+                    size=(30, 12),
+                    color=k,
+                    textcolor=(1 - k[0], 1 - k[1], 1 - k[2]),  # invert
+                    on_activate_call=bs.Call(NicePick, s, a, i),
+                    position=(180, cb - (20 * i)),
+                )
             else:
-                l = bui.textwidget(parent=attr_sub,
-                                   text=str(a),
-                                   scale=s.scale/2,
-                                   h_align='left',
-                                   v_align='center',
-                                   editable=True,
-                                   color=(1, 1, 1),
-                                   size=(150, 25),
-                                   position=(150, et - (20 * i)))
+                l = bui.textwidget(
+                    parent=attr_sub,
+                    text=str(a),
+                    scale=s.scale / 2,
+                    h_align='left',
+                    v_align='center',
+                    editable=True,
+                    color=(1, 1, 1),
+                    size=(150, 25),
+                    position=(150, et - (20 * i)),
+                )
             ins.append(l)
 
     # on back press
@@ -2721,7 +3204,8 @@ class Nice(igm):
                             v = float(v)
                         except ValueError:
                             error(
-                                f"{attrs[i]}: Invalid value '{v}'\nRequired type: float, Given type: {type(v).__name__}\nExample of float: 3.141592 (decimal number)")
+                                f"{attrs[i]}: Invalid value '{v}'\nRequired type: float, Given type: {type(v).__name__}\nExample of float: 3.141592 (decimal number)"
+                            )
                             return
                 elif t == 'int':
                     if ran:
@@ -2732,7 +3216,8 @@ class Nice(igm):
                             v = int(v)
                         except ValueError:
                             error(
-                                f"{attrs[i]}: Invalid value '{v}'\nRequired type: int, Given type: {type(v)}\nExample of int: 68 (number)")
+                                f"{attrs[i]}: Invalid value '{v}'\nRequired type: int, Given type: {type(v)}\nExample of int: 68 (number)"
+                            )
                             return
                 else:
                     # print (f"checking={v} v_in_bot_name={v in bot_name} not_i={not i} i={i}")
@@ -2745,7 +3230,9 @@ class Nice(igm):
                             error(f"character: Invalid character '{v}'")
                             if v in w_bot_name:
                                 push(
-                                    f"Did you mean '{bot_name[w_bot_name.index(v)]}'?", color=(0, 0.6, 1))
+                                    f"Did you mean '{bot_name[w_bot_name.index(v)]}'?",
+                                    color=(0, 0.6, 1),
+                                )
                             return
                     elif i == 1:
                         if ran:
@@ -2763,14 +3250,20 @@ class Nice(igm):
                             error(f"default_bomb_type: Invalid bomb type '{v}'")
                             if v in w_bomb_type:
                                 push(
-                                    f"Did you mean '{bomb_type[w_bomb_type.index(v)]}'?", color=(0, 0.6, 1))
+                                    f"Did you mean '{bomb_type[w_bomb_type.index(v)]}'?",
+                                    color=(0, 0.6, 1),
+                                )
                             return
                     elif v in bomb_type and ran and i == 8:
                         v = random.choice(bomb_type)
                         bui.textwidget(edit=ins[i], text=str(v))
                 Nice.val_attrs[i] = v
             if bui.Widget.get_widget_type(ins[i]) == 'checkbox' and ran:
-                v = random.choice([True, False]) if not s.random_peace else False
+                v = (
+                    random.choice([True, False])
+                    if not s.random_peace
+                    else False
+                )
                 bui.checkboxwidget(edit=ins[i], value=v)
                 Nice.val_attrs[i] = v
             elif bui.Widget.get_widget_type(ins[i]) == 'button' and ran:
@@ -2778,13 +3271,25 @@ class Nice(igm):
                 for r in range(3):
                     a.append(random.uniform(0.0, 1.0))
                 a = (float(a[0]), float(a[1]), float(a[2]))
-                bui.buttonwidget(edit=ins[i], label=f"{str(a[0]+0.01)[:3]} {str(a[1]+0.01)[:3]}, {str(a[2]+0.01)[:3]}", color=(
-                    a[0], a[1], a[2]), textcolor=(1-a[0], 1-a[1], 1-a[2]))
-                Nice.val_attrs[i] = a
-                bui.buttonwidget(edit=nice_view, tint_texture=bui.gettexture(
-                    bot_texture[bot_name.index(Nice.val_attrs[1])]+'IconColorMask'))
                 bui.buttonwidget(
-                    edit=nice_view, tint_color=Nice.val_attrs[6], tint2_color=Nice.val_attrs[11])
+                    edit=ins[i],
+                    label=f"{str(a[0]+0.01)[:3]} {str(a[1]+0.01)[:3]}, {str(a[2]+0.01)[:3]}",
+                    color=(a[0], a[1], a[2]),
+                    textcolor=(1 - a[0], 1 - a[1], 1 - a[2]),
+                )
+                Nice.val_attrs[i] = a
+                bui.buttonwidget(
+                    edit=nice_view,
+                    tint_texture=bui.gettexture(
+                        bot_texture[bot_name.index(Nice.val_attrs[1])]
+                        + 'IconColorMask'
+                    ),
+                )
+                bui.buttonwidget(
+                    edit=nice_view,
+                    tint_color=Nice.val_attrs[6],
+                    tint2_color=Nice.val_attrs[11],
+                )
         if not ran and close:
             s.kill(True, attr_widget, rev=True)
         elif ran:
@@ -2803,64 +3308,80 @@ class Nice(igm):
             bomb_control = False
         fresh = True
 
-        control_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                             size=(500, 300),
-                                             stack_offset=s.soff,
-                                             color=cola,
-                                             transition=s.anim_in,
-                                             scale=s.scale)
+        control_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
         try:
             p1 = lmao[currently_dux]
             p2 = lmao_bots[currently_dux].character
-            lol = bui.gettexture(bot_texture[bot_name.index(p2)]+"Icon")
+            lol = bui.gettexture(bot_texture[bot_name.index(p2)] + "Icon")
         except NameError:
             p1 = 'Name'
             p2 = 'Character'
             lol = None
-        preview_image = bui.buttonwidget(parent=control_widget,
-                                         label='',
-                                         size=(50, 50),
-                                         position=(300, 175),
-                                         button_type='square',
-                                         color=(1, 1, 1),
-                                         texture=lol,
-                                         mask_texture=bui.gettexture('characterIconMask'),
-                                         on_activate_call=bs.Call(push, 'Set the skin in modify menu'))
+        preview_image = bui.buttonwidget(
+            parent=control_widget,
+            label='',
+            size=(50, 50),
+            position=(300, 175),
+            button_type='square',
+            color=(1, 1, 1),
+            texture=lol,
+            mask_texture=bui.gettexture('characterIconMask'),
+            on_activate_call=bs.Call(push, 'Set the skin in modify menu'),
+        )
 
-        preview_text = bui.textwidget(parent=control_widget,
-                                      text=p1,
-                                      size=(50, 50),
-                                      scale=s.scale/1.3,
-                                      position=(365, 175))
+        preview_text = bui.textwidget(
+            parent=control_widget,
+            text=p1,
+            size=(50, 50),
+            scale=s.scale / 1.3,
+            position=(365, 175),
+        )
 
-        preview_text2 = bui.textwidget(parent=control_widget,
-                                       text=p2,
-                                       size=(50, 50),
-                                       scale=s.scale/1.7,
-                                       position=(360, 155))
+        preview_text2 = bui.textwidget(
+            parent=control_widget,
+            text=p2,
+            size=(50, 50),
+            scale=s.scale / 1.7,
+            position=(360, 155),
+        )
 
         # '{100 * (1 - lmao_bots[0].node.hurt)}%'
-        preview_text3 = bui.textwidget(parent=control_widget,
-                                       text='',
-                                       size=(50, 50),
-                                       scale=s.scale/1.7,
-                                       position=(295, 125))
+        preview_text3 = bui.textwidget(
+            parent=control_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.7,
+            position=(295, 125),
+        )
 
         try:
             test = currently_txt
         except NameError:
             test = 'Control started\nnow tap a bot'
-        preview_text4 = bui.textwidget(parent=control_widget,
-                                       text='Press start\nto start controlling' if not on_control else test,
-                                       size=(50, 50),
-                                       scale=s.scale/1.7,
-                                       position=(295, 85))
+        preview_text4 = bui.textwidget(
+            parent=control_widget,
+            text=(
+                'Press start\nto start controlling' if not on_control else test
+            ),
+            size=(50, 50),
+            scale=s.scale / 1.7,
+            position=(295, 85),
+        )
 
-        bui.textwidget(parent=control_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Control',
-                       position=(200, 250),
-                       maxwidth=250)
+        bui.textwidget(
+            parent=control_widget,
+            color=(0.1, 0.7, 1),
+            text='Control',
+            position=(200, 250),
+            maxwidth=250,
+        )
 
         start_stop = bui.buttonwidget(
             parent=control_widget,
@@ -2873,20 +3394,25 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(370, 30),
-            on_activate_call=bs.Call(s.start_or_stop))  # , True))
+            on_activate_call=bs.Call(s.start_or_stop),
+        )  # , True))
 
-        control_scroll = bui.scrollwidget(parent=control_widget,
-                                          position=(30, 80),
-                                          claims_up_down=False,
-                                          claims_left_right=True,
-                                          autoselect=True,
-                                          size=(250, 150))
+        control_scroll = bui.scrollwidget(
+            parent=control_widget,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(250, 150),
+        )
 
-        control_sub = bui.containerwidget(parent=control_scroll,
-                                          background=False,
-                                          size=(190, len(lmao)*26),
-                                          color=(0.3, 0.3, 0.3),
-                                          scale=s.scale)
+        control_sub = bui.containerwidget(
+            parent=control_scroll,
+            background=False,
+            size=(190, len(lmao) * 26),
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
 
         bacc = bui.buttonwidget(
             parent=control_widget,
@@ -2896,7 +3422,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, control_widget))
+            on_activate_call=bs.Call(s.kill, True, control_widget),
+        )
         bui.containerwidget(edit=control_widget, cancel_button=bacc)
 
         bui.checkboxwidget(
@@ -2905,18 +3432,21 @@ class Nice(igm):
             color=cola,
             text='Bomb to switch control',
             value=bomb_control,
-            scale=s.scale/2,
+            scale=s.scale / 2,
             position=(120, 35),
             textcolor=(1, 1, 1),
-            on_value_change_call=s.check_bomb)
+            on_value_change_call=s.check_bomb,
+        )
 
         if len(lmao) == 0 or str(ga()) != old_ga:
-            bui.textwidget(parent=control_sub,
-                           text='no bots',
-                           h_align='center',
-                           v_align='center',
-                           size=(60, 29),
-                           position=(60, -62))
+            bui.textwidget(
+                parent=control_sub,
+                text='no bots',
+                h_align='center',
+                v_align='center',
+                size=(60, 29),
+                position=(60, -62),
+            )
         control_ones = []
         for i in range(len(lmao)):
             try:
@@ -2927,18 +3457,20 @@ class Nice(igm):
                 return
             except AttributeError:
                 alive = False
-            da_one = bui.textwidget(parent=control_sub,
-                                    scale=s.scale/2,
-                                    text=(lmao[i] if alive else f"{lmao[i]} (dead)"),
-                                    h_align='left',
-                                    v_align='center',
-                                    color=((1, 1, 1) if alive else (0.6, 0.6, 0.6)),
-                                    on_activate_call=bs.Call(s.preview, i, alive),
-                                    selectable=True,
-                                    autoselect=True,
-                                    click_activate=True,
-                                    size=(180, 29),
-                                    position=(-30, (20 * i)))
+            da_one = bui.textwidget(
+                parent=control_sub,
+                scale=s.scale / 2,
+                text=(lmao[i] if alive else f"{lmao[i]} (dead)"),
+                h_align='left',
+                v_align='center',
+                color=((1, 1, 1) if alive else (0.6, 0.6, 0.6)),
+                on_activate_call=bs.Call(s.preview, i, alive),
+                selectable=True,
+                autoselect=True,
+                click_activate=True,
+                size=(180, 29),
+                position=(-30, (20 * i)),
+            )
             control_ones.append(da_one)
         try:
             control_ones[currently_dux].activate()
@@ -2955,9 +3487,15 @@ class Nice(igm):
         # special case
         if i == 69123:
             bui.textwidget(edit=preview_text, text='All bots', color=(1, 1, 1))
-            bui.textwidget(edit=preview_text2, text='real', color=(0.8, 0.8, 0.8))
-            bui.buttonwidget(edit=preview_image, texture=bui.gettexture(
-                "achievementSharingIsCaring"), tint_texture=None, mask_texture=None)
+            bui.textwidget(
+                edit=preview_text2, text='real', color=(0.8, 0.8, 0.8)
+            )
+            bui.buttonwidget(
+                edit=preview_image,
+                texture=bui.gettexture("achievementSharingIsCaring"),
+                tint_texture=None,
+                mask_texture=None,
+            )
             s.select_all_bots = True
             return
         s.select_all_bots = False
@@ -2969,15 +3507,28 @@ class Nice(igm):
         _lmao_chars = lmao_chars if mod != 3 else lmao_chars2
         _lmao = lmao if mod != 3 else lmao2
         _lmao_bots = lmao_bots if mod != 3 else lmao_players
-        bui.textwidget(edit=preview_text, text=_lmao[i], color=(
-            (1, 1, 1) if alive else (0.6, 0.6, 0.6)))
-        bui.textwidget(edit=preview_text2, text=_lmao_chars[i], color=(
-            (0.8, 0.8, 0.8) if alive else (0.4, 0.4, 0.4)))
-        bui.buttonwidget(edit=preview_image, tint_texture=bui.gettexture(
-            bot_texture[bot_name.index(_lmao_chars[i])]+'IconColorMask'))
+        bui.textwidget(
+            edit=preview_text,
+            text=_lmao[i],
+            color=((1, 1, 1) if alive else (0.6, 0.6, 0.6)),
+        )
+        bui.textwidget(
+            edit=preview_text2,
+            text=_lmao_chars[i],
+            color=((0.8, 0.8, 0.8) if alive else (0.4, 0.4, 0.4)),
+        )
+        bui.buttonwidget(
+            edit=preview_image,
+            tint_texture=bui.gettexture(
+                bot_texture[bot_name.index(_lmao_chars[i])] + 'IconColorMask'
+            ),
+        )
         if mod != 3:
-            bui.buttonwidget(edit=preview_image,
-                             tint_color=val_arr[drux][6], tint2_color=val_arr[drux][11])
+            bui.buttonwidget(
+                edit=preview_image,
+                tint_color=val_arr[drux][6],
+                tint2_color=val_arr[drux][11],
+            )
         if alive:
             try:
                 if not on_control:
@@ -2989,7 +3540,11 @@ class Nice(igm):
         else:
             s.hl3(None, False)
         try:
-            hurt = _lmao_bots[i].node.hurt if mod != 3 else _lmao_bots[i].actor.node.hurt
+            hurt = (
+                _lmao_bots[i].node.hurt
+                if mod != 3
+                else _lmao_bots[i].actor.node.hurt
+            )
         except AttributeError:
             pass  # bot is GONE
         try:
@@ -2998,8 +3553,11 @@ class Nice(igm):
             hp_txt = 'HP: 0.00%'
         except NameError:
             hp_txt = 'HP: 0.00% (gone)'
-        bui.textwidget(edit=preview_text3, text=hp_txt, color=(
-            (0.8, 0.8, 0.8) if alive else (0.4, 0.4, 0.4)))
+        bui.textwidget(
+            edit=preview_text3,
+            text=hp_txt,
+            color=((0.8, 0.8, 0.8) if alive else (0.4, 0.4, 0.4)),
+        )
         dux = i
         if not mod:
             currently_dux = i
@@ -3010,9 +3568,12 @@ class Nice(igm):
         bot = _lmao_bots[dux]
         char = _lmao_chars[dux]
         skin = bot_texture[bot_name.index(char)]  # neoSpaz
-        icon = bui.gettexture(skin+'Icon')  # texture: neoSpazIcon
-        bui.buttonwidget(edit=preview_image, texture=icon, color=(
-            (1, 1, 1) if alive else (0.6, 0.6, 0.6)))
+        icon = bui.gettexture(skin + 'Icon')  # texture: neoSpazIcon
+        bui.buttonwidget(
+            edit=preview_image,
+            texture=icon,
+            color=((1, 1, 1) if alive else (0.6, 0.6, 0.6)),
+        )
         if mod or on_control:
             s.assign()
 
@@ -3034,8 +3595,10 @@ class Nice(igm):
             return
         on_control = b = not on_control
         bui.buttonwidget(edit=start_stop, label='Stop' if b else 'Start')
-        bui.buttonwidget(edit=start_stop, icon=bui.gettexture(
-            'ouyaAButton' if b else 'ouyaOButton'))
+        bui.buttonwidget(
+            edit=start_stop,
+            icon=bui.gettexture('ouyaAButton' if b else 'ouyaOButton'),
+        )
         if b:
             if random.choice([1, 0, 0]):
                 push('You can switch control by selecting another bot')
@@ -3066,7 +3629,10 @@ class Nice(igm):
                         s.draw(s)
                     old_dux = None
                     try:
-                        bui.textwidget(edit=preview_text4, text="Press start\nto start controlling")
+                        bui.textwidget(
+                            edit=preview_text4,
+                            text="Press start\nto start controlling",
+                        )
                     except NameError:
                         pass  # modify again
                     except RuntimeError:
@@ -3083,10 +3649,16 @@ class Nice(igm):
                     error(f'{lmao[dux]} is dead, controlling nothing')
                     on_control = False
                     s.assign()
-                    bui.buttonwidget(edit=start_stop, label='Start',
-                                     icon=bui.gettexture("ouyaOButton"))
+                    bui.buttonwidget(
+                        edit=start_stop,
+                        label='Start',
+                        icon=bui.gettexture("ouyaOButton"),
+                    )
                     return
-                if cast(str, bui.textwidget(query=preview_text4)) == 'Character':
+                if (
+                    cast(str, bui.textwidget(query=preview_text4))
+                    == 'Character'
+                ):
                     push('good, now select a bot to control', color=(0, 0.5, 0))
                     return
                 if Nice.while_control:
@@ -3129,15 +3701,22 @@ class Nice(igm):
         c = color
         for i in range(len(t)):
             with ga().context:
-                n = bs.newnode("text", attrs={
-                               "text": t[i],
-                               "flatness": 1.0,
-                               "h_align": "left",
-                               "v_attach": "bottom",
-                               "scale": 0.8,
-                               "position": (p[0], p[1] - (i * 25)),
-                               "color": (c[0]-(i*0.25), c[1]-(i*0.3), c[2]-(i*0.1))
-                               })
+                n = bs.newnode(
+                    "text",
+                    attrs={
+                        "text": t[i],
+                        "flatness": 1.0,
+                        "h_align": "left",
+                        "v_attach": "bottom",
+                        "scale": 0.8,
+                        "position": (p[0], p[1] - (i * 25)),
+                        "color": (
+                            c[0] - (i * 0.25),
+                            c[1] - (i * 0.3),
+                            c[2] - (i * 0.1),
+                        ),
+                    },
+                )
             nood.append(n)
 
     def config_window(s):
@@ -3145,81 +3724,99 @@ class Nice(igm):
             push('Sure, ask the HOST that is obv not YOU', color=(1, 1, 0))
             return
         global config_widget, epic_config
-        config_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                            size=(500, 350),
-                                            stack_offset=s.soff,
-                                            color=cola,
-                                            transition=s.anim_in,
-                                            scale=s.scale)
+        config_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 350),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=config_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Tune',
-                       position=(205, 303))
+        bui.textwidget(
+            parent=config_widget,
+            color=(0.1, 0.7, 1),
+            text='Tune',
+            position=(205, 303),
+        )
 
-        bui.checkboxwidget(parent=config_widget,
-                           color=cola,
-                           text="Invincible while controlling bots",
-                           textcolor=(1, 1, 1),
-                           value=Nice.while_control,
-                           on_value_change_call=bs.Call(s.conf, 0),
-                           scale=s.scale/1.3,
-                           position=(30, 268))
+        bui.checkboxwidget(
+            parent=config_widget,
+            color=cola,
+            text="Invincible while controlling bots",
+            textcolor=(1, 1, 1),
+            value=Nice.while_control,
+            on_value_change_call=bs.Call(s.conf, 0),
+            scale=s.scale / 1.3,
+            position=(30, 268),
+        )
 
-        bui.checkboxwidget(parent=config_widget,
-                           color=cola,
-                           text="Notify when my bots die",
-                           textcolor=(1, 1, 1),
-                           value=Nice.notify_bot_ded,
-                           on_value_change_call=bs.Call(s.conf, 1),
-                           scale=s.scale/1.3,
-                           position=(30, 233))
+        bui.checkboxwidget(
+            parent=config_widget,
+            color=cola,
+            text="Notify when my bots die",
+            textcolor=(1, 1, 1),
+            value=Nice.notify_bot_ded,
+            on_value_change_call=bs.Call(s.conf, 1),
+            scale=s.scale / 1.3,
+            position=(30, 233),
+        )
 
-        bui.checkboxwidget(parent=config_widget,
-                           color=cola,
-                           text="Pause the game when using this",
-                           textcolor=(1, 1, 1),
-                           value=Nice.pause_when_bots,
-                           on_value_change_call=bs.Call(s.conf, 2),
-                           scale=s.scale/1.3,
-                           position=(30, 198))
+        bui.checkboxwidget(
+            parent=config_widget,
+            color=cola,
+            text="Pause the game when using this",
+            textcolor=(1, 1, 1),
+            value=Nice.pause_when_bots,
+            on_value_change_call=bs.Call(s.conf, 2),
+            scale=s.scale / 1.3,
+            position=(30, 198),
+        )
 
-        epic_config = bui.checkboxwidget(parent=config_widget,
-                                         color=cola,
-                                         text="Show screen messages on top right",
-                                         textcolor=(1, 1, 1),
-                                         value=Nice.top_msg,
-                                         on_value_change_call=bs.Call(s.conf, 3),
-                                         scale=s.scale/1.3,
-                                         position=(30, 163))
-#        s.do_your_thing(ga().globalsnode.slow_motion, False)
+        epic_config = bui.checkboxwidget(
+            parent=config_widget,
+            color=cola,
+            text="Show screen messages on top right",
+            textcolor=(1, 1, 1),
+            value=Nice.top_msg,
+            on_value_change_call=bs.Call(s.conf, 3),
+            scale=s.scale / 1.3,
+            position=(30, 163),
+        )
+        #        s.do_your_thing(ga().globalsnode.slow_motion, False)
 
-        bui.checkboxwidget(parent=config_widget,
-                           color=cola,
-                           text="Lite mode (keep off unless lags)",
-                           textcolor=(1, 1, 1),
-                           value=Nice.lite_mode,
-                           on_value_change_call=bs.Call(s.conf, 4),
-                           scale=s.scale/1.3,
-                           position=(30, 128))
+        bui.checkboxwidget(
+            parent=config_widget,
+            color=cola,
+            text="Lite mode (keep off unless lags)",
+            textcolor=(1, 1, 1),
+            value=Nice.lite_mode,
+            on_value_change_call=bs.Call(s.conf, 4),
+            scale=s.scale / 1.3,
+            position=(30, 128),
+        )
 
-        bui.checkboxwidget(parent=config_widget,
-                           color=cola,
-                           text="Rotate camera on control (cool)",
-                           textcolor=(1, 1, 1),
-                           value=Nice.animate_camera,
-                           on_value_change_call=bs.Call(s.conf, 5),
-                           scale=s.scale/1.3,
-                           position=(30, 93))
+        bui.checkboxwidget(
+            parent=config_widget,
+            color=cola,
+            text="Rotate camera on control (cool)",
+            textcolor=(1, 1, 1),
+            value=Nice.animate_camera,
+            on_value_change_call=bs.Call(s.conf, 5),
+            scale=s.scale / 1.3,
+            position=(30, 93),
+        )
 
-        bui.checkboxwidget(parent=config_widget,
-                           color=cola,
-                           text="Play ding sound on success",
-                           textcolor=(1, 1, 1),
-                           value=Nice.do_ding,
-                           on_value_change_call=bs.Call(s.conf, 6),
-                           scale=s.scale/1.3,
-                           position=(30, 58))
+        bui.checkboxwidget(
+            parent=config_widget,
+            color=cola,
+            text="Play ding sound on success",
+            textcolor=(1, 1, 1),
+            value=Nice.do_ding,
+            on_value_change_call=bs.Call(s.conf, 6),
+            scale=s.scale / 1.3,
+            position=(30, 58),
+        )
 
         bacc = bui.buttonwidget(
             parent=config_widget,
@@ -3229,7 +3826,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, config_widget))
+            on_activate_call=bs.Call(s.kill, True, config_widget),
+        )
         bui.containerwidget(edit=config_widget, cancel_button=bacc)
 
     def conf(s, i, b):
@@ -3260,8 +3858,10 @@ class Nice(igm):
     """do your thing, a dumb node extractor that i coded myself
        simply extracts titles and changes based on game
        eg. Epic Hockey <-> Hockey"""
+
     def do_your_thing(s, b):
         import json
+
         global title, virgin, epic_config, title_node
         epic = "Epic " if b else ""
 
@@ -3271,6 +3871,7 @@ class Nice(igm):
             except:
                 pass
             bs.animate(node, 'opacity', {0.0: 0.0, 0.15: 1.0})
+
         with ga().context:
             if virgin:
                 virgin = False  # defined outside as True
@@ -3285,7 +3886,9 @@ class Nice(igm):
                             continue
                         try:
                             try:
-                                title.append(json.loads(n.text)['s'][0][1]['t'][1])
+                                title.append(
+                                    json.loads(n.text)['s'][0][1]['t'][1]
+                                )
                             except:
                                 try:
                                     title.append(json.loads(n.text)['t'][1])
@@ -3310,45 +3913,59 @@ class Nice(igm):
         global mod_widget, lmao, lmao_bots, old_ga, preview_image, preview_text, dux, preview_text2, dux2, preview_text3, do_tp
         dux = None
 
-        mod_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                         size=(500, 300),
-                                         stack_offset=s.soff,
-                                         color=cola,
-                                         transition=s.anim_in,
-                                         scale=s.scale)
+        mod_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        preview_image = bui.buttonwidget(parent=mod_widget,
-                                         label='',
-                                         size=(50, 50),
-                                         position=(300, 175),
-                                         button_type='square',
-                                         color=colb,
-                                         mask_texture=bui.gettexture('characterIconMask'),
-                                         on_activate_call=bs.Call(push, 'Press modify to set the skin and stuff'))
+        preview_image = bui.buttonwidget(
+            parent=mod_widget,
+            label='',
+            size=(50, 50),
+            position=(300, 175),
+            button_type='square',
+            color=colb,
+            mask_texture=bui.gettexture('characterIconMask'),
+            on_activate_call=bs.Call(
+                push, 'Press modify to set the skin and stuff'
+            ),
+        )
 
-        preview_text = bui.textwidget(parent=mod_widget,
-                                      text='',
-                                      size=(50, 50),
-                                      scale=s.scale/1.3,
-                                      position=(365, 175))
+        preview_text = bui.textwidget(
+            parent=mod_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.3,
+            position=(365, 175),
+        )
 
-        preview_text2 = bui.textwidget(parent=mod_widget,
-                                       text='',
-                                       size=(50, 50),
-                                       scale=s.scale/1.7,
-                                       position=(360, 155))
+        preview_text2 = bui.textwidget(
+            parent=mod_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.7,
+            position=(360, 155),
+        )
 
-        preview_text3 = bui.textwidget(parent=mod_widget,
-                                       text='',
-                                       size=(50, 50),
-                                       scale=s.scale/1.7,
-                                       position=(295, 125))
+        preview_text3 = bui.textwidget(
+            parent=mod_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.7,
+            position=(295, 125),
+        )
 
-        bui.textwidget(parent=mod_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Modify',
-                       position=(200, 250),
-                       maxwidth=250)
+        bui.textwidget(
+            parent=mod_widget,
+            color=(0.1, 0.7, 1),
+            text='Modify',
+            position=(200, 250),
+            maxwidth=250,
+        )
 
         bui.buttonwidget(
             parent=mod_widget,
@@ -3359,20 +3976,25 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(370, 30),
-            on_activate_call=bs.Call(s.do_modify))
+            on_activate_call=bs.Call(s.do_modify),
+        )
 
-        mod_scroll = bui.scrollwidget(parent=mod_widget,
-                                      position=(30, 80),
-                                      claims_up_down=False,
-                                      claims_left_right=True,
-                                      autoselect=True,
-                                      size=(250, 150))
+        mod_scroll = bui.scrollwidget(
+            parent=mod_widget,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(250, 150),
+        )
 
-        mod_sub = bui.containerwidget(parent=mod_scroll,
-                                      background=False,
-                                      size=(190, len(lmao)*26),
-                                      color=(0.3, 0.3, 0.3),
-                                      scale=s.scale)
+        mod_sub = bui.containerwidget(
+            parent=mod_scroll,
+            background=False,
+            size=(190, len(lmao) * 26),
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
 
         bacc = bui.buttonwidget(
             parent=mod_widget,
@@ -3382,7 +4004,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, mod_widget))
+            on_activate_call=bs.Call(s.kill, True, mod_widget),
+        )
         bui.containerwidget(edit=mod_widget, cancel_button=bacc)
 
         bui.buttonwidget(edit=preview_image, texture=None, color=(1, 1, 1))
@@ -3390,12 +4013,14 @@ class Nice(igm):
         bui.textwidget(edit=preview_text2, text='Character')
 
         if len(lmao) == 0 or str(ga()) != old_ga:
-            bui.textwidget(parent=mod_sub,
-                           text='no bots',
-                           h_align='center',
-                           v_align='center',
-                           size=(60, 29),
-                           position=(60, -62))
+            bui.textwidget(
+                parent=mod_sub,
+                text='no bots',
+                h_align='center',
+                v_align='center',
+                size=(60, 29),
+                position=(60, -62),
+            )
             return
 
         # selected index is dux
@@ -3408,18 +4033,20 @@ class Nice(igm):
                 return
             except AttributeError:
                 alive = False
-            bui.textwidget(parent=mod_sub,
-                           scale=s.scale/2,
-                           text=(lmao[i] if alive else f"{lmao[i]} (dead)"),
-                           h_align='left',
-                           v_align='center',
-                           color=((1, 1, 1) if alive else (0.6, 0.6, 0.6)),
-                           on_activate_call=bs.Call(s.preview, i, alive, 1),
-                           selectable=True,
-                           autoselect=True,
-                           click_activate=True,
-                           size=(180, 29),
-                           position=(-30, (20 * i)))
+            bui.textwidget(
+                parent=mod_sub,
+                scale=s.scale / 2,
+                text=(lmao[i] if alive else f"{lmao[i]} (dead)"),
+                h_align='left',
+                v_align='center',
+                color=((1, 1, 1) if alive else (0.6, 0.6, 0.6)),
+                on_activate_call=bs.Call(s.preview, i, alive, 1),
+                selectable=True,
+                autoselect=True,
+                click_activate=True,
+                size=(180, 29),
+                position=(-30, (20 * i)),
+            )
 
     def tp_check(s, b):
         global do_tp
@@ -3438,29 +4065,36 @@ class Nice(igm):
         except TypeError:
             error('It\'s dead.')
             return
-        mid_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                         size=(500, 300),
-                                         stack_offset=s.soff,
-                                         color=cola,
-                                         transition=s.anim_in,
-                                         scale=s.scale)
+        mid_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=mid_widget,
-                       color=(0.1, 0.7, 1),
-                       text=f'Modify {name}',
-                       position=(150, 250),
-                       maxwidth=250)
+        bui.textwidget(
+            parent=mid_widget,
+            color=(0.1, 0.7, 1),
+            text=f'Modify {name}',
+            position=(150, 250),
+            maxwidth=250,
+        )
 
-        nice2_view = bui.buttonwidget(parent=mid_widget,
-                                      label='',
-                                      size=(100, 100),
-                                      position=(30, 120),
-                                      button_type='square',
-                                      color=(1, 1, 1),
-                                      texture=bui.gettexture(
-                                          bot_texture[bot_name.index(lmao_chars[dux])]+'Icon'),
-                                      mask_texture=bui.gettexture('characterIconMask'),
-                                      on_activate_call=bs.Call(Picker, 1))
+        nice2_view = bui.buttonwidget(
+            parent=mid_widget,
+            label='',
+            size=(100, 100),
+            position=(30, 120),
+            button_type='square',
+            color=(1, 1, 1),
+            texture=bui.gettexture(
+                bot_texture[bot_name.index(lmao_chars[dux])] + 'Icon'
+            ),
+            mask_texture=bui.gettexture('characterIconMask'),
+            on_activate_call=bs.Call(Picker, 1),
+        )
 
         # Apply bot's stuff to mod preset (clean up)
         cap = bot_name.index(lmao_chars[drux])
@@ -3468,10 +4102,17 @@ class Nice(igm):
         va = val_arr[drux]
         va[1] = good_name
 
-        bui.buttonwidget(edit=nice2_view, tint_texture=bui.gettexture(
-            bot_texture[bot_name.index(val_arr[drux][1])]+'IconColorMask'))
         bui.buttonwidget(
-            edit=nice2_view, tint_color=val_arr[drux][6], tint2_color=val_arr[drux][11])
+            edit=nice2_view,
+            tint_texture=bui.gettexture(
+                bot_texture[bot_name.index(val_arr[drux][1])] + 'IconColorMask'
+            ),
+        )
+        bui.buttonwidget(
+            edit=nice2_view,
+            tint_color=val_arr[drux][6],
+            tint2_color=val_arr[drux][11],
+        )
 
         try:
             pus = lmao_bots[dux].node.position
@@ -3479,49 +4120,59 @@ class Nice(igm):
             error(f'{lmao[dux]} is dead.')
             return
         m = max_digits
-        cords2_view = bui.buttonwidget(parent=mid_widget,
-                                       label=f'changed via\nupdate_cords_view',
-                                       color=colb,
-                                       textcolor=wht,
-                                       size=(180, 100),
-                                       position=(150, 120),
-                                       button_type='square',
-                                       on_activate_call=bs.Call(s.cords2_window))
+        cords2_view = bui.buttonwidget(
+            parent=mid_widget,
+            label=f'changed via\nupdate_cords_view',
+            color=colb,
+            textcolor=wht,
+            size=(180, 100),
+            position=(150, 120),
+            button_type='square',
+            on_activate_call=bs.Call(s.cords2_window),
+        )
 
-        attr_view = bui.buttonwidget(parent=mid_widget,
-                                     label='Edit\nAttrs',
-                                     color=colb,
-                                     size=(100, 100),
-                                     textcolor=wht,
-                                     position=(350, 120),
-                                     button_type='square',
-                                     on_activate_call=bs.Call(s.do_modify2))
+        attr_view = bui.buttonwidget(
+            parent=mid_widget,
+            label='Edit\nAttrs',
+            color=colb,
+            size=(100, 100),
+            textcolor=wht,
+            position=(350, 120),
+            button_type='square',
+            on_activate_call=bs.Call(s.do_modify2),
+        )
 
         s.update_cords_view(True)
 
-        nice2_name = bui.textwidget(parent=mid_widget,
-                                    text=good_name,
-                                    h_align='center',
-                                    v_align='center',
-                                    position=(50, 85))
+        nice2_name = bui.textwidget(
+            parent=mid_widget,
+            text=good_name,
+            h_align='center',
+            v_align='center',
+            position=(50, 85),
+        )
 
-        bui.buttonwidget(parent=mid_widget,
-                         label='Locate position',
-                         size=(120, 25),
-                         position=(180, 85),
-                         color=colb,
-                         textcolor=wht,
-                         button_type='square',
-                         on_activate_call=bs.Call(s.show_in_game, 0, True))
+        bui.buttonwidget(
+            parent=mid_widget,
+            label='Locate position',
+            size=(120, 25),
+            position=(180, 85),
+            color=colb,
+            textcolor=wht,
+            button_type='square',
+            on_activate_call=bs.Call(s.show_in_game, 0, True),
+        )
 
-        bui.buttonwidget(parent=mid_widget,
-                         label='Draw a line',
-                         size=(120, 25),
-                         position=(180, 50),
-                         button_type='square',
-                         color=colb,
-                         textcolor=wht,
-                         on_activate_call=bs.Call(s.show_in_game, 1, True))
+        bui.buttonwidget(
+            parent=mid_widget,
+            label='Draw a line',
+            size=(120, 25),
+            position=(180, 50),
+            button_type='square',
+            color=colb,
+            textcolor=wht,
+            on_activate_call=bs.Call(s.show_in_game, 1, True),
+        )
 
         bacc = bui.buttonwidget(
             parent=mid_widget,
@@ -3531,10 +4182,11 @@ class Nice(igm):
             scale=s.scale,
             color=colb,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, mid_widget, True))
+            on_activate_call=bs.Call(s.kill, True, mid_widget, True),
+        )
         bui.containerwidget(edit=mid_widget, cancel_button=bacc)
 
-        bui. buttonwidget(
+        bui.buttonwidget(
             parent=mid_widget,
             size=(100, 40),
             label='Apply',
@@ -3542,7 +4194,8 @@ class Nice(igm):
             scale=s.scale,
             textcolor=wht,
             position=(350, 30),
-            on_activate_call=s.apply_mods)
+            on_activate_call=s.apply_mods,
+        )
 
         bui.checkboxwidget(
             parent=mid_widget,
@@ -3552,8 +4205,9 @@ class Nice(igm):
             color=cola,
             textcolor=(1, 1, 1),
             on_value_change_call=bs.Call(s.tp_check),
-            scale=s.scale/1.5,
-            position=(340, 90))
+            scale=s.scale / 1.5,
+            position=(340, 90),
+        )
 
         val_attrs2 = val_arr[dux].copy()  # reset to default temp
         indox2 = bot_name.index(val_attrs2[1])
@@ -3567,27 +4221,33 @@ class Nice(igm):
         except TypeError:
             error('You what bro?')
             return
-        mud_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                         size=(400, 500),
-                                         color=cola,
-                                         stack_offset=s.soff,
-                                         transition=s.anim_in,
-                                         scale=s.scale)
+        mud_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(400, 500),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        mud_scroll = bui.scrollwidget(parent=mud_widget,
-                                      position=(30, 80),
-                                      claims_up_down=False,
-                                      claims_left_right=True,
-                                      autoselect=True,
-                                      size=(350, 370))
+        mud_scroll = bui.scrollwidget(
+            parent=mud_widget,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(350, 370),
+        )
 
-        bui.textwidget(parent=mud_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Edit attributes',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(180, 460))
+        bui.textwidget(
+            parent=mud_widget,
+            color=(0.1, 0.7, 1),
+            text='Edit attributes',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(180, 460),
+        )
 
         bacc = bui.buttonwidget(
             parent=mud_widget,
@@ -3597,7 +4257,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=s.gather2)
+            on_activate_call=s.gather2,
+        )
         bui.containerwidget(edit=mud_widget, cancel_button=bacc)
 
         bui.buttonwidget(
@@ -3608,7 +4269,8 @@ class Nice(igm):
             textcolor=wht,
             scale=s.scale,
             position=(290, 30),
-            on_activate_call=bs.Call(s.welp, 69123))
+            on_activate_call=bs.Call(s.welp, 69123),
+        )
 
         bui.buttonwidget(
             parent=mud_widget,
@@ -3618,7 +4280,8 @@ class Nice(igm):
             scale=s.scale,
             color=colb,
             position=(150, 30),
-            on_activate_call=bs.Call(s.gather2, True))
+            on_activate_call=bs.Call(s.gather2, True),
+        )
 
         # -> no = 23
         # -> cw = 595 (+26)
@@ -3629,57 +4292,73 @@ class Nice(igm):
         tw = 553
 
         et = tw
-        mud_sub = bui.containerwidget(parent=mud_scroll,
-                                      background=False,
-                                      size=(190, cw),
-                                      color=(0.3, 0.3, 0.3),
-                                      scale=s.scale)
+        mud_sub = bui.containerwidget(
+            parent=mud_scroll,
+            background=False,
+            size=(190, cw),
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
         global ins2
         ins2 = []
         for i in range(len(attrs)):
-            bui.textwidget(parent=mud_sub,
-                           text=attrs[i],
-                           scale=s.scale/2,
-                           h_align='left',
-                           v_align='center',
-                           on_activate_call=bs.Call(
-                               s.welp, i) if i not in not_editable else bs.Call(s.welp, i, nah=True),
-                           selectable=True,
-                           autoselect=True,
-                           color=(1, 1, 1) if i not in not_editable else (0.6, 0.6, 0.6),
-                           click_activate=True,
-                           size=(180, 29),
-                           position=(-30, tw - (20 * i)))
+            bui.textwidget(
+                parent=mud_sub,
+                text=attrs[i],
+                scale=s.scale / 2,
+                h_align='left',
+                v_align='center',
+                on_activate_call=(
+                    bs.Call(s.welp, i)
+                    if i not in not_editable
+                    else bs.Call(s.welp, i, nah=True)
+                ),
+                selectable=True,
+                autoselect=True,
+                color=(1, 1, 1) if i not in not_editable else (0.6, 0.6, 0.6),
+                click_activate=True,
+                size=(180, 29),
+                position=(-30, tw - (20 * i)),
+            )
             a = val_attrs2[i]
             if isinstance(a, bool):
-                l = bui.checkboxwidget(parent=mud_sub,
-                                       value=a,
-                                       text="",
-                                       color=colb,
-                                       scale=s.scale/2,
-                                       on_value_change_call=bs.Call(
-                                           s.check, i, mod=True) if i not in not_editable else bs.Call(s.welp, i, ignore=True),
-                                       position=(180, cb - (20 * i)))
+                l = bui.checkboxwidget(
+                    parent=mud_sub,
+                    value=a,
+                    text="",
+                    color=colb,
+                    scale=s.scale / 2,
+                    on_value_change_call=(
+                        bs.Call(s.check, i, mod=True)
+                        if i not in not_editable
+                        else bs.Call(s.welp, i, ignore=True)
+                    ),
+                    position=(180, cb - (20 * i)),
+                )
             elif isinstance(a, tuple) or i == 6 or i == 11 or i == 28:
                 k = val_attrs2[i]
-                l = bui.buttonwidget(parent=mud_sub,
-                                     label=f"{str(a[0]+0.01)[:3]} {str(a[1]+0.01)[:3]}, {str(a[2]+0.01)[:3]}",
-                                     scale=s.scale,
-                                     size=(30, 12),
-                                     color=k,
-                                     textcolor=(1-k[0], 1-k[1], 1-k[2]),  # invert
-                                     on_activate_call=bs.Call(NicePick2, s, a, i),
-                                     position=(180, cb - (20 * i)))
+                l = bui.buttonwidget(
+                    parent=mud_sub,
+                    label=f"{str(a[0]+0.01)[:3]} {str(a[1]+0.01)[:3]}, {str(a[2]+0.01)[:3]}",
+                    scale=s.scale,
+                    size=(30, 12),
+                    color=k,
+                    textcolor=(1 - k[0], 1 - k[1], 1 - k[2]),  # invert
+                    on_activate_call=bs.Call(NicePick2, s, a, i),
+                    position=(180, cb - (20 * i)),
+                )
             else:
-                l = bui.textwidget(parent=mud_sub,
-                                   text=str(a),
-                                   scale=s.scale/2,
-                                   h_align='left',
-                                   v_align='center',
-                                   editable=True,
-                                   color=(1, 1, 1),
-                                   size=(150, 25),
-                                   position=(150, et - (20 * i)))
+                l = bui.textwidget(
+                    parent=mud_sub,
+                    text=str(a),
+                    scale=s.scale / 2,
+                    h_align='left',
+                    v_align='center',
+                    editable=True,
+                    color=(1, 1, 1),
+                    size=(150, 25),
+                    position=(150, et - (20 * i)),
+                )
             ins2.append(l)
 
     def gather2(s, ran=False):
@@ -3697,7 +4376,8 @@ class Nice(igm):
                             v = float(v)
                         except ValueError:
                             error(
-                                f"{attrs[i]}: Invalid value '{v}'\nRequired type: float, Given type: {type(v).__name__}\nExample of float: 3.141592 (decimal number)")
+                                f"{attrs[i]}: Invalid value '{v}'\nRequired type: float, Given type: {type(v).__name__}\nExample of float: 3.141592 (decimal number)"
+                            )
                             return
                 elif t == 'int':
                     if ran:
@@ -3708,7 +4388,8 @@ class Nice(igm):
                             v = int(v)
                         except ValueError:
                             error(
-                                f"{attrs[i]}: Invalid value '{v}'\nRequired type: int, Given type: {type(v)}\nExample of int: 68 (number)")
+                                f"{attrs[i]}: Invalid value '{v}'\nRequired type: int, Given type: {type(v)}\nExample of int: 68 (number)"
+                            )
                             return
                 else:
                     # print (f"checking={v} v_in_bot_name={v in bot_name} not_i={not i} i={i}")
@@ -3721,7 +4402,9 @@ class Nice(igm):
                             error(f"character: Invalid character '{v}'")
                             if v in w_bot_name:
                                 push(
-                                    f"Did you mean '{bot_name[w_bot_name.index(v)]}'?", color=(0, 0.6, 1))
+                                    f"Did you mean '{bot_name[w_bot_name.index(v)]}'?",
+                                    color=(0, 0.6, 1),
+                                )
                             return
                     elif i == 1:
                         if ran:
@@ -3736,7 +4419,9 @@ class Nice(igm):
                             error(f"default_bomb_type: Invalid bomb type '{v}'")
                             if v in w_bomb_type:
                                 push(
-                                    f"Did you mean '{bomb_type[w_bomb_type.index(v)]}'?", color=(0, 0.6, 1))
+                                    f"Did you mean '{bomb_type[w_bomb_type.index(v)]}'?",
+                                    color=(0, 0.6, 1),
+                                )
                             return
                     elif v in bomb_type and ran and i == 8:
                         v = random.choice(bomb_type)
@@ -3751,14 +4436,26 @@ class Nice(igm):
                 for r in range(3):
                     a.append(random.uniform(0.0, 1.0))
                 a = (float(a[0]), float(a[1]), float(a[2]))
-                bui.buttonwidget(edit=ins2[i], label=f"{str(a[0]+0.01)[:3]} {str(a[1]+0.01)[:3]}, {str(a[2]+0.01)[:3]}", color=(
-                    a[0], a[1], a[2]), textcolor=(1-a[0], 1-a[1], 1-a[2]))
-                val_attrs2[i] = a
-#                bui.buttonwidget(edit=nice2_view, tint_texture=bui.gettexture(val_attrs2[1]+'IconColorMask'))
-                bui.buttonwidget(edit=nice2_view, tint_texture=bui.gettexture(
-                    bot_texture[bot_name.index(val_attrs2[1])]+'IconColorMask'))
                 bui.buttonwidget(
-                    edit=nice2_view, tint_color=val2_attrs[6], tint2_color=val2_attrs[11])
+                    edit=ins2[i],
+                    label=f"{str(a[0]+0.01)[:3]} {str(a[1]+0.01)[:3]}, {str(a[2]+0.01)[:3]}",
+                    color=(a[0], a[1], a[2]),
+                    textcolor=(1 - a[0], 1 - a[1], 1 - a[2]),
+                )
+                val_attrs2[i] = a
+                #                bui.buttonwidget(edit=nice2_view, tint_texture=bui.gettexture(val_attrs2[1]+'IconColorMask'))
+                bui.buttonwidget(
+                    edit=nice2_view,
+                    tint_texture=bui.gettexture(
+                        bot_texture[bot_name.index(val_attrs2[1])]
+                        + 'IconColorMask'
+                    ),
+                )
+                bui.buttonwidget(
+                    edit=nice2_view,
+                    tint_color=val2_attrs[6],
+                    tint2_color=val2_attrs[11],
+                )
         if not ran:
             s.kill(True, mud_widget, True)
         else:
@@ -3766,37 +4463,45 @@ class Nice(igm):
 
     def cords2_window(s):
         global cords2_widget
-        cords2_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                            size=(300, 250),
-                                            color=cola,
-                                            stack_offset=s.soff,
-                                            transition=s.anim_in,
-                                            scale=s.scale)
-        bui.buttonwidget(parent=cords2_widget,
-                         size=(200, 50),
-                         label="Current Position",
-                         textcolor=wht,
-                         scale=s.scale,
-                         color=colb,
-                         position=(20, 125),
-                         on_activate_call=bs.Call(s.use_my_pos, True))
+        cords2_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
+        bui.buttonwidget(
+            parent=cords2_widget,
+            size=(200, 50),
+            label="Current Position",
+            textcolor=wht,
+            scale=s.scale,
+            color=colb,
+            position=(20, 125),
+            on_activate_call=bs.Call(s.use_my_pos, True),
+        )
 
-        bui.textwidget(parent=cords2_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Teleport to:',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        bui.textwidget(
+            parent=cords2_widget,
+            color=(0.1, 0.7, 1),
+            text='Teleport to:',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
 
-        bui.buttonwidget(parent=cords2_widget,
-                         size=(200, 50),
-                         label="Custom Position",
-                         scale=s.scale,
-                         color=colb,
-                         textcolor=wht,
-                         position=(20, 60),
-                         on_activate_call=bs.Call(s.custom2_window))
+        bui.buttonwidget(
+            parent=cords2_widget,
+            size=(200, 50),
+            label="Custom Position",
+            scale=s.scale,
+            color=colb,
+            textcolor=wht,
+            position=(20, 60),
+            on_activate_call=bs.Call(s.custom2_window),
+        )
 
         bacc = bui.buttonwidget(
             parent=cords2_widget,
@@ -3806,7 +4511,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, cords2_widget, True))
+            on_activate_call=bs.Call(s.kill, True, cords2_widget, True),
+        )
         bui.containerwidget(edit=cords2_widget, cancel_button=bacc)
 
     def custom2_window(s):
@@ -3817,19 +4523,23 @@ class Nice(igm):
         except TypeError:
             cords2 = (0, 0, 0)
             txt = "0"
-        custom2_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                             size=(300, 250),
-                                             color=cola,
-                                             stack_offset=s.soff,
-                                             transition=s.anim_in,
-                                             scale=s.scale)
-        bui.textwidget(parent=custom2_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Custom Position',
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(125, 200))
+        custom2_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(300, 250),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
+        bui.textwidget(
+            parent=custom2_widget,
+            color=(0.1, 0.7, 1),
+            text='Custom Position',
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(125, 200),
+        )
 
         x = bui.textwidget(
             parent=custom2_widget,
@@ -3838,7 +4548,8 @@ class Nice(igm):
             size=(200, 25),
             h_align='center',
             v_align='center',
-            position=(55, 150))
+            position=(55, 150),
+        )
         y = bui.textwidget(
             parent=custom2_widget,
             size=(200, 25),
@@ -3846,7 +4557,8 @@ class Nice(igm):
             editable=True,
             h_align='center',
             v_align='center',
-            position=(55, 120))
+            position=(55, 120),
+        )
         z = bui.textwidget(
             parent=custom2_widget,
             size=(200, 25),
@@ -3854,7 +4566,8 @@ class Nice(igm):
             editable=True,
             h_align='center',
             v_align='center',
-            position=(55, 90))
+            position=(55, 90),
+        )
 
         def collect(s):
             global cords2
@@ -3864,7 +4577,11 @@ class Nice(igm):
                 try:
                     a.append(float(cast(str, bui.textwidget(query=w))))
                 except:
-                    error("Invalid "+("Z" if w == z else "Y" if w == y else "X")+" Cordinate!")
+                    error(
+                        "Invalid "
+                        + ("Z" if w == z else "Y" if w == y else "X")
+                        + " Cordinate!"
+                    )
                     return
                 w = z if i else y
             s.kill(True, custom2_widget, True)
@@ -3884,7 +4601,8 @@ class Nice(igm):
             textcolor=wht,
             scale=s.scale,
             position=(190, 30),
-            on_activate_call=bs.Call(collect, s))
+            on_activate_call=bs.Call(collect, s),
+        )
 
         bacc = bui.buttonwidget(
             parent=custom2_widget,
@@ -3894,7 +4612,8 @@ class Nice(igm):
             textcolor=wht,
             color=colb,
             position=(30, 30),
-            on_activate_call=bs.Call(back, s))
+            on_activate_call=bs.Call(back, s),
+        )
         bui.containerwidget(edit=custom2_widget, cancel_button=bacc)
 
     def apply_mods(s):
@@ -3957,17 +4676,17 @@ class Nice(igm):
         c = bot_texture[bot_style.index(char)]
         with ga().context:
             try:
-                pelvis = bs.getmesh(c+'Pelvis')
+                pelvis = bs.getmesh(c + 'Pelvis')
             except RuntimeError:
                 pelvis = bs.getmesh('kronkPelvis')
-            head = bs.getmesh(c+'Head')
-            torso = bs.getmesh(c+'Torso')
-            toes = bs.getmesh(c+'Toes')
-            uarm = bs.getmesh(c+'UpperArm')
-            uleg = bs.getmesh(c+'UpperLeg')
-            farm = bs.getmesh(c+'ForeArm')
-            lleg = bs.getmesh(c+'LowerLeg')
-            hand = bs.getmesh(c+'Hand')
+            head = bs.getmesh(c + 'Head')
+            torso = bs.getmesh(c + 'Torso')
+            toes = bs.getmesh(c + 'Toes')
+            uarm = bs.getmesh(c + 'UpperArm')
+            uleg = bs.getmesh(c + 'UpperLeg')
+            farm = bs.getmesh(c + 'ForeArm')
+            lleg = bs.getmesh(c + 'LowerLeg')
+            hand = bs.getmesh(c + 'Hand')
             b.head_mesh = head
             b.pelvis_mesh = pelvis
             b.torso_mesh = torso
@@ -3978,47 +4697,59 @@ class Nice(igm):
             b.lower_leg_mesh = lleg
             b.hand_mesh = hand
             b.style = 'spaz' if char in has_no_style else char
-            b.color_mask_texture = bs.gettexture(c+'ColorMask')
-            b.color_texture = bs.gettexture(c if c in has_no_color else c+'Color')
+            b.color_mask_texture = bs.gettexture(c + 'ColorMask')
+            b.color_texture = bs.gettexture(
+                c if c in has_no_color else c + 'Color'
+            )
         s.preview(i, (bot.node.hurt < 1), 1)
 
     def listen_window(s):
         global listen_widget, music_preview_image, wmusic_preview_text, music_preview_text2, music_dux
         music_dux = 8
-        listen_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                            size=(500, 300),
-                                            stack_offset=s.soff,
-                                            color=cola,
-                                            transition=s.anim_in,
-                                            scale=s.scale)
+        listen_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        music_preview_image = bui.buttonwidget(parent=listen_widget,
-                                               label='',
-                                               size=(50, 50),
-                                               position=(300, 175),
-                                               button_type='square',
-                                               color=colb,
-                                               mask_texture=bui.gettexture('characterIconMask'))
+        music_preview_image = bui.buttonwidget(
+            parent=listen_widget,
+            label='',
+            size=(50, 50),
+            position=(300, 175),
+            button_type='square',
+            color=colb,
+            mask_texture=bui.gettexture('characterIconMask'),
+        )
 
-        music_preview_text = bui.textwidget(parent=listen_widget,
-                                            text='',
-                                            size=(50, 50),
-                                            scale=s.scale/1.4,
-                                            maxwidth=115,
-                                            position=(365, 175))
+        music_preview_text = bui.textwidget(
+            parent=listen_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.4,
+            maxwidth=115,
+            position=(365, 175),
+        )
 
-        music_preview_text2 = bui.textwidget(parent=listen_widget,
-                                             text='',
-                                             size=(50, 50),
-                                             scale=s.scale/1.7,
-                                             maxwidth=115,
-                                             position=(360, 155))
+        music_preview_text2 = bui.textwidget(
+            parent=listen_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.7,
+            maxwidth=115,
+            position=(360, 155),
+        )
 
-        bui.textwidget(parent=listen_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Listen',
-                       position=(200, 250),
-                       maxwidth=150)
+        bui.textwidget(
+            parent=listen_widget,
+            color=(0.1, 0.7, 1),
+            text='Listen',
+            position=(200, 250),
+            maxwidth=150,
+        )
 
         bui.buttonwidget(
             parent=listen_widget,
@@ -4029,7 +4760,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(370, 30),
-            on_activate_call=bs.Call(s.play_music))
+            on_activate_call=bs.Call(s.play_music),
+        )
 
         bui.buttonwidget(
             parent=listen_widget,
@@ -4038,24 +4770,29 @@ class Nice(igm):
             button_type='square',
             scale=s.scale,
             icon=bui.gettexture("replayIcon"),
-            iconscale=s.scale/2.5,
+            iconscale=s.scale / 2.5,
             color=colb,
             textcolor=wht,
             position=(270, 30),
-            on_activate_call=bs.Call(s.play_music, True))
+            on_activate_call=bs.Call(s.play_music, True),
+        )
 
-        listen_scroll = bui.scrollwidget(parent=listen_widget,
-                                         position=(30, 80),
-                                         claims_up_down=False,
-                                         claims_left_right=True,
-                                         autoselect=True,
-                                         size=(250, 150))
+        listen_scroll = bui.scrollwidget(
+            parent=listen_widget,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(250, 150),
+        )
 
-        listen_sub = bui.containerwidget(parent=listen_scroll,
-                                         background=False,
-                                         size=(190, len(music_name)*26),
-                                         color=(0.3, 0.3, 0.3),
-                                         scale=s.scale)
+        listen_sub = bui.containerwidget(
+            parent=listen_scroll,
+            background=False,
+            size=(190, len(music_name) * 26),
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
 
         bacc = bui.buttonwidget(
             parent=listen_widget,
@@ -4065,52 +4802,77 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, listen_widget))
+            on_activate_call=bs.Call(s.kill, True, listen_widget),
+        )
         bui.containerwidget(edit=listen_widget, cancel_button=bacc)
 
-        bui.buttonwidget(edit=music_preview_image, texture=None, color=(1, 1, 1))
+        bui.buttonwidget(
+            edit=music_preview_image, texture=None, color=(1, 1, 1)
+        )
         bui.textwidget(edit=music_preview_text, text=music_name[music_dux])
         bui.textwidget(edit=music_preview_text2, text=music_desc[music_dux])
-        bui.buttonwidget(edit=music_preview_image, texture=bui.gettexture(music_texture[music_dux]))
+        bui.buttonwidget(
+            edit=music_preview_image,
+            texture=bui.gettexture(music_texture[music_dux]),
+        )
 
         # selected index is music_dux
         for i in range(len(music_name)):
-            bui.textwidget(parent=listen_sub,
-                           scale=s.scale/2,
-                           text=(music_name[i]),
-                           h_align='left',
-                           v_align='center',
-                           color=(1, 1, 1),
-                           on_activate_call=bs.Call(s.preview_music, i),
-                           selectable=True,
-                           autoselect=True,
-                           click_activate=True,
-                           size=(180, 29),
-                           position=(-30, (20 * i)))
+            bui.textwidget(
+                parent=listen_sub,
+                scale=s.scale / 2,
+                text=(music_name[i]),
+                h_align='left',
+                v_align='center',
+                color=(1, 1, 1),
+                on_activate_call=bs.Call(s.preview_music, i),
+                selectable=True,
+                autoselect=True,
+                click_activate=True,
+                size=(180, 29),
+                position=(-30, (20 * i)),
+            )
 
     def preview_music(s, i):
         global music_preview_image, music_dux, music_preview_text, music_preview_text2
         global music_widget
         music_dux = i
-        bui.textwidget(edit=music_preview_text, text=music_name[i], color=(1, 1, 1))
-        bui.textwidget(edit=music_preview_text2, text=music_desc[i], color=(1, 1, 1))
-        bui.buttonwidget(edit=music_preview_image, texture=bui.gettexture(music_texture[i]))
+        bui.textwidget(
+            edit=music_preview_text, text=music_name[i], color=(1, 1, 1)
+        )
+        bui.textwidget(
+            edit=music_preview_text2, text=music_desc[i], color=(1, 1, 1)
+        )
+        bui.buttonwidget(
+            edit=music_preview_image, texture=bui.gettexture(music_texture[i])
+        )
 
     def play_music(s, default=False):
         global music_dux
         try:
             with ga().context:
-                bs.setmusic(music_type[music_dux] if not default else ga().default_music)
+                bs.setmusic(
+                    music_type[music_dux] if not default else ga().default_music
+                )
         except AttributeError:
             if not default:
-                bs.set_internal_music(ba.getsimplesound(music_desc[music_dux][:-4]))
-                push("You are not the host,\nsound will only play for you\nand it might be lower than usual\nturn sound volume down and music volume up", color=(1, 0, 1))
+                bs.set_internal_music(
+                    ba.getsimplesound(music_desc[music_dux][:-4])
+                )
+                push(
+                    "You are not the host,\nsound will only play for you\nand it might be lower than usual\nturn sound volume down and music volume up",
+                    color=(1, 0, 1),
+                )
         if default:
             try:
                 push(
-                    f"Now playing default music: {music_name[music_type.index(ga().default_music)]}")
+                    f"Now playing default music: {music_name[music_type.index(ga().default_music)]}"
+                )
             except AttributeError:
-                push("Unable to get default music\nsince you are not the host\nit resets next game tho", (1, 1, 0))
+                push(
+                    "Unable to get default music\nsince you are not the host\nit resets next game tho",
+                    (1, 1, 0),
+                )
 
     def effect_window(s):
         if ga() is None:
@@ -4118,61 +4880,75 @@ class Nice(igm):
             return
         global effect_widget, lmao, lmao_bots, old_ga, preview_image, preview_text, dux, preview_text2, dux2, preview_text3, effect_dux, effect_ones, effect_tab, effect_sub, effect_bots
         effect_bots = True
-        effect_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                            size=(500, 290),
-                                            stack_offset=s.soff,
-                                            color=cola,
-                                            transition=s.anim_in,
-                                            scale=s.scale)
+        effect_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 290),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
         try:
             p1 = lmao[effect_dux]
             p2 = lmao_bots[effect_dux].character
-            lol = bui.gettexture(bot_texture[bot_name.index(p2)]+"Icon")
+            lol = bui.gettexture(bot_texture[bot_name.index(p2)] + "Icon")
         except IndexError:
             p1 = 'Name'
             p2 = 'Character'
             lol = None
-        preview_image = bui.buttonwidget(parent=effect_widget,
-                                         label='',
-                                         size=(50, 50),
-                                         position=(300, 175),
-                                         button_type='square',
-                                         color=(1, 1, 1),
-                                         texture=lol,
-                                         mask_texture=bui.gettexture('characterIconMask'),
-                                         on_activate_call=bs.Call(push, 'what are you trying to achieve'))
+        preview_image = bui.buttonwidget(
+            parent=effect_widget,
+            label='',
+            size=(50, 50),
+            position=(300, 175),
+            button_type='square',
+            color=(1, 1, 1),
+            texture=lol,
+            mask_texture=bui.gettexture('characterIconMask'),
+            on_activate_call=bs.Call(push, 'what are you trying to achieve'),
+        )
 
-        preview_text = bui.textwidget(parent=effect_widget,
-                                      text=p1,
-                                      size=(50, 50),
-                                      scale=s.scale/1.3,
-                                      position=(365, 175))
+        preview_text = bui.textwidget(
+            parent=effect_widget,
+            text=p1,
+            size=(50, 50),
+            scale=s.scale / 1.3,
+            position=(365, 175),
+        )
 
-        preview_text2 = bui.textwidget(parent=effect_widget,
-                                       text=p2,
-                                       size=(50, 50),
-                                       scale=s.scale/1.7,
-                                       position=(360, 155))
+        preview_text2 = bui.textwidget(
+            parent=effect_widget,
+            text=p2,
+            size=(50, 50),
+            scale=s.scale / 1.7,
+            position=(360, 155),
+        )
 
         # '{100 * (1 - lmao_bots[0].node.hurt)}%'
-        preview_text3 = bui.textwidget(parent=effect_widget,
-                                       text='',
-                                       size=(50, 50),
-                                       scale=s.scale/1.7,
-                                       position=(295, 125))
+        preview_text3 = bui.textwidget(
+            parent=effect_widget,
+            text='',
+            size=(50, 50),
+            scale=s.scale / 1.7,
+            position=(295, 125),
+        )
 
-        bui.textwidget(parent=effect_widget,
-                       text='Select who,\nthen press effect',
-                       size=(50, 50),
-                       scale=s.scale/1.7,
-                       position=(295, 85))
+        bui.textwidget(
+            parent=effect_widget,
+            text='Select who,\nthen press effect',
+            size=(50, 50),
+            scale=s.scale / 1.7,
+            position=(295, 85),
+        )
 
-        bui.textwidget(parent=effect_widget,
-                       color=(0.1, 0.7, 1),
-                       text='Effect',
-                       position=(300, 240),
-                       maxwidth=250)
+        bui.textwidget(
+            parent=effect_widget,
+            color=(0.1, 0.7, 1),
+            text='Effect',
+            position=(300, 240),
+            maxwidth=250,
+        )
 
         bui.buttonwidget(
             parent=effect_widget,
@@ -4183,14 +4959,17 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(360, 30),
-            on_activate_call=bs.Call(s.do_effect))
+            on_activate_call=bs.Call(s.do_effect),
+        )
 
-        effect_scroll = bui.scrollwidget(parent=effect_widget,
-                                         position=(30, 80),
-                                         claims_up_down=False,
-                                         claims_left_right=True,
-                                         autoselect=True,
-                                         size=(250, 150))
+        effect_scroll = bui.scrollwidget(
+            parent=effect_widget,
+            position=(30, 80),
+            claims_up_down=False,
+            claims_left_right=True,
+            autoselect=True,
+            size=(250, 150),
+        )
         tabdefs = [('bots', 'Bots'), ('players', "Players")]
 
         effect_tab = TabRow(
@@ -4198,13 +4977,16 @@ class Nice(igm):
             tabdefs,
             pos=(30, 230),
             size=(250, 0),
-            on_select_call=s.switch_tab)
+            on_select_call=s.switch_tab,
+        )
 
         effect_tab.update_appearance('bots')
-        effect_sub = bui.containerwidget(parent=effect_scroll,
-                                         background=False,
-                                         color=(0.3, 0.3, 0.3),
-                                         scale=s.scale)
+        effect_sub = bui.containerwidget(
+            parent=effect_scroll,
+            background=False,
+            color=(0.3, 0.3, 0.3),
+            scale=s.scale,
+        )
         bacc = bui.buttonwidget(
             parent=effect_widget,
             size=(60, 20),
@@ -4213,7 +4995,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, effect_widget))
+            on_activate_call=bs.Call(s.kill, True, effect_widget),
+        )
         bui.containerwidget(edit=effect_widget, cancel_button=bacc)
 
         s.cola_fill(effect_widget)
@@ -4253,44 +5036,53 @@ class Nice(igm):
 
     def load(s, arr, arr2, container, sub, dux=0, mod=2):
         global lmao_bots, lmao_players, preview_image
-        bui.containerwidget(edit=sub, size=(190, ((1 if mod == 2 else 0)+len(arr))*26))
+        bui.containerwidget(
+            edit=sub, size=(190, ((1 if mod == 2 else 0) + len(arr)) * 26)
+        )
         if len(arr) == 0 or str(ga()) != old_ga and mod == 2:
             s.inform('Still\nNo bots', effect_sub)
             return
         ones = []
         for i in range(len(arr)):
             try:
-                alive = (arr2[i].node.hurt <
-                         1) if arr2[i] in lmao_bots else arr2[i].actor.node.hurt < 1
+                alive = (
+                    (arr2[i].node.hurt < 1)
+                    if arr2[i] in lmao_bots
+                    else arr2[i].actor.node.hurt < 1
+                )
             except IndexError:
                 s.kill(True, widget)
                 push('Something is still spawining, try again')
                 return
             except AttributeError:
                 alive = False
-            da_one = bui.textwidget(parent=sub,
-                                    scale=s.scale/2,
-                                    text=(arr[i] if alive else f"{arr[i]} (dead)"),
-                                    h_align='left',
-                                    v_align='center',
-                                    color=((1, 1, 1) if alive else (0.6, 0.6, 0.6)),
-                                    on_activate_call=bs.Call(s.preview, i, alive, mod),
-                                    selectable=True,
-                                    autoselect=True,
-                                    click_activate=True,
-                                    size=(180, 29),
-                                    position=(-30, (20 * i)))
+            da_one = bui.textwidget(
+                parent=sub,
+                scale=s.scale / 2,
+                text=(arr[i] if alive else f"{arr[i]} (dead)"),
+                h_align='left',
+                v_align='center',
+                color=((1, 1, 1) if alive else (0.6, 0.6, 0.6)),
+                on_activate_call=bs.Call(s.preview, i, alive, mod),
+                selectable=True,
+                autoselect=True,
+                click_activate=True,
+                size=(180, 29),
+                position=(-30, (20 * i)),
+            )
             ones.append(da_one)
         if mod == 2:
-            s.select_all = bui.checkboxwidget(parent=sub,
-                                              scale=s.scale/2,
-                                              size=(200, 5),
-                                              text="Select all",
-                                              color=cola,
-                                              value=False,
-                                              textcolor=wht,
-                                              on_value_change_call=s.effect_all_bots,
-                                              position=(0, 10+(20 * (len(arr)))))
+            s.select_all = bui.checkboxwidget(
+                parent=sub,
+                scale=s.scale / 2,
+                size=(200, 5),
+                text="Select all",
+                color=cola,
+                value=False,
+                textcolor=wht,
+                on_value_change_call=s.effect_all_bots,
+                position=(0, 10 + (20 * (len(arr)))),
+            )
         try:
             ones[dux].activate()
         except NameError:
@@ -4311,12 +5103,14 @@ class Nice(igm):
             pass
         for i in where.get_children():
             i.delete()
-        nukeme = bui.textwidget(parent=where,
-                                text=what,
-                                h_align='center',
-                                v_align='center',
-                                size=(60, 29),
-                                position=(60, -62))
+        nukeme = bui.textwidget(
+            parent=where,
+            text=what,
+            h_align='center',
+            v_align='center',
+            size=(60, 29),
+            position=(60, -62),
+        )
 
     def do_effect(s):
         global effect_dux, lmao_bots, lmao, effect_bots, lmao2, lmao_players, eff_widget, indox2, nice2_name, nice2_view, cords2_view, dux, max_digits, val_attrs2, val_arr, drux, cords2, dp_tp, effect_indox, effect_tip, effect_dux2
@@ -4328,13 +5122,20 @@ class Nice(igm):
             try:
                 name = _lmao[_effect_dux]
             except NameError:
-                error('Select a bot first' if len(_lmao_bots)
-                      else 'When it says no bots\nyet u still click the button??')
+                error(
+                    'Select a bot first'
+                    if len(_lmao_bots)
+                    else 'When it says no bots\nyet u still click the button??'
+                )
                 return
             except IndexError:
                 pass
             try:
-                hurt = _lmao_bots[_effect_dux].node.hurt if effect_bots else _lmao_bots[_effect_dux].actor.node.hurt
+                hurt = (
+                    _lmao_bots[_effect_dux].node.hurt
+                    if effect_bots
+                    else _lmao_bots[_effect_dux].actor.node.hurt
+                )
                 if hurt == 1:
                     error(f'{_lmao[_effect_dux]} is dead.')
                     return
@@ -4354,48 +5155,60 @@ class Nice(igm):
             a = effect_indox
         except NameError:
             effect_indox = 0
-        eff_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                         size=(500, 300),
-                                         stack_offset=s.soff,
-                                         color=cola,
-                                         transition=s.anim_in,
-                                         scale=s.scale)
+        eff_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(500, 300),
+            stack_offset=s.soff,
+            color=cola,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=eff_widget,
-                       color=(0.1, 0.7, 1),
-                       text=f'Effect {name}',
-                       position=(165, 250),
-                       maxwidth=250)
+        bui.textwidget(
+            parent=eff_widget,
+            color=(0.1, 0.7, 1),
+            text=f'Effect {name}',
+            position=(165, 250),
+            maxwidth=250,
+        )
 
-        effect_tip = bui.textwidget(parent=eff_widget,
-                                    text=effect_tips[effect_indox],
-                                    position=(175, 190),
-                                    scale=s.scale/2,
-                                    maxwidth=250)
+        effect_tip = bui.textwidget(
+            parent=eff_widget,
+            text=effect_tips[effect_indox],
+            position=(175, 190),
+            scale=s.scale / 2,
+            maxwidth=250,
+        )
 
-        nice2_view = bui.buttonwidget(parent=eff_widget,
-                                      label='',
-                                      size=(100, 100),
-                                      position=(60, 120),
-                                      button_type='square',
-                                      color=(1, 1, 1),
-                                      texture=bui.gettexture(effect_texture[effect_indox]),
-                                      mask_texture=bui.gettexture('characterIconMask'),
-                                      on_activate_call=bs.Call(Picker, 2))
+        nice2_view = bui.buttonwidget(
+            parent=eff_widget,
+            label='',
+            size=(100, 100),
+            position=(60, 120),
+            button_type='square',
+            color=(1, 1, 1),
+            texture=bui.gettexture(effect_texture[effect_indox]),
+            mask_texture=bui.gettexture('characterIconMask'),
+            on_activate_call=bs.Call(Picker, 2),
+        )
 
         # Apply bot's stuff to mod preset (clean up)
         if not s.select_all_bots:
             good_name = effect_name[_effect_dux]
             if effect_bots:
                 va = val_arr[_effect_dux]
-            bui.buttonwidget(edit=nice2_view, tint_texture=bui.gettexture(
-                effect_texture[_effect_dux]))
+            bui.buttonwidget(
+                edit=nice2_view,
+                tint_texture=bui.gettexture(effect_texture[_effect_dux]),
+            )
 
-        nice2_name = bui.textwidget(parent=eff_widget,
-                                    text=effect_name[effect_indox],
-                                    h_align='center',
-                                    v_align='center',
-                                    position=(85, 85))
+        nice2_name = bui.textwidget(
+            parent=eff_widget,
+            text=effect_name[effect_indox],
+            h_align='center',
+            v_align='center',
+            position=(85, 85),
+        )
 
         bacc = bui.buttonwidget(
             parent=eff_widget,
@@ -4405,10 +5218,11 @@ class Nice(igm):
             scale=s.scale,
             color=colb,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, eff_widget, True))
+            on_activate_call=bs.Call(s.kill, True, eff_widget, True),
+        )
         bui.containerwidget(edit=eff_widget, cancel_button=bacc)
 
-        bui. buttonwidget(
+        bui.buttonwidget(
             parent=eff_widget,
             size=(100, 40),
             label='Apply',
@@ -4416,7 +5230,8 @@ class Nice(igm):
             scale=s.scale,
             textcolor=wht,
             position=(350, 30),
-            on_activate_call=s.apply_effects)
+            on_activate_call=s.apply_effects,
+        )
 
         if s.select_all_bots:
             return
@@ -4487,7 +5302,8 @@ class Nice(igm):
                         bot.on_jump_press = s.spaz_bot_fly(bot.on_jump_press)
                     else:
                         lmao_players[i].assigninput(
-                            ba.InputType.JUMP_PRESS, bs.Call(s.spaz_fly, bot))
+                            ba.InputType.JUMP_PRESS, bs.Call(s.spaz_fly, bot)
+                        )
                 elif a == 'Normal Jumps':
                     bot.on_jump_press = s.spaz_not_fly
                 elif a == 'GodMode Preset':
@@ -4495,8 +5311,11 @@ class Nice(igm):
                     bot._super = True
                     bot.node.invincible = True  # Invincibility
                     s.give_sp(bot)  # Super Punch
-                    PopupText("I HAVE THE POWER", position=bot.node.position,
-                              random_offset=1).autoretain()
+                    PopupText(
+                        "I HAVE THE POWER",
+                        position=bot.node.position,
+                        random_offset=1,
+                    ).autoretain()
                 elif a == "Reset All":
                     push(f'Resetted all effects from {name}')
                     bui.getsound('shieldDown').play()
@@ -4514,21 +5333,25 @@ class Nice(igm):
     def link_text(s, text, bot, color=(1, 1, 1), off=1.5):
         with ga().context:
             try:
-                m = bs.newnode('math',
-                               owner=bot.node,
-                               attrs={'input1': (0, off, 0),
-                                      'operation': 'add'})
+                m = bs.newnode(
+                    'math',
+                    owner=bot.node,
+                    attrs={'input1': (0, off, 0), 'operation': 'add'},
+                )
                 bot.node.connectattr('position', m, 'input2')
                 test = bs.newnode(
                     'text',
                     owner=bot.node,
-                    attrs={'text': text,
-                           'in_world': True,
-                           'shadow': 1.0,
-                           'flatness': 1.0,
-                           'color': color,
-                           'scale': 0.0,
-                           'h_align': 'center'})
+                    attrs={
+                        'text': text,
+                        'in_world': True,
+                        'shadow': 1.0,
+                        'flatness': 1.0,
+                        'color': color,
+                        'scale': 0.0,
+                        'h_align': 'center',
+                    },
+                )
                 m.connectattr('output', test, 'position')
                 bs.animate(test, 'scale', {0: 0.0, 0.5: 0.01})
                 return test
@@ -4540,43 +5363,55 @@ class Nice(igm):
             bs.timer(time, node.delete)
 
     """Constant Jump - spam jump on bot, combine w fly jumps"""
+
     def constant_jump(s, bot):
         if not bot.exists():
             return
         p = bot.node.position
-        p2 = (p[0], p[1]-0.2, p[2])
+        p2 = (p[0], p[1] - 0.2, p[2])
         bot.on_jump_press(bot)
         if random.choice([False, False, False, True]):
-            PopupText("Hoppie", position=p2, random_offset=0.3, color=(1, 0, 1)).autoretain()
-        bs.timer((random.choice([0.1, 0.4, 0.7, 0.1]) if p2[1] <
-                 4 else 1.5), bs.Call(s.constant_jump, s, bot))
+            PopupText(
+                "Hoppie", position=p2, random_offset=0.3, color=(1, 0, 1)
+            ).autoretain()
+        bs.timer(
+            (random.choice([0.1, 0.4, 0.7, 0.1]) if p2[1] < 4 else 1.5),
+            bs.Call(s.constant_jump, s, bot),
+        )
 
     """toxic celebrate - when a player dies,
        celebrate the hunt, called from outside Nice."""
+
     def toxic_celebrate(s):
         for b in Nice.toxic_bots:
             try:
                 p = b.node.position
             except:
                 return  # bot is dead
-            p2 = (p[0], p[1]-0.2, p[2])
-#            PopupText(random.choice(toxic_win),position=p2,random_offset=0.3,color=(0,1,1)).autoretain()
-            n = s.link_text(s, text=random.choice(toxic_win), bot=b, color=(1, 0, 1), off=2)
+            p2 = (p[0], p[1] - 0.2, p[2])
+            #            PopupText(random.choice(toxic_win),position=p2,random_offset=0.3,color=(0,1,1)).autoretain()
+            n = s.link_text(
+                s, text=random.choice(toxic_win), bot=b, color=(1, 0, 1), off=2
+            )
             s.nodetimer(s, 1.5, n)
 
     """Constant Heal - heal bot from time to time"""
+
     def constant_heal(s, bot):
         with ga().context:
             if not bot.exists():
                 return
             p = bot.node.position
-            p2 = (p[0], p[1]-0.2, p[2])
+            p2 = (p[0], p[1] - 0.2, p[2])
             bot.handlemessage(bs.PowerupMessage('health'))
-            PopupText("Healed", position=p2, random_offset=0.3, color=(0, 1, 0)).autoretain()
+            PopupText(
+                "Healed", position=p2, random_offset=0.3, color=(0, 1, 0)
+            ).autoretain()
             bs.timer(4, bs.Call(s.constant_heal, s, bot))
 
     """Make Toxic - makes a bot say toxic stuff.
        only called from outside Nice"""
+
     def make_toxic(s, bot):
         with ga().context:
             if not bot.exists():
@@ -4584,16 +5419,23 @@ class Nice(igm):
             p = bot.node.position
             if bot.node.hurt > 0.5:
                 bot.handlemessage(bs.PowerupMessage('shield'))
-            p2 = (p[0], p[1]-0.2, p[2])
-#            PopupText(random.choice(toxic),position=p2,random_offset=0.3,color=(1,0,0)).autoretain()
-            n = s.link_text(s, text=random.choice(toxic), bot=bot, color=(1, 0, 0))
+            p2 = (p[0], p[1] - 0.2, p[2])
+            #            PopupText(random.choice(toxic),position=p2,random_offset=0.3,color=(1,0,0)).autoretain()
+            n = s.link_text(
+                s, text=random.choice(toxic), bot=bot, color=(1, 0, 0)
+            )
             s.nodetimer(s, 1.5, n)
             bs.timer(2, bs.Call(s.make_toxic, s, bot))
 
     def phew(s, pos):
-        PopupText("Damage ignored", position=pos, random_offset=0.3).autoretain()
+        PopupText(
+            "Damage ignored", position=pos, random_offset=0.3
+        ).autoretain()
 
-    def give_sp(s, bot): bot._punch_cooldown = 0; bot._punch_power_scale = 15; bot._super = True
+    def give_sp(s, bot):
+        bot._punch_cooldown = 0
+        bot._punch_power_scale = 15
+        bot._super = True
 
     def spam_knock(s, bot):
         with ga().context:
@@ -4601,7 +5443,7 @@ class Nice(igm):
                 return
             bot.node.handlemessage('knockout', 1000)
             p = bot.node.position
-            p2 = (p[0], p[1]-0.2, p[2])
+            p2 = (p[0], p[1] - 0.2, p[2])
             PopupText("z", position=p2, random_offset=0.3).autoretain()
             bs.timer(0.9, bs.Call(s.spam_knock, bot))
 
@@ -4611,10 +5453,15 @@ class Nice(igm):
                 return
             bot.handlemessage(bs.PowerupMessage('health'))
             p2 = bot.node.position
-            p2 = (p2[0]+0.7, p2[1]-0.3, p2[2])
-            PopupText(random.choice(nah_uh), position=p2, random_offset=0.3).autoretain()
+            p2 = (p2[0] + 0.7, p2[1] - 0.3, p2[2])
+            PopupText(
+                random.choice(nah_uh), position=p2, random_offset=0.3
+            ).autoretain()
             bot.curse()
-            def adapter(): Nice.spam_curse(Nice, bot)
+
+            def adapter():
+                Nice.spam_curse(Nice, bot)
+
             bs.timer(4.5, adapter)
 
     def update_alive_bots(s):
@@ -4633,7 +5480,10 @@ class Nice(igm):
     # fly override
     def spaz_bot_fly(s, self):
         def wrapper(b):
-            is_moving = abs(b.node.move_up_down) >= 0.01 or abs(b.node.move_left_right) >= 0.01
+            is_moving = (
+                abs(b.node.move_up_down) >= 0.01
+                or abs(b.node.move_left_right) >= 0.01
+            )
             if not b.node.exists():
                 return
             t = ba.apptime()
@@ -4650,22 +5500,78 @@ class Nice(igm):
                     p2 = p[1]
                     p3 = p[2]
                     r = b.node.run
-                    b.node.handlemessage("impulse", p1, 0.0+p2, p3, v1, v2,
-                                         v3, 0*r, 0*r, 0, 0, v1, v2, v3)
-                    b.node.handlemessage("impulse", p1, 3.6+p2, p3, v1, v2,
-                                         v3, 0*r, 0*r, 0, 0, v1, v2, v3)
-                    b.node.handlemessage('impulse', p1, p2+0.001, p3, 0,
-                                         0.2, 0, 200, 200, 0, 0, 0, 5, 0)
+                    b.node.handlemessage(
+                        "impulse",
+                        p1,
+                        0.0 + p2,
+                        p3,
+                        v1,
+                        v2,
+                        v3,
+                        0 * r,
+                        0 * r,
+                        0,
+                        0,
+                        v1,
+                        v2,
+                        v3,
+                    )
+                    b.node.handlemessage(
+                        "impulse",
+                        p1,
+                        3.6 + p2,
+                        p3,
+                        v1,
+                        v2,
+                        v3,
+                        0 * r,
+                        0 * r,
+                        0,
+                        0,
+                        v1,
+                        v2,
+                        v3,
+                    )
+                    b.node.handlemessage(
+                        'impulse',
+                        p1,
+                        p2 + 0.001,
+                        p3,
+                        0,
+                        0.2,
+                        0,
+                        200,
+                        200,
+                        0,
+                        0,
+                        0,
+                        5,
+                        0,
+                    )
                 b.last_jump_time_ms = t
             b._turbo_filter_add_press('jump')
+
         return wrapper
 
     def spaz_fly(s, _bot):
         if not _bot.node.exists():
             return
         _bot.node.handlemessage(
-            'impulse', _bot.node.position[0], _bot.node.position[1], _bot.node.position[2],
-            0.0, 0.0, 0.0, 200.0, 200.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+            'impulse',
+            _bot.node.position[0],
+            _bot.node.position[1],
+            _bot.node.position[2],
+            0.0,
+            0.0,
+            0.0,
+            200.0,
+            200.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+        )
 
     def cola_fill(s, widget, exclude=[]):
         if hasattr(widget, 'exists') and widget.exists():
@@ -4706,7 +5612,10 @@ class Nice(igm):
                             currently_dux += 1  # vanished
                     if currently_dux == len(lmao) + 1:
                         currently_dux = 0
-                    push(f'Switched control to {lmao[currently_dux]}', color=(0, 1, 1))
+                    push(
+                        f'Switched control to {lmao[currently_dux]}',
+                        color=(0, 1, 1),
+                    )
                     currently_txt = f"Now controlling\n{lmao[currently_dux]}"
                     s.draw(currently_txt)
                     bui.getsound('gunCocking').play()
@@ -4730,9 +5639,11 @@ class Nice(igm):
                 bot.on_pickup_press()
                 bot.on_pickup_release()
 
-    def set_x(s, x): s.thex = x
+    def set_x(s, x):
+        s.thex = x
 
-    def set_y(s, y): s.they = y
+    def set_y(s, y):
+        s.they = y
 
     def pls_move(s):
         global lmao_bots, move_on, currently_dux, move_x
@@ -4767,31 +5678,49 @@ class Nice(igm):
             nah = ignore
         global attrs
         title = 'Help' if w == 69123 else attrs[w] if w > 0 else node_attrs[-w]
-        desc = 'Tap on an attribute to view detailed help about it.\nI wrote this help myself by trying each,\nmay not be 100% accurate tho' if w == 69123 else welps[
-            w] if w > 0 else node_welps[-w]
-        welp_widget = bui.containerwidget(parent=bui.get_special_widget('overlay_stack'),
-                                          size=(400, 200 if title not in [
-                                                'custom_name', 'gravity_scale'] else 230),
-                                          color=cola,
-                                          stack_offset=s.soff,
-                                          transition=s.anim_in,
-                                          scale=s.scale)
+        desc = (
+            'Tap on an attribute to view detailed help about it.\nI wrote this help myself by trying each,\nmay not be 100% accurate tho'
+            if w == 69123
+            else welps[w] if w > 0 else node_welps[-w]
+        )
+        welp_widget = bui.containerwidget(
+            parent=bui.get_special_widget('overlay_stack'),
+            size=(
+                400,
+                200 if title not in ['custom_name', 'gravity_scale'] else 230,
+            ),
+            color=cola,
+            stack_offset=s.soff,
+            transition=s.anim_in,
+            scale=s.scale,
+        )
 
-        bui.textwidget(parent=welp_widget,
-                       color=(0.1, 0.7, 1),
-                       text=title,
-                       scale=s.scale,
-                       h_align='center',
-                       v_align='center',
-                       position=(170, 150 if title not in ['custom_name', 'gravity_scale'] else 180))
+        bui.textwidget(
+            parent=welp_widget,
+            color=(0.1, 0.7, 1),
+            text=title,
+            scale=s.scale,
+            h_align='center',
+            v_align='center',
+            position=(
+                170,
+                150 if title not in ['custom_name', 'gravity_scale'] else 180,
+            ),
+        )
 
-        bui.textwidget(parent=welp_widget,
-                       text=desc if not nah else "Attribute is only editable at first spawn,\nyou can remake the bot in that case." +
-                       ("\nThis change will be ignored." if ignore else ""),
-                       scale=s.scale/2,
-                       h_align='center',
-                       v_align='center',
-                       position=(180, 100))
+        bui.textwidget(
+            parent=welp_widget,
+            text=(
+                desc
+                if not nah
+                else "Attribute is only editable at first spawn,\nyou can remake the bot in that case."
+                + ("\nThis change will be ignored." if ignore else "")
+            ),
+            scale=s.scale / 2,
+            h_align='center',
+            v_align='center',
+            position=(180, 100),
+        )
 
         bacc = bui.buttonwidget(
             parent=welp_widget,
@@ -4801,7 +5730,8 @@ class Nice(igm):
             color=colb,
             textcolor=wht,
             position=(30, 30),
-            on_activate_call=bs.Call(s.kill, True, welp_widget, True))
+            on_activate_call=bs.Call(s.kill, True, welp_widget, True),
+        )
         bui.containerwidget(edit=welp_widget, cancel_button=bacc)
 
     # checkbox manager
@@ -4830,18 +5760,41 @@ class Nice(igm):
             Nice.drop_indox = i
         else:
             Nice.indox = i
-        nv = nice_view if not mod else nice2_view if mod != 69 else Nice.drop_view
+        nv = (
+            nice_view
+            if not mod
+            else nice2_view if mod != 69 else Nice.drop_view
+        )
         va = Nice.val_attrs if not mod else val_attrs2 if mod != 69 else None
-        nn = nice_name if not mod else nice2_name if mod != 69 else Nice.drop_name
+        nn = (
+            nice_name
+            if not mod
+            else nice2_name if mod != 69 else Nice.drop_name
+        )
         try:
-            bui.textwidget(edit=nn, text=bot_name[i] if mod not in [
-                           2, 3, 69] else effect_name[i] if mod != 69 else drop_name[i])
+            bui.textwidget(
+                edit=nn,
+                text=(
+                    bot_name[i]
+                    if mod not in [2, 3, 69]
+                    else effect_name[i] if mod != 69 else drop_name[i]
+                ),
+            )
         except:
             s.spawn(i, 0)
-        bui.buttonwidget(edit=nv, texture=bui.gettexture(
-            (bot_texture[i]+'Icon') if mod not in [2, 3, 69] else effect_texture[i] if mod != 69 else drop_texture[i]))
+        bui.buttonwidget(
+            edit=nv,
+            texture=bui.gettexture(
+                (bot_texture[i] + 'Icon')
+                if mod not in [2, 3, 69]
+                else effect_texture[i] if mod != 69 else drop_texture[i]
+            ),
+        )
         if mod not in [2, 3, 69]:
-            bui.buttonwidget(edit=nv, tint_texture=bui.gettexture(bot_texture[i]+'IconColorMask'))
+            bui.buttonwidget(
+                edit=nv,
+                tint_texture=bui.gettexture(bot_texture[i] + 'IconColorMask'),
+            )
             bui.buttonwidget(edit=nv, tint_color=va[6], tint2_color=va[11])
             va[1] = bot_name[i]
 
@@ -4874,8 +5827,10 @@ class Nice(igm):
         global move_on, lmao_chars, on_control, busy
         if busy:
             if Nice.pause_when_bots:
-                push('Already spawned a bot\nResume first to spawn another\nOr Turn off pause from Config', color=(
-                    1, 1, 0))
+                push(
+                    'Already spawned a bot\nResume first to spawn another\nOr Turn off pause from Config',
+                    color=(1, 1, 0),
+                )
             else:
                 push('too fast', color=(1, 1, 0))
             return
@@ -4891,8 +5846,11 @@ class Nice(igm):
             for k in ga().players:
                 if k.sessionplayer.inputdevice.client_id == -1:
                     p = k
-                    lmao.append(random.choice(random_bot_names).replace(
-                        '#', str(len(lmao))))  # NO_BOT)
+                    lmao.append(
+                        random.choice(random_bot_names).replace(
+                            '#', str(len(lmao))
+                        )
+                    )  # NO_BOT)
                     CustomBot.set_up(attrs, Nice.val_attrs)
             try:
                 p.customdata[lmao[-1]] = CustomBotSet(p)
@@ -4928,11 +5886,17 @@ class Nice(igm):
                     return
                 ding(f"Drew a line between you and position!")
                 if random.randint(1, 10) == 10:
-                    push('Tip: wait for some particles to die if line wasn\'t drawn')
+                    push(
+                        'Tip: wait for some particles to die if line wasn\'t drawn'
+                    )
                 for i in s.draw_line(co, me):
-                    bs.emitfx(position=i,
-                              scale=2, count=1, spread=0,
-                              chunk_type=chunk_types[0 if Nice.lite_mode else 1])
+                    bs.emitfx(
+                        position=i,
+                        scale=2,
+                        count=1,
+                        spread=0,
+                        chunk_type=chunk_types[0 if Nice.lite_mode else 1],
+                    )
             else:
                 ding(f"Particle spawned at position!")
                 s.hl(co)
@@ -4942,13 +5906,17 @@ class Nice(igm):
         def w():
             global mod_widget
             return mod_widget.exists()
+
         old = bot.node.color
-        old_off = (old[0]-5, old[1]-5, old[2]-5)
-        def hl4_off(bot, old_off): bot.node.color = old_off
+        old_off = (old[0] - 5, old[1] - 5, old[2] - 5)
+
+        def hl4_off(bot, old_off):
+            bot.node.color = old_off
 
         def hl4_on(bot, old):
             if w():
                 bot.node.color = old
+
         # that spaz is goin blinking fr
         if Nice.lite_mode:
             return
@@ -4968,7 +5936,7 @@ class Nice(igm):
                 continue
             # this nukes all bright colors, they look annoying anyway
             if c[0] >= 5:
-                b.node.color = (c[0]-5, c[1]-5, c[2]-5)
+                b.node.color = (c[0] - 5, c[1] - 5, c[2] - 5)
 
         try:
             for b in lmao_players:
@@ -4977,7 +5945,7 @@ class Nice(igm):
                 except:
                     continue
                 if c[0] >= 5:
-                    b.actor.node.color = (c[0]-5, c[1]-5, c[2]-5)
+                    b.actor.node.color = (c[0] - 5, c[1] - 5, c[2] - 5)
         except NameError:
             return
 
@@ -4989,12 +5957,16 @@ class Nice(igm):
             return
         if i is not None:
             try:
-                bot = lmao_bots[i].node if effect_bots else lmao_players[i].actor.node
+                bot = (
+                    lmao_bots[i].node
+                    if effect_bots
+                    else lmao_players[i].actor.node
+                )
             except IndexError:
                 return
             old = bot.color
             if set:
-                bot.color = (old[0]+5, old[1]+5, old[2]+5)
+                bot.color = (old[0] + 5, old[1] + 5, old[2] + 5)
 
     def hl2(s, p, instant=False):
         s.hl3(None)
@@ -5002,16 +5974,17 @@ class Nice(igm):
             return
         old = p.color
         n = 10
-        shade = (old[0]+n, old[1]+n, old[2]+n)
+        shade = (old[0] + n, old[1] + n, old[2] + n)
         p.color = shade
 
         def nah(n):
             n -= 0.01
-            shade = (old[0]+n, old[1]+n, old[2]+n)
+            shade = (old[0] + n, old[1] + n, old[2] + n)
             p.color = shade
             if old[0] > shade[0]:
                 return
             bs.apptimer(0.001, bs.Call(nah, n))
+
         bs.apptimer(0 if instant else 2, bs.Call(nah, n))
 
     def hl(s, p):
@@ -5021,9 +5994,14 @@ class Nice(igm):
             v1 = 1
             v2 = 3
         with ga().context:
-            bs.emitfx(position=p, tendril_type=tendril_types[1],
-                      scale=v1, count=v2, spread=0,
-                      chunk_type=chunk_types[0])
+            bs.emitfx(
+                position=p,
+                tendril_type=tendril_types[1],
+                scale=v1,
+                count=v2,
+                spread=0,
+                chunk_type=chunk_types[0],
+            )
 
     # TODO by-id positioning
     def use_my_pos(s, c2=False):
@@ -5038,7 +6016,15 @@ class Nice(igm):
             s.update_cords_view(c2)
         else:
             error('You are not in game')
-        s.kill(True, cords2_widget if c2 is True else cords_widget if c2 is False else s.where_drop_widget, c2)
+        s.kill(
+            True,
+            (
+                cords2_widget
+                if c2 is True
+                else cords_widget if c2 is False else s.where_drop_widget
+            ),
+            c2,
+        )
         bui.getsound('gunCocking').play()
 
     def get_my_pos(s):
@@ -5056,14 +6042,32 @@ class Nice(igm):
         global cords_view, cords, cords2_view, cords2
         c = cords2 if c2 is True else cords if c2 != 69 else Nice.drop_cords
         try:
-            bui.buttonwidget(edit=cords2_view if c2 is True else cords_view if c2 != 69 else s.drop_where,
-                             label=f"X: {c[0]}\nY: {c[1]}\nZ: {c[2]}" if c[0] != 69123 else 'Where To\nTeleport?' if c2 != 69 else "Where To\nDeploy?")
+            bui.buttonwidget(
+                edit=(
+                    cords2_view
+                    if c2 is True
+                    else cords_view if c2 != 69 else s.drop_where
+                ),
+                label=(
+                    f"X: {c[0]}\nY: {c[1]}\nZ: {c[2]}"
+                    if c[0] != 69123
+                    else (
+                        'Where To\nTeleport?'
+                        if c2 != 69
+                        else "Where To\nDeploy?"
+                    )
+                ),
+            )
         except TypeError:
             error("Join the game first bruh")
 
     # math is OP after all
     def draw_line(s, c, me):
-        def gd(c, me): return ((c[0] - me[0])**2 + (c[1] - me[1])**2 + (c[2] - me[2])**2)**0.5
+        def gd(c, me):
+            return (
+                (c[0] - me[0]) ** 2 + (c[1] - me[1]) ** 2 + (c[2] - me[2]) ** 2
+            ) ** 0.5
+
         d = gd(c, me)
         n = int(d)
         pol = []
@@ -5077,7 +6081,11 @@ class Nice(igm):
 
     def are_close(s, p1, p2, sus):
         try:
-            d = ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2 + (p1[2] - p2[2])**2)**0.5
+            d = (
+                (p1[0] - p2[0]) ** 2
+                + (p1[1] - p2[1]) ** 2
+                + (p1[2] - p2[2]) ** 2
+            ) ** 0.5
         except TypeError:
             return 1
         if d < sus:
@@ -5103,22 +6111,27 @@ class NicePick(bui.Window):
             tag=('color'),
             delegate=s,
             initial_color=u,
-            position=(700, 0))
+            position=(700, 0),
+        )
 
-    def _set_color(s, color): pass
+    def _set_color(s, color):
+        pass
 
     def color_picker_selected_color(s, picker, c):
         global hmm, val_attrs2, ins
         Nice.val_attrs[hmm] = c
-        bui.buttonwidget(edit=ins[hmm],
-                         label=f"{str(c[0]+0.01)[:3]} {str(c[1]+0.01)[:3]}, {str(c[2]+0.01)[:3]}",
-                         color=c,
-                         on_activate_call=bs.Call(NicePick, s, c, hmm),
-                         textcolor=(1-c[0], 1-c[1], 1-c[2]))
+        bui.buttonwidget(
+            edit=ins[hmm],
+            label=f"{str(c[0]+0.01)[:3]} {str(c[1]+0.01)[:3]}, {str(c[2]+0.01)[:3]}",
+            color=c,
+            on_activate_call=bs.Call(NicePick, s, c, hmm),
+            textcolor=(1 - c[0], 1 - c[1], 1 - c[2]),
+        )
         Nice.gather(Nice, False, False)
         val_attrs2[hmm] = c
 
-    def color_picker_closing(self, picker): pass
+    def color_picker_closing(self, picker):
+        pass
 
 
 class NicePick2(bui.Window):
@@ -5130,18 +6143,27 @@ class NicePick2(bui.Window):
             tag=('color'),
             delegate=s,
             initial_color=u,
-            position=(700, 0))
+            position=(700, 0),
+        )
 
-    def _set_color(s, color): pass
+    def _set_color(s, color):
+        pass
 
     def color_picker_selected_color(s, picker, c):
         global hmm2, val_attrs2, ins2
         val_attrs2[hmm2] = c
         bui.buttonwidget(
-            edit=ins2[hmm2], label=f"{str(c[0]+0.01)[:3]} {str(c[1]+0.01)[:3]}, {str(c[2]+0.01)[:3]}", color=c, textcolor=(1-c[0], 1-c[1], 1-c[2]))
-        bui.buttonwidget(edit=ins2[hmm2], on_activate_call=bs.Call(NicePick2, s, c, hmm2))
+            edit=ins2[hmm2],
+            label=f"{str(c[0]+0.01)[:3]} {str(c[1]+0.01)[:3]}, {str(c[2]+0.01)[:3]}",
+            color=c,
+            textcolor=(1 - c[0], 1 - c[1], 1 - c[2]),
+        )
+        bui.buttonwidget(
+            edit=ins2[hmm2], on_activate_call=bs.Call(NicePick2, s, c, hmm2)
+        )
 
-    def color_picker_closing(self, picker): pass
+    def color_picker_closing(self, picker):
+        pass
 
 
 class PickerLight(bui.Window):
@@ -5151,17 +6173,22 @@ class PickerLight(bui.Window):
             tag=('color'),
             delegate=s,
             initial_color=u,
-            position=(700, 0))
+            position=(700, 0),
+        )
 
-    def _set_color(s, color): pass
+    def _set_color(s, color):
+        pass
 
     def color_picker_selected_color(s, picker, c):
         bui.buttonwidget(edit=light_pick, color=c)
         bui.buttonwidget(edit=light_pick, textcolor=Nice.negate(Nice, c))
-        bui.buttonwidget(edit=light_pick, on_activate_call=bs.Call(PickerLight, c))
+        bui.buttonwidget(
+            edit=light_pick, on_activate_call=bs.Call(PickerLight, c)
+        )
         Nice.ga_tint = c
 
-    def color_picker_closing(self, picker): pass
+    def color_picker_closing(self, picker):
+        pass
 
 
 class PickerLol(bui.Window):
@@ -5171,64 +6198,103 @@ class PickerLol(bui.Window):
             tag=('color'),
             delegate=s,
             initial_color=u,
-            position=(700, 0))
+            position=(700, 0),
+        )
 
-    def _set_color(s, color): pass
+    def _set_color(s, color):
+        pass
 
     def color_picker_selected_color(s, picker, c):
         Nice.LTWAC = c
         bui.buttonwidget(edit=LTWAB, color=c)
         bui.buttonwidget(edit=LTWAB, textcolor=Nice.negate(Nice, c))
-        bui.buttonwidget(edit=LTWAB, on_activate_call=bs.Call(PickerLol, Nice.LTWAC))
+        bui.buttonwidget(
+            edit=LTWAB, on_activate_call=bs.Call(PickerLol, Nice.LTWAC)
+        )
 
-    def color_picker_closing(self, picker): pass
+    def color_picker_closing(self, picker):
+        pass
 
 
 class Picker(popup.PopupWindow):
     def __init__(s, mod=0):
         uiscale = bui.app.ui_v1.uiscale
-        scale = (1.9 if uiscale is ba.UIScale.SMALL else 1.6 if uiscale is ba.UIScale.MEDIUM else 1)
-        count = len(bot_texture) if mod not in [2, 69] else len(
-            effect_texture) if mod != 69 else len(drop_texture)
+        scale = (
+            1.9
+            if uiscale is ba.UIScale.SMALL
+            else 1.6 if uiscale is ba.UIScale.MEDIUM else 1
+        )
+        count = (
+            len(bot_texture)
+            if mod not in [2, 69]
+            else len(effect_texture) if mod != 69 else len(drop_texture)
+        )
         columns = 3
         rows = int(math.ceil(float(count) / columns))
         bw = 100
         bh = 100
         bbh = 10
         bbv = 15
-        s._width = (10 + columns * (bw + 2 * bbh) * (1.0 / 0.95) * (1.0 / 0.8))
+        s._width = 10 + columns * (bw + 2 * bbh) * (1.0 / 0.95) * (1.0 / 0.8)
         s._height = s._width * 0.8
         s._sw = s._width * 0.8
         s._sh = s._height * 0.9
         s._sp = ((s._width - s._sw) * 0.5, (s._height - s._sh) * 0.5)
-        popup.PopupWindow.__init__(s,
-                                   position=(550.0, 0.0),
-                                   size=(s._width, s._height),
-                                   scale=scale,
-                                   bg_color=(0, 0, 0),
-                                   focus_position=s._sp,
-                                   focus_size=(s._sw, s._sh))
-        s._scrollwidget = bui.scrollwidget(parent=s.root_widget,
-                                           size=(s._sw, s._sh),
-                                           color=(0, 0, 0),
-                                           position=s._sp)
+        popup.PopupWindow.__init__(
+            s,
+            position=(550.0, 0.0),
+            size=(s._width, s._height),
+            scale=scale,
+            bg_color=(0, 0, 0),
+            focus_position=s._sp,
+            focus_size=(s._sw, s._sh),
+        )
+        s._scrollwidget = bui.scrollwidget(
+            parent=s.root_widget,
+            size=(s._sw, s._sh),
+            color=(0, 0, 0),
+            position=s._sp,
+        )
         bui.containerwidget(edit=s._scrollwidget, claims_left_right=True)
         s._sub_width = s._sw * 0.95
         s._sub_height = 5 + rows * (bh + 2 * bbv) + 100
-        s._subcontainer = bui.containerwidget(parent=s._scrollwidget, size=(
-            s._sub_width, s._sub_height), background=False)
-        bui.textwidget(parent=s.root_widget,
-                       text='Select character (scroll)' if mod != 2 and mod != 69 else 'Select effect (scroll)' if mod != 69 else 'What to deploy? (scroll)',
-                       scale=scale/2,
-                       position=(130, 364))
+        s._subcontainer = bui.containerwidget(
+            parent=s._scrollwidget,
+            size=(s._sub_width, s._sub_height),
+            background=False,
+        )
+        bui.textwidget(
+            parent=s.root_widget,
+            text=(
+                'Select character (scroll)'
+                if mod != 2 and mod != 69
+                else (
+                    'Select effect (scroll)'
+                    if mod != 69
+                    else 'What to deploy? (scroll)'
+                )
+            ),
+            scale=scale / 2,
+            position=(130, 364),
+        )
         mask_texture = bui.gettexture('characterIconMask')  # good frame
         index = 0
         for y in range(rows):
             for x in range(columns):
-                pos = (x * (bw + 2 * bbh) + bbh, s._sub_height - (y + 1) * (bh + 2 * bbv) + 12)
+                pos = (
+                    x * (bw + 2 * bbh) + bbh,
+                    s._sub_height - (y + 1) * (bh + 2 * bbv) + 12,
+                )
                 try:
-                    icon = bui.gettexture(bot_texture[index] + 'Icon') if mod not in [2, 69] else bui.gettexture(
-                        effect_texture[index]) if mod != 69 else bui.gettexture(drop_texture[index])
+                    icon = (
+                        bui.gettexture(bot_texture[index] + 'Icon')
+                        if mod not in [2, 69]
+                        else (
+                            bui.gettexture(effect_texture[index])
+                            if mod != 69
+                            else bui.gettexture(drop_texture[index])
+                        )
+                    )
                 except IndexError:
                     return
                 btn = bui.buttonwidget(
@@ -5238,39 +6304,64 @@ class Picker(popup.PopupWindow):
                     size=(bw, bh),
                     autoselect=True,
                     texture=icon,
-                    tint_texture=(bui.gettexture(
-                        bot_texture[index]+'IconColorMask') if mod not in [2, 69] else None),
-                    tint_color=val_attrs2[6] if mod == 1 else None if mod in [
-                        2, 69] else Nice.val_attrs[6],
-                    tint2_color=val_attrs2[11] if mod == 1 else None if mod in [
-                        2, 69] else Nice.val_attrs[11],
+                    tint_texture=(
+                        bui.gettexture(bot_texture[index] + 'IconColorMask')
+                        if mod not in [2, 69]
+                        else None
+                    ),
+                    tint_color=(
+                        val_attrs2[6]
+                        if mod == 1
+                        else None if mod in [2, 69] else Nice.val_attrs[6]
+                    ),
+                    tint2_color=(
+                        val_attrs2[11]
+                        if mod == 1
+                        else None if mod in [2, 69] else Nice.val_attrs[11]
+                    ),
                     color=(1, 1, 1),
                     mask_texture=mask_texture,
                     label='',
-                    on_activate_call=bs.Call(s.ok, index, mod))
+                    on_activate_call=bs.Call(s.ok, index, mod),
+                )
                 bui.widget(edit=btn, show_buffer_top=60, show_buffer_bottom=60)
-                name = bot_name[index] if mod not in [
-                    2, 69] else effect_name[index] if mod != 69 else drop_name[index]
-                bui.textwidget(parent=s._subcontainer,
-                               text=name,
-                               position=(pos[0] + bw * 0.5, pos[1] - 12),
-                               size=(0, 0),
-                               scale=0.5,
-                               maxwidth=bw,
-                               draw_controller=btn,
-                               h_align='center',
-                               v_align='center')
+                name = (
+                    bot_name[index]
+                    if mod not in [2, 69]
+                    else effect_name[index] if mod != 69 else drop_name[index]
+                )
+                bui.textwidget(
+                    parent=s._subcontainer,
+                    text=name,
+                    position=(pos[0] + bw * 0.5, pos[1] - 12),
+                    size=(0, 0),
+                    scale=0.5,
+                    maxwidth=bw,
+                    draw_controller=btn,
+                    h_align='center',
+                    v_align='center',
+                )
                 index += 1
-                if index >= len(bot_texture if mod not in [2, 69] else effect_texture if mod != 69 else drop_texture):
+                if index >= len(
+                    bot_texture
+                    if mod not in [2, 69]
+                    else effect_texture if mod != 69 else drop_texture
+                ):
                     break  # brb
-            if index >= len(bot_texture if mod not in [2, 69] else effect_texture if mod != 69 else drop_texture):
+            if index >= len(
+                bot_texture
+                if mod not in [2, 69]
+                else effect_texture if mod != 69 else drop_texture
+            ):
                 break  # bye bye
 
     def ok(s, index, mod=False):
         global effect_bots
         bui.containerwidget(edit=s.root_widget, transition=anim_out)
         if index or index == 0:
-            Nice.spawn(Nice, index, mod if effect_bots or mod == 69 else mod + 1)
+            Nice.spawn(
+                Nice, index, mod if effect_bots or mod == 69 else mod + 1
+            )
 
     def on_popup_cancel(s) -> None:
         bui.getsound('swish').play()
@@ -5287,31 +6378,41 @@ class TexturePicker(popup.PopupWindow):
         bh = 100
         bbh = 10
         bbv = 15
-        s._width = (10 + columns * (bw + 2 * bbh) * (1.0 / 0.95) * (1.0 / 0.8))
+        s._width = 10 + columns * (bw + 2 * bbh) * (1.0 / 0.95) * (1.0 / 0.8)
         s._height = s._width * 0.8
         s._sw = s._width * 0.8
         s._sh = s._height * 0.9
         s._sp = ((s._width - s._sw) * 0.5, (s._height - s._sh) * 0.5)
-        popup.PopupWindow.__init__(s,
-                                   position=(550.0, 0.0),
-                                   size=(s._width, s._height),
-                                   scale=scale,
-                                   bg_color=(0, 0, 0),
-                                   focus_position=s._sp,
-                                   focus_size=(s._sw, s._sh))
-        s._scrollwidget = bui.scrollwidget(parent=s.root_widget,
-                                           size=(s._sw, s._sh),
-                                           color=(0, 0, 0),
-                                           position=s._sp)
+        popup.PopupWindow.__init__(
+            s,
+            position=(550.0, 0.0),
+            size=(s._width, s._height),
+            scale=scale,
+            bg_color=(0, 0, 0),
+            focus_position=s._sp,
+            focus_size=(s._sw, s._sh),
+        )
+        s._scrollwidget = bui.scrollwidget(
+            parent=s.root_widget,
+            size=(s._sw, s._sh),
+            color=(0, 0, 0),
+            position=s._sp,
+        )
         bui.containerwidget(edit=s._scrollwidget, claims_left_right=True)
         s._sub_width = s._sw * 0.95
         s._sub_height = 5 + rows * (bh + 2 * bbv) + 100
-        s._subcontainer = bui.containerwidget(parent=s._scrollwidget, size=(
-            s._sub_width, s._sub_height), background=False)
+        s._subcontainer = bui.containerwidget(
+            parent=s._scrollwidget,
+            size=(s._sub_width, s._sub_height),
+            background=False,
+        )
         index = 0
         for y in range(rows):
             for x in range(columns):
-                pos = (x * (bw + 2 * bbh) + bbh, s._sub_height - (y + 1) * (bh + 2 * bbv) + 12)
+                pos = (
+                    x * (bw + 2 * bbh) + bbh,
+                    s._sub_height - (y + 1) * (bh + 2 * bbv) + 12,
+                )
                 try:
                     icon = bui.gettexture(all_texture[index])
                 except IndexError:
@@ -5325,18 +6426,21 @@ class TexturePicker(popup.PopupWindow):
                     texture=icon,
                     color=(1, 1, 1),
                     label='',
-                    on_activate_call=bs.Call(s.ok, index))
+                    on_activate_call=bs.Call(s.ok, index),
+                )
                 bui.widget(edit=btn, show_buffer_top=60, show_buffer_bottom=60)
                 name = all_texture[index]
-                bui.textwidget(parent=s._subcontainer,
-                               text=name,
-                               position=(pos[0] + bw * 0.5, pos[1] - 12),
-                               size=(0, 0),
-                               scale=0.5,
-                               maxwidth=bw,
-                               draw_controller=btn,
-                               h_align='center',
-                               v_align='center')
+                bui.textwidget(
+                    parent=s._subcontainer,
+                    text=name,
+                    position=(pos[0] + bw * 0.5, pos[1] - 12),
+                    size=(0, 0),
+                    scale=0.5,
+                    maxwidth=bw,
+                    draw_controller=btn,
+                    h_align='center',
+                    v_align='center',
+                )
                 index += 1
                 if index >= len(all_texture):
                     break
@@ -5357,35 +6461,41 @@ class TexturePicker(popup.PopupWindow):
 
 
 # Initialize Arrays
-toxic = ["You can't run too far",
-         "You're dead",
-         "Keep running noob",
-         "Come here you deadmeat",
-         "It's about time",
-         "Do not resist your death",
-         "The instrument of doom",
-         "Your death is near",
-         "I see your fear, just die",
-         "COME HERE",
-         "KILL KILL KILL",
-         "I'm the OnePunchMan",
-         "STOP LET ME KILL U",
-         "YOU'RE ALMOST DEAD"]
+toxic = [
+    "You can't run too far",
+    "You're dead",
+    "Keep running noob",
+    "Come here you deadmeat",
+    "It's about time",
+    "Do not resist your death",
+    "The instrument of doom",
+    "Your death is near",
+    "I see your fear, just die",
+    "COME HERE",
+    "KILL KILL KILL",
+    "I'm the OnePunchMan",
+    "STOP LET ME KILL U",
+    "YOU'RE ALMOST DEAD",
+]
 
-toxic_win = ["HAHAHHAA",
-             "Easy noob",
-             "And stay dead",
-             "That was easy",
-             "HE'S DEAD.",
-             "YOU FAILED! HAHAH"]
+toxic_win = [
+    "HAHAHHAA",
+    "Easy noob",
+    "And stay dead",
+    "That was easy",
+    "HE'S DEAD.",
+    "YOU FAILED! HAHAH",
+]
 
-load_name = ["Beboo The GOAT",
-             "Kronk Buddy",
-             "Flying Pixel",
-             "Suicidal Jack (or not?)",
-             "Big Shiny TNT",
-             "Liying bomb",
-             "Huge Safe Mine"]
+load_name = [
+    "Beboo The GOAT",
+    "Kronk Buddy",
+    "Flying Pixel",
+    "Suicidal Jack (or not?)",
+    "Big Shiny TNT",
+    "Liying bomb",
+    "Huge Safe Mine",
+]
 
 random_team = [
     ["Cyan", (0, 1, 1)],
@@ -5417,83 +6527,223 @@ random_team = [
     ["Falcons", (0.75, 0.75, 0)],
     ["Wolves", (0.5, 0.5, 0.5)],
     ["Lions", (1, 0.5, 0.5)],
-    ["Panthers", (0.1, 0, 0.1)]
+    ["Panthers", (0.1, 0, 0.1)],
 ]
 
-node_attrs = ['gotta clean this code soon', 'gravity_scale', 'sticky',
-              'reflection=\'powerup\'', "reflection='soft'", "reflection_scale"]
-node_welps = ["i mean for real", "How likely is it to be pulled by the ground.\ndefault: 1.0, increasing makes it heavier\ndecreasing makes it lighter, it may even fly,\nnegative values cause object to fall up",
-              'When checked, object spawns sticky\nwhich sticks to anything lol', "reflect light like powerups do", "reflect light softly like bombs do", "how shiny the reflection can get, default is 1.2\nsetting to something like 40 results in\na very shiny object which looks cool"]
-powerup_name = ['triple_bombs', 'curse', 'health', 'ice_bombs',
-                'impact_bombs', 'land_mines', 'punch',
-                'shield', 'sticky_bombs']
-effect_texture = (['powerupBomb', 'powerupCurse', 'powerupHealth', 'powerupIceBombs',
-                   'powerupImpactBombs', 'powerupLandMines', 'powerupPunch',
-                   'powerupShield', 'powerupStickyBombs', 'graphicsIcon',
-                   'bombColorIce', 'touchArrowsActions', 'trophy',
-                   'crossOut', 'bonesIcon', 'lock',
-                   'achievementGotTheMoves', 'backIcon',
-                   'star', 'achievementCrossHair',
-                   'achievementOffYouGo', 'achievementFootballShutout',
-                   'achievementSuperPunch', 'leftButton',
-                   "buttonJump", "downButton"])
+node_attrs = [
+    'gotta clean this code soon',
+    'gravity_scale',
+    'sticky',
+    'reflection=\'powerup\'',
+    "reflection='soft'",
+    "reflection_scale",
+]
+node_welps = [
+    "i mean for real",
+    "How likely is it to be pulled by the ground.\ndefault: 1.0, increasing makes it heavier\ndecreasing makes it lighter, it may even fly,\nnegative values cause object to fall up",
+    'When checked, object spawns sticky\nwhich sticks to anything lol',
+    "reflect light like powerups do",
+    "reflect light softly like bombs do",
+    "how shiny the reflection can get, default is 1.2\nsetting to something like 40 results in\na very shiny object which looks cool",
+]
+powerup_name = [
+    'triple_bombs',
+    'curse',
+    'health',
+    'ice_bombs',
+    'impact_bombs',
+    'land_mines',
+    'punch',
+    'shield',
+    'sticky_bombs',
+]
+effect_texture = [
+    'powerupBomb',
+    'powerupCurse',
+    'powerupHealth',
+    'powerupIceBombs',
+    'powerupImpactBombs',
+    'powerupLandMines',
+    'powerupPunch',
+    'powerupShield',
+    'powerupStickyBombs',
+    'graphicsIcon',
+    'bombColorIce',
+    'touchArrowsActions',
+    'trophy',
+    'crossOut',
+    'bonesIcon',
+    'lock',
+    'achievementGotTheMoves',
+    'backIcon',
+    'star',
+    'achievementCrossHair',
+    'achievementOffYouGo',
+    'achievementFootballShutout',
+    'achievementSuperPunch',
+    'leftButton',
+    "buttonJump",
+    "downButton",
+]
 effect_texture.append("neoSpazIconColorMask")
 effect_texture.append("replayIcon")
 
-effect_name = ["Triple Bombs", "Curse", "Heal", "Ice Bombs", "Impact Bombs", "Land Mines",
-               "Gloves", "Energy Shield", "Sticky Bombs", "Shatter", "Freeze",
-               "Unfreeze", "Celebrate", "Stop Celebrating", "Kill", "Infinite Curse",
-               "Super Speed", "Normal Speed", "Invincible", "Beatable", "Sleep",
-               "Wake Up", "Super Punch", "Normal Punch", "Fly Jumps", "Normal Jumps"]
+effect_name = [
+    "Triple Bombs",
+    "Curse",
+    "Heal",
+    "Ice Bombs",
+    "Impact Bombs",
+    "Land Mines",
+    "Gloves",
+    "Energy Shield",
+    "Sticky Bombs",
+    "Shatter",
+    "Freeze",
+    "Unfreeze",
+    "Celebrate",
+    "Stop Celebrating",
+    "Kill",
+    "Infinite Curse",
+    "Super Speed",
+    "Normal Speed",
+    "Invincible",
+    "Beatable",
+    "Sleep",
+    "Wake Up",
+    "Super Punch",
+    "Normal Punch",
+    "Fly Jumps",
+    "Normal Jumps",
+]
 effect_name.append("GodMode Preset")
 effect_name.append("Reset All")
 
-effect_tips = ["PowerUp\nSets default_bomb_count\nvalue to 3 for a short while",
-               "PowerUp\nCurse the player, making\nthem explode in 5 seconds",
-               "PowerUp\nHeal the player, removing\nany curses and wounds!",
-               "PowerUp\nSets default_bomb_type\nvalue to ice for a short while",
-               "PowerUp\nSets default_bomb_type\nvalue to impact for a short while",
-               "PowerUp\nSets land_mine_count\nvalue to 3, decreased on use",
-               "PowerUp\nGives the player\nboxing gloves for a short while",
-               "PowerUp\nGives the player an\nenergy shield, decays over time",
-               "PowerUp\nSets default_bomb_type\nvalue to sticky for a short while",
-               "Effect\nShatters the player\ntearing them apart everywhere",
-               "Effect\nFreezes the player\nparalyzing them for an amount of time\nand calling FreezeMessage\ndoesn't work on shielded spazes",
-               "Effect\nImmediately unfreezes player\nmelting the ice and calling ThawMessage",
-               "Emote\nMakes the spaz celebrate forever!",
-               "Emote\nMakes the spaz stop celebrating!",
-               "Instant Effect\nImmediately kill the spaz\nfor good.",
-               "Effect Granter\nApply an infinite curse\non the poor spaz, although\ncurse -> heal -> repeat",
-               "Effect Granter\nApply super speed to bot\nsince I couldn't make it run\nbcz me nub",
-               "Effect Revoker\nReturn bot speed to normal\nin case you used super speed",
-               "Effect Granter\nMake the bot Invincible!\nwhich means it would be immune,\nmaking a weird rod sound upon\nbeing hit",
-               "Effect Revoker\nTake the invincibility off the bot\nmaking it valnurable",
-               "Effect Granter\nMake the bot have a nap that lasts forever.\nYes, they won't wake up",
-               "Effect Revoker\nWake the bot up if it's sleeping or so",
-               "Effect Granter\nTurn the bot into OnePunchMan\nin addition to removing\npunch cooldown",
-               "Effect Revoker\nRemoves super punch powers from bot",
-               "Effect Granter\nGives the bot unlimited jumps\nwhich makes it fly after each",
-               "Effect Revoker\nRemoves the fly jumps effect\nwhich returns old jumping behaviour"]
-effect_tips.append("Multiple Effect Granter\nGiven effects:\nSuper Punch\nInvincibility\nSpeed")
-effect_tips.append("Universal Effect Revoker\nRemoves all effects on bot,\nwho's laughing now?")
+effect_tips = [
+    "PowerUp\nSets default_bomb_count\nvalue to 3 for a short while",
+    "PowerUp\nCurse the player, making\nthem explode in 5 seconds",
+    "PowerUp\nHeal the player, removing\nany curses and wounds!",
+    "PowerUp\nSets default_bomb_type\nvalue to ice for a short while",
+    "PowerUp\nSets default_bomb_type\nvalue to impact for a short while",
+    "PowerUp\nSets land_mine_count\nvalue to 3, decreased on use",
+    "PowerUp\nGives the player\nboxing gloves for a short while",
+    "PowerUp\nGives the player an\nenergy shield, decays over time",
+    "PowerUp\nSets default_bomb_type\nvalue to sticky for a short while",
+    "Effect\nShatters the player\ntearing them apart everywhere",
+    "Effect\nFreezes the player\nparalyzing them for an amount of time\nand calling FreezeMessage\ndoesn't work on shielded spazes",
+    "Effect\nImmediately unfreezes player\nmelting the ice and calling ThawMessage",
+    "Emote\nMakes the spaz celebrate forever!",
+    "Emote\nMakes the spaz stop celebrating!",
+    "Instant Effect\nImmediately kill the spaz\nfor good.",
+    "Effect Granter\nApply an infinite curse\non the poor spaz, although\ncurse -> heal -> repeat",
+    "Effect Granter\nApply super speed to bot\nsince I couldn't make it run\nbcz me nub",
+    "Effect Revoker\nReturn bot speed to normal\nin case you used super speed",
+    "Effect Granter\nMake the bot Invincible!\nwhich means it would be immune,\nmaking a weird rod sound upon\nbeing hit",
+    "Effect Revoker\nTake the invincibility off the bot\nmaking it valnurable",
+    "Effect Granter\nMake the bot have a nap that lasts forever.\nYes, they won't wake up",
+    "Effect Revoker\nWake the bot up if it's sleeping or so",
+    "Effect Granter\nTurn the bot into OnePunchMan\nin addition to removing\npunch cooldown",
+    "Effect Revoker\nRemoves super punch powers from bot",
+    "Effect Granter\nGives the bot unlimited jumps\nwhich makes it fly after each",
+    "Effect Revoker\nRemoves the fly jumps effect\nwhich returns old jumping behaviour",
+]
+effect_tips.append(
+    "Multiple Effect Granter\nGiven effects:\nSuper Punch\nInvincibility\nSpeed"
+)
+effect_tips.append(
+    "Universal Effect Revoker\nRemoves all effects on bot,\nwho's laughing now?"
+)
 
-effect_message = ["triple_bombs", "curse", "health", "ice_bombs", "impact_bombs",
-                  "land_mines", "punch", "shield", "sticky_bombs"]
+effect_message = [
+    "triple_bombs",
+    "curse",
+    "health",
+    "ice_bombs",
+    "impact_bombs",
+    "land_mines",
+    "punch",
+    "shield",
+    "sticky_bombs",
+]
 
-bot_texture = (['neoSpaz', 'kronk', 'zoe', 'ninja', 'mel', 'jack', 'bunny',
-                'agent', 'penguin', 'cyborg', 'pixie', 'frosty', 'wizard',
-                'bear', 'ali', 'santa', 'bones'])
+bot_texture = [
+    'neoSpaz',
+    'kronk',
+    'zoe',
+    'ninja',
+    'mel',
+    'jack',
+    'bunny',
+    'agent',
+    'penguin',
+    'cyborg',
+    'pixie',
+    'frosty',
+    'wizard',
+    'bear',
+    'ali',
+    'santa',
+    'bones',
+]
 
-bot_name = (['Spaz', 'Kronk', 'Zoe', 'Snake Shadow', 'Mel', 'Jack Morgan', 'Easter Bunny',
-             'Agent Johnson', 'Pascal', 'B-9000', 'Pixel', 'Frosty',
-             'Grumbledorf', 'Bernard', 'Taobao Mascot', 'Santa Claus', 'Bones'])
+bot_name = [
+    'Spaz',
+    'Kronk',
+    'Zoe',
+    'Snake Shadow',
+    'Mel',
+    'Jack Morgan',
+    'Easter Bunny',
+    'Agent Johnson',
+    'Pascal',
+    'B-9000',
+    'Pixel',
+    'Frosty',
+    'Grumbledorf',
+    'Bernard',
+    'Taobao Mascot',
+    'Santa Claus',
+    'Bones',
+]
 
-bot_style = ["spaz", "kronk", "female", "ninja", "mel", "pirate",
-             "bunny", "agent", "penguin", "cyborg", "pixie",
-             "frosty", "wizard", "bear", "ali", "santa", "bones"]
+bot_style = [
+    "spaz",
+    "kronk",
+    "female",
+    "ninja",
+    "mel",
+    "pirate",
+    "bunny",
+    "agent",
+    "penguin",
+    "cyborg",
+    "pixie",
+    "frosty",
+    "wizard",
+    "bear",
+    "ali",
+    "santa",
+    "bones",
+]
 
-w_bot_name = ['Spas', 'Kornk', 'Girl', 'Ninja', 'Cook', 'Jack', 'Rabbit', 'Agent', 'Penguin',
-              'Robot', 'Angel', 'Snowman', 'Wizard', 'Bear', 'Santa', 'Skeleton']
+w_bot_name = [
+    'Spas',
+    'Kornk',
+    'Girl',
+    'Ninja',
+    'Cook',
+    'Jack',
+    'Rabbit',
+    'Agent',
+    'Penguin',
+    'Robot',
+    'Angel',
+    'Snowman',
+    'Wizard',
+    'Bear',
+    'Santa',
+    'Skeleton',
+]
 
 indox2 = 0
 effect_dux = 0
@@ -5513,61 +6763,182 @@ tendril_types = ['ice', 'smoke', 'thin_smoke']
 max_digits = 8
 nice_custom_text = '$'
 nice_custom_color = (0.7, 0.7, 0.7)
-attrs = ["bouncy", "character", "charge_dist_max", "charge_dist_min",
-         "charge_speed_max", "charge_speed_min", "color", "default_bomb_count",
-         "default_bomb_type", "default_boxing_gloves", "default_shields", "highlight", "punchiness", "run", "run_dist_min",
-         "demo_mode", "static", "throw_dist_max", "throw_dist_min", "throw_rate",
-         "throwiness", "can_accept_powerups", "start_invincible", 'attack_host', 'attack_players',
-         'attack_bots', 'attack_your_bots', 'custom_name', 'custom_name_color']
+attrs = [
+    "bouncy",
+    "character",
+    "charge_dist_max",
+    "charge_dist_min",
+    "charge_speed_max",
+    "charge_speed_min",
+    "color",
+    "default_bomb_count",
+    "default_bomb_type",
+    "default_boxing_gloves",
+    "default_shields",
+    "highlight",
+    "punchiness",
+    "run",
+    "run_dist_min",
+    "demo_mode",
+    "static",
+    "throw_dist_max",
+    "throw_dist_min",
+    "throw_rate",
+    "throwiness",
+    "can_accept_powerups",
+    "start_invincible",
+    'attack_host',
+    'attack_players',
+    'attack_bots',
+    'attack_your_bots',
+    'custom_name',
+    'custom_name_color',
+]
 not_editable = [21, 22]
-music_name = ["Char Select", "Chosen One", "Epic", "Epic Race", "Flag Catcher",
-              "Flying", "Football", "Forward March", "Grand Romp", "Hockey",
-              "Keep Away", "Marching", "Menu", "Onslaught", "Race",
-              "Runaway", "Scary", "Scores", "Sports", "Survival",
-              "To The Death", "Victory"]
+music_name = [
+    "Char Select",
+    "Chosen One",
+    "Epic",
+    "Epic Race",
+    "Flag Catcher",
+    "Flying",
+    "Football",
+    "Forward March",
+    "Grand Romp",
+    "Hockey",
+    "Keep Away",
+    "Marching",
+    "Menu",
+    "Onslaught",
+    "Race",
+    "Runaway",
+    "Scary",
+    "Scores",
+    "Sports",
+    "Survival",
+    "To The Death",
+    "Victory",
+]
 
-drop_texture = (['powerupBomb', 'powerupCurse', 'powerupHealth', 'powerupIceBombs',
-                 'powerupImpactBombs', 'powerupLandMines', 'powerupPunch',
-                 'powerupShield', 'powerupStickyBombs', 'tnt',
-                 "landMine", "landMineLit", "eggTex1", "eggTex2", "eggTex3", "white", "black",
-                 "bombColor", "impactBombColor", "bombStickyColor", "bombColorIce"])
-drop_name = ["Triple Bombs", "Curse", "Heal", "Ice Bombs", "Impact Bombs", "Land Mines",
-             "Gloves", "Energy Shield", "Sticky Bombs", 'TNT', 'Land Mine',
-             "Lit Land Mine", "Striped Egg", "Lined Egg", "Dotted Egg", "White Egg", "Black Egg",
-             "Bomb", "Impact Bomb", "Sticky Bomb", "Ice Bomb"]
+drop_texture = [
+    'powerupBomb',
+    'powerupCurse',
+    'powerupHealth',
+    'powerupIceBombs',
+    'powerupImpactBombs',
+    'powerupLandMines',
+    'powerupPunch',
+    'powerupShield',
+    'powerupStickyBombs',
+    'tnt',
+    "landMine",
+    "landMineLit",
+    "eggTex1",
+    "eggTex2",
+    "eggTex3",
+    "white",
+    "black",
+    "bombColor",
+    "impactBombColor",
+    "bombStickyColor",
+    "bombColorIce",
+]
+drop_name = [
+    "Triple Bombs",
+    "Curse",
+    "Heal",
+    "Ice Bombs",
+    "Impact Bombs",
+    "Land Mines",
+    "Gloves",
+    "Energy Shield",
+    "Sticky Bombs",
+    'TNT',
+    'Land Mine',
+    "Lit Land Mine",
+    "Striped Egg",
+    "Lined Egg",
+    "Dotted Egg",
+    "White Egg",
+    "Black Egg",
+    "Bomb",
+    "Impact Bomb",
+    "Sticky Bomb",
+    "Ice Bomb",
+]
 
-music_texture = ["neoSpazIcon", "achievementSuperPunch", "tipTopPreview", "bigGPreview", "bridgitPreview",
-                 "alwaysLandPreview", "achievementFootballVictory", "cragCastlePreview", "achievementFlawlessVictory", "hockeyStadiumPreview",
-                 "thePadPreview", "achievementRunaround", "logo", "doomShroomPreview", "lakeFrigidPreview",
-                 "monkeyFacePreview", "powerupCurse", "achievementFootballShutout", "footballStadiumPreview", "rampagePreview",
-                 "achievementOnslaught", "achievementMedalLarge"]
-music_desc = ["charSelectMusic.ogg", "survivalMusic.ogg", "slowEpicMusic.ogg", "slowEpicMusic.ogg", "flagCatcherMusic.ogg",
-              "flyingMusic.ogg", "sportsMusic.ogg", "forwardMarchMusic.ogg", "grandRompMusic.ogg", "sportsMusic.ogg",
-              "runAwayMusic.ogg", "whenJohnnyComesMarchingHomeMusic.ogg", "menuMusic.ogg", "runAwayMusic.ogg", "runAwayMusic.ogg",
-              "runAwayMusic.ogg", "scaryMusic.ogg", "scoresEpicMusic.ogg", "sportsMusic.ogg", "survivalMusic.ogg",
-              "toTheDeathMusic.ogg", "victoryMusic.ogg"]
-music_type = [bs.MusicType.CHAR_SELECT,
-              bs.MusicType.CHOSEN_ONE,
-              bs.MusicType.EPIC,
-              bs.MusicType.EPIC_RACE,
-              bs.MusicType.FLAG_CATCHER,
-              bs.MusicType.FLYING,
-              bs.MusicType.FOOTBALL,
-              bs.MusicType.FORWARD_MARCH,
-              bs.MusicType.GRAND_ROMP,
-              bs.MusicType.HOCKEY,
-              bs.MusicType.KEEP_AWAY,
-              bs.MusicType.MARCHING,
-              bs.MusicType.MENU,
-              bs.MusicType.ONSLAUGHT,
-              bs.MusicType.RACE,
-              bs.MusicType.RUN_AWAY,
-              bs.MusicType.SCARY,
-              bs.MusicType.SCORES,
-              bs.MusicType.SPORTS,
-              bs.MusicType.SURVIVAL,
-              bs.MusicType.TO_THE_DEATH,
-              bs.MusicType.VICTORY]
+music_texture = [
+    "neoSpazIcon",
+    "achievementSuperPunch",
+    "tipTopPreview",
+    "bigGPreview",
+    "bridgitPreview",
+    "alwaysLandPreview",
+    "achievementFootballVictory",
+    "cragCastlePreview",
+    "achievementFlawlessVictory",
+    "hockeyStadiumPreview",
+    "thePadPreview",
+    "achievementRunaround",
+    "logo",
+    "doomShroomPreview",
+    "lakeFrigidPreview",
+    "monkeyFacePreview",
+    "powerupCurse",
+    "achievementFootballShutout",
+    "footballStadiumPreview",
+    "rampagePreview",
+    "achievementOnslaught",
+    "achievementMedalLarge",
+]
+music_desc = [
+    "charSelectMusic.ogg",
+    "survivalMusic.ogg",
+    "slowEpicMusic.ogg",
+    "slowEpicMusic.ogg",
+    "flagCatcherMusic.ogg",
+    "flyingMusic.ogg",
+    "sportsMusic.ogg",
+    "forwardMarchMusic.ogg",
+    "grandRompMusic.ogg",
+    "sportsMusic.ogg",
+    "runAwayMusic.ogg",
+    "whenJohnnyComesMarchingHomeMusic.ogg",
+    "menuMusic.ogg",
+    "runAwayMusic.ogg",
+    "runAwayMusic.ogg",
+    "runAwayMusic.ogg",
+    "scaryMusic.ogg",
+    "scoresEpicMusic.ogg",
+    "sportsMusic.ogg",
+    "survivalMusic.ogg",
+    "toTheDeathMusic.ogg",
+    "victoryMusic.ogg",
+]
+music_type = [
+    bs.MusicType.CHAR_SELECT,
+    bs.MusicType.CHOSEN_ONE,
+    bs.MusicType.EPIC,
+    bs.MusicType.EPIC_RACE,
+    bs.MusicType.FLAG_CATCHER,
+    bs.MusicType.FLYING,
+    bs.MusicType.FOOTBALL,
+    bs.MusicType.FORWARD_MARCH,
+    bs.MusicType.GRAND_ROMP,
+    bs.MusicType.HOCKEY,
+    bs.MusicType.KEEP_AWAY,
+    bs.MusicType.MARCHING,
+    bs.MusicType.MENU,
+    bs.MusicType.ONSLAUGHT,
+    bs.MusicType.RACE,
+    bs.MusicType.RUN_AWAY,
+    bs.MusicType.SCARY,
+    bs.MusicType.SCORES,
+    bs.MusicType.SPORTS,
+    bs.MusicType.SURVIVAL,
+    bs.MusicType.TO_THE_DEATH,
+    bs.MusicType.VICTORY,
+]
 val_attrs2 = Nice.def_attrs.copy()  # for modifying, not creating
 val_arr = []
 type_attrs = [type(i).__name__ for i in Nice.def_attrs]
@@ -5596,59 +6967,150 @@ anim_in = 'in_right'
 anim_out = 'out_right'
 bomb_type = ['normal', 'impact', 'sticky', 'ice', 'land_mine', 'tnt']
 w_bomb_type = ['default', 'black', 'green', 'blue', 'mine', 'box']
-welps = ['When checked, the bot randomly jumps around,\nincreasing its damage',
-         'The way bot looks, more like of its "skin"\nIt has nothing to do with behavior',
-         'How close the bot needs to get to you\nbefore attempting to bomb you',
-         'How far the bot needs to get away from you\nbefore attempting to bomb you',
-         'The limit of bomb reload speed which the bot\ncan\'t go any faster',
-         'The limit of bomb reload speed which the bot\ncan\'t go any slower',
-         'The main color of the bot, Has nothing to do\nwith its behaviour',
-         'How much bombs the bot is allowed to throw\nin a row before the old ones explode.\nBlud has the triple bomb by default rip',
-         'The type of the bomb which the bot throws,\navailable types are\nnormal, sticky, impact, ice, tnt and land_mine',
-         'When checked, the bot will spawn with a shield.\nUnfair naa?',
-         'When checked, the bot will spawn with gloves.\nClick spawn and start running away.',
-         'The side color of bot, covers places which the\ncolor attribute doesn\'t',
-         'How likely is the bot to punch, simply\nincrease this enough and it\'s gonna spam punch lol',
-         'When checked, the bot is allowed to run,\nincreasing its damage',
-         'How far the bot needs to be to start running',
-         'I have no idea what is this,\npreviously this was start_cursed but\nI removed it because it was annoying',
-         'When checked, the bot will not try to follow you,\ninstead, will try to bomb you from a remote distance.\nSpaz\'es in Rookie Onslaught have this by default.',
-         'How far the distance needed by bot\nbefore throwing a bomb\nsimilar to charge, but throw!',
-         'How close the distance needed\nso the bot stops throwing',
-         'How likely is the bot to spam bombs',
-         'How pro the bot can be at predicting your next move\nand throwing a bomb at a place you would be in',
-         "When checked, bot can collect powerups!",
-         "hen checked, bot spawns invincible for a short while",
-         "When checked, the bot attacks the game host,\nother players have another check",
-         "When checked, the bot attacks all players\nexcept the host, which has his own check",
-         "When checked, the bot attacks other bots,\nexcept its friends, the bots that\nYOU spawned.",
-         "When checked, the bot betrays other bots\nthat YOU spawned, for bots that you\ndidn\'t spawn exists another check",
-         "Gives the bot a nice name!\nBot mame appears above its head.\nSet to '%' to follow default name,\nset to '$' to follow bot's control codename",
-         "The color of bot's custom_name"]
+welps = [
+    'When checked, the bot randomly jumps around,\nincreasing its damage',
+    'The way bot looks, more like of its "skin"\nIt has nothing to do with behavior',
+    'How close the bot needs to get to you\nbefore attempting to bomb you',
+    'How far the bot needs to get away from you\nbefore attempting to bomb you',
+    'The limit of bomb reload speed which the bot\ncan\'t go any faster',
+    'The limit of bomb reload speed which the bot\ncan\'t go any slower',
+    'The main color of the bot, Has nothing to do\nwith its behaviour',
+    'How much bombs the bot is allowed to throw\nin a row before the old ones explode.\nBlud has the triple bomb by default rip',
+    'The type of the bomb which the bot throws,\navailable types are\nnormal, sticky, impact, ice, tnt and land_mine',
+    'When checked, the bot will spawn with a shield.\nUnfair naa?',
+    'When checked, the bot will spawn with gloves.\nClick spawn and start running away.',
+    'The side color of bot, covers places which the\ncolor attribute doesn\'t',
+    'How likely is the bot to punch, simply\nincrease this enough and it\'s gonna spam punch lol',
+    'When checked, the bot is allowed to run,\nincreasing its damage',
+    'How far the bot needs to be to start running',
+    'I have no idea what is this,\npreviously this was start_cursed but\nI removed it because it was annoying',
+    'When checked, the bot will not try to follow you,\ninstead, will try to bomb you from a remote distance.\nSpaz\'es in Rookie Onslaught have this by default.',
+    'How far the distance needed by bot\nbefore throwing a bomb\nsimilar to charge, but throw!',
+    'How close the distance needed\nso the bot stops throwing',
+    'How likely is the bot to spam bombs',
+    'How pro the bot can be at predicting your next move\nand throwing a bomb at a place you would be in',
+    "When checked, bot can collect powerups!",
+    "hen checked, bot spawns invincible for a short while",
+    "When checked, the bot attacks the game host,\nother players have another check",
+    "When checked, the bot attacks all players\nexcept the host, which has his own check",
+    "When checked, the bot attacks other bots,\nexcept its friends, the bots that\nYOU spawned.",
+    "When checked, the bot betrays other bots\nthat YOU spawned, for bots that you\ndidn\'t spawn exists another check",
+    "Gives the bot a nice name!\nBot mame appears above its head.\nSet to '%' to follow default name,\nset to '$' to follow bot's control codename",
+    "The color of bot's custom_name",
+]
 
 # For Nice.what_is
-what_is_arr = [["tnt", "TNT"],
-               ["powerup", "PUP"]]
+what_is_arr = [["tnt", "TNT"], ["powerup", "PUP"]]
 
 # BotName Builder
 random_bot_names = [
-    "Gapple#", "iPun#", "BathRom#", "double#", "Times#", "InsertName#", "ShutUp#", "Botty#", "Bottie#", "Clumsy#",
-    "Cheeky#", "Phucc#", "Cope#", "Bebo#", "Sike#", "AwMan#", "Putt#", "Nuts#", "Kids#", "Poo#",
-    "Bang#", "Sus#", "OnCrack#", "Cadeau#", "Bureau#", "Yasta#", "Eshta#", "YaZmele#", "7abibo#", "Straight#",
-    "Egg#", "NotEgg#", "MaybeEgg#", "ProbEgg#", "YouEgg#", "YouNoob#", "Nub#", "HahaNoob#", "LMAO#", "LOL#",
-    "Bomb#", "FrBro?#", "ForReal#", "RealOrFake#", "Real#", "Fake#", "UnFake#", "Realn't#", "Bruh#", "Stop#",
-    "SnapDrag#", "Exynos#", "Lagsynos#", "GnuNano#", "Lynx#", "How#", "TeachMe#", "Scam#", "Cap#", "ScamSung#",
-    "iBot#", "Just#", "I'mNot#", "Run#", "EzNoob#", "GoSleep#", "Pain#", "GalaxyTabA#", "GalaxyA#", "GalaxyS#",
-    "GalaxyM#", "ReleasedV#", "MtkGen#", "MediaTek#", "IntelI#", "IndexIs#", "MyOrder#", "Grep#", "KaliLinux#", "Bios#",
-    "Ftw#", "Tldr#", "Simp#", "MrSmoth#", "Bordd#", "Geh#", "KillMe#", "Bruda#", "Otg#"
+    "Gapple#",
+    "iPun#",
+    "BathRom#",
+    "double#",
+    "Times#",
+    "InsertName#",
+    "ShutUp#",
+    "Botty#",
+    "Bottie#",
+    "Clumsy#",
+    "Cheeky#",
+    "Phucc#",
+    "Cope#",
+    "Bebo#",
+    "Sike#",
+    "AwMan#",
+    "Putt#",
+    "Nuts#",
+    "Kids#",
+    "Poo#",
+    "Bang#",
+    "Sus#",
+    "OnCrack#",
+    "Cadeau#",
+    "Bureau#",
+    "Yasta#",
+    "Eshta#",
+    "YaZmele#",
+    "7abibo#",
+    "Straight#",
+    "Egg#",
+    "NotEgg#",
+    "MaybeEgg#",
+    "ProbEgg#",
+    "YouEgg#",
+    "YouNoob#",
+    "Nub#",
+    "HahaNoob#",
+    "LMAO#",
+    "LOL#",
+    "Bomb#",
+    "FrBro?#",
+    "ForReal#",
+    "RealOrFake#",
+    "Real#",
+    "Fake#",
+    "UnFake#",
+    "Realn't#",
+    "Bruh#",
+    "Stop#",
+    "SnapDrag#",
+    "Exynos#",
+    "Lagsynos#",
+    "GnuNano#",
+    "Lynx#",
+    "How#",
+    "TeachMe#",
+    "Scam#",
+    "Cap#",
+    "ScamSung#",
+    "iBot#",
+    "Just#",
+    "I'mNot#",
+    "Run#",
+    "EzNoob#",
+    "GoSleep#",
+    "Pain#",
+    "GalaxyTabA#",
+    "GalaxyA#",
+    "GalaxyS#",
+    "GalaxyM#",
+    "ReleasedV#",
+    "MtkGen#",
+    "MediaTek#",
+    "IntelI#",
+    "IndexIs#",
+    "MyOrder#",
+    "Grep#",
+    "KaliLinux#",
+    "Bios#",
+    "Ftw#",
+    "Tldr#",
+    "Simp#",
+    "MrSmoth#",
+    "Bordd#",
+    "Geh#",
+    "KillMe#",
+    "Bruda#",
+    "Otg#",
 ]
 
 # infinite curse pop ups
-nah_uh = ["naah uh", "not today", "reset that counter!", "I'm stayin alive",
-          "not in mood\nto explood", "Not today,\nthank you.",
-          "Let that 1\nbecome a 5", "boomn't, let's\ntry again",
-          "Infinite curse\non duty!", "3.. 2.. 1.. repeat!", "this takes forever",
-          "nope, try again", "The power of\nthe infinite curse!"]
+nah_uh = [
+    "naah uh",
+    "not today",
+    "reset that counter!",
+    "I'm stayin alive",
+    "not in mood\nto explood",
+    "Not today,\nthank you.",
+    "Let that 1\nbecome a 5",
+    "boomn't, let's\ntry again",
+    "Infinite curse\non duty!",
+    "3.. 2.. 1.. repeat!",
+    "this takes forever",
+    "nope, try again",
+    "The power of\nthe infinite curse!",
+]
 
 for i in range(len(nah_uh)):
     nah_uh.append("")  # 50% chance to say nothing
@@ -5658,21 +7120,42 @@ def meow_patch(og):
     def wrapper(self, msg: Any) -> Any:
         #        print(msg)
         if isinstance(msg, bs.DieMessage):
-            if msg.how == bs.DeathType.IMPACT and self.node.getdelegate(object) not in Nice.toxic_bots:
+            if (
+                msg.how == bs.DeathType.IMPACT
+                and self.node.getdelegate(object) not in Nice.toxic_bots
+            ):
                 Nice.toxic_celebrate(Nice)
             global on_control
-            if msg.how == bs.DeathType.IMPACT and hasattr(self.node.getdelegate(object), 'source_player') and on_control:
+            if (
+                msg.how == bs.DeathType.IMPACT
+                and hasattr(self.node.getdelegate(object), 'source_player')
+                and on_control
+            ):
                 on_control = False
                 Nice.assign(Nice)
-                push('Control will stop when your corpse vanish LOL', color=(0, 1, 1))
-        elif isinstance(msg, bs.ImpactDamageMessage) and hasattr(self.node.getdelegate(object), 'source_player') and self.node.getdelegate(object).node.invincible:
+                push(
+                    'Control will stop when your corpse vanish LOL',
+                    color=(0, 1, 1),
+                )
+        elif (
+            isinstance(msg, bs.ImpactDamageMessage)
+            and hasattr(self.node.getdelegate(object), 'source_player')
+            and self.node.getdelegate(object).node.invincible
+        ):
             pos = self.node.getdelegate(object).node.position
             with ga().context:
                 bs.timer(0.001, bs.Call(Nice.phew, Nice, pos))
             return
-        elif isinstance(msg, bs.PowerupMessage) and msg.poweruptype == 'punch' and hasattr(self.node.getdelegate(object), "_super") and self.node.getdelegate(object)._super:
+        elif (
+            isinstance(msg, bs.PowerupMessage)
+            and msg.poweruptype == 'punch'
+            and hasattr(self.node.getdelegate(object), "_super")
+            and self.node.getdelegate(object)._super
+        ):
             if on_control:
-                push('Gloves have canceled your Super Punch effect\nDon\'t worry, restoring Super Punch')
+                push(
+                    'Gloves have canceled your Super Punch effect\nDon\'t worry, restoring Super Punch'
+                )
             bot = self.node.getdelegate(object)
             with ga().context:
                 bs.timer(0.01, bs.Call(Nice.give_sp, Nice, bot))
@@ -5681,6 +7164,7 @@ def meow_patch(og):
             return og(self, msg)
         except:
             pass  # safe mines are gay
+
     return wrapper
 
 
@@ -5718,13 +7202,15 @@ class CustomBot(SpazBot):
                 setattr(cls, key, value)
 
     def __init__(self, player) -> None:
-        Spaz.__init__(self,
-                      color=self.color,
-                      highlight=self.highlight,
-                      character=self.character,
-                      source_player=None,
-                      start_invincible=self.start_invincible,
-                      can_accept_powerups=self.can_accept_powerups)
+        Spaz.__init__(
+            self,
+            color=self.color,
+            highlight=self.highlight,
+            character=self.character,
+            source_player=None,
+            start_invincible=self.start_invincible,
+            can_accept_powerups=self.can_accept_powerups,
+        )
         self.update_callback: Optional[Callable[[SpazBot], Any]] = None
         activity = self.activity
         assert isinstance(activity, bs.GameActivity)
@@ -5736,8 +7222,9 @@ class CustomBot(SpazBot):
         self.held_count = 0
         self.last_player_held_by: Optional[bs.Player] = None
         self.target_flag: Optional[Flag] = None
-        self._charge_speed = 0.5 * (self.charge_speed_min +
-                                    self.charge_speed_max)
+        self._charge_speed = 0.5 * (
+            self.charge_speed_min + self.charge_speed_max
+        )
         self._lead_amount = 0.5
         self._mode = 'wait'
         self._charge_closing_in = False
@@ -5761,10 +7248,16 @@ class CustomBot(SpazBot):
                         if not s._dead:
                             move_on += 1
                             if Nice.notify_bot_ded:
-                                push(f'{lmao[lmao_bots.index(s)]} has died!', color=(1, 0, 1))
+                                push(
+                                    f'{lmao[lmao_bots.index(s)]} has died!',
+                                    color=(1, 0, 1),
+                                )
                             p = self.node.position  # PEPSI
                             if dux == lmao_bots.index(s) and on_control:
-                                push('the bot you are controlling has died LMAO', color=(1, 0.2, 0.7))
+                                push(
+                                    'the bot you are controlling has died LMAO',
+                                    color=(1, 0.2, 0.7),
+                                )
                                 on_control = False
                                 allow_assign = True
                                 Nice.assign(Nice)
@@ -5779,14 +7272,15 @@ class CustomBot(SpazBot):
                 if self.play_big_death_sound and not wasdead:
                     SpazFactory.get().single_player_death_sound.play()
                 self.node.dead = True
-                bs.timer(2.0, self.node.delete)  # TODO ragdoll erase time settings
+                bs.timer(
+                    2.0, self.node.delete
+                )  # TODO ragdoll erase time settings
         else:
             return super().handlemessage(msg)
 
 
 class CustomBotSet(SpazBotSet):
-    def __init__(self,
-                 source_player: bs.Player = None) -> None:
+    def __init__(self, source_player: bs.Player = None) -> None:
         self._bot_list_count = 5
         self._bot_add_list = 0
         self._bot_update_list = 0
@@ -5801,17 +7295,19 @@ class CustomBotSet(SpazBotSet):
 
     def do_custom(self) -> None:
         global cords
-        self.spawn_bot(CustomBot,
-                       cords,
-                       0, self.setup_custom)
+        self.spawn_bot(CustomBot, cords, 0, self.setup_custom)
 
     def start_moving_customs(self) -> None:
-        self._bot_update_timer = bs.Timer(0.05,
-                                          bs.WeakCall(self._bupdate),
-                                          repeat=True)
+        self._bot_update_timer = bs.Timer(
+            0.05, bs.WeakCall(self._bupdate), repeat=True
+        )
 
-    def _spawn_bot(self, bot_type: type[SpazBot], pos: Sequence[float],
-                   on_spawn_call: Optional[Callable[[SpazBot], Any]]) -> None:
+    def _spawn_bot(
+        self,
+        bot_type: type[SpazBot],
+        pos: Sequence[float],
+        on_spawn_call: Optional[Callable[[SpazBot], Any]],
+    ) -> None:
         spaz = bot_type(self.source_player)
         self._spawn_sound.play(position=pos)
         spaz.node.handlemessage('flash')
@@ -5826,9 +7322,9 @@ class CustomBotSet(SpazBotSet):
     def _bupdate(self) -> None:
         global LAH, LAP, LAB, LAF, lmao_bots
         nuds = bs.getnodes()
-        bot_list = self._bot_lists[self._bot_update_list] = ([
+        bot_list = self._bot_lists[self._bot_update_list] = [
             b for b in self._bot_lists[self._bot_update_list] if b
-        ])
+        ]
         player_pts = []
         not_host = []
         bad_bots = []
@@ -5840,20 +7336,20 @@ class CustomBotSet(SpazBotSet):
                 if isinstance(s, SpazBot):
                     if not s in self.get_living_bots():
                         if hasattr(s, 'source_player'):
-                            player_pts.append((
-                                bs.Vec3(n.position),
-                                bs.Vec3(n.velocity)))
+                            player_pts.append(
+                                (bs.Vec3(n.position), bs.Vec3(n.velocity))
+                            )
                             if s.source_player is self.source_player:
                                 good_bots.append(player_pts[-1])
                         else:
-                            player_pts.append((
-                                bs.Vec3(n.position),
-                                bs.Vec3(n.velocity)))
+                            player_pts.append(
+                                (bs.Vec3(n.position), bs.Vec3(n.velocity))
+                            )
                             bad_bots.append(player_pts[-1])
                 elif isinstance(s, PlayerSpaz):
-                    player_pts.append((
-                        bs.Vec3(n.position),
-                        bs.Vec3(n.velocity)))
+                    player_pts.append(
+                        (bs.Vec3(n.position), bs.Vec3(n.velocity))
+                    )
                     bowl = s.getplayer(bs.Player, True) is self.source_player
                     if bowl:
                         host = player_pts[-1]
@@ -5904,26 +7400,31 @@ class CustomBotSet(SpazBotSet):
     def set_custom_text(self, spaz) -> None:  # FLOAT
         global nice_custom_text, nice_custom_color, testa
         try:
-            m = bs.newnode('math',
-                           owner=spaz.node,
-                           attrs={'input1': (0, 1.2, 0),
-                                  'operation': 'add'})
+            m = bs.newnode(
+                'math',
+                owner=spaz.node,
+                attrs={'input1': (0, 1.2, 0), 'operation': 'add'},
+            )
             spaz.node.connectattr('position', m, 'input2')
             test = spaz._custom_text = bs.newnode(
                 'text',
                 owner=spaz.node,
-                attrs={'text': nice_custom_text,
-                       'in_world': True,
-                       'shadow': 1.0,
-                       'flatness': 1.0,
-                       'color': nice_custom_color,
-                       'scale': 0.0,
-                       'h_align': 'center'})
+                attrs={
+                    'text': nice_custom_text,
+                    'in_world': True,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'color': nice_custom_color,
+                    'scale': 0.0,
+                    'h_align': 'center',
+                },
+            )
             m.connectattr('output', spaz._custom_text, 'position')
             bs.animate(spaz._custom_text, 'scale', {0: 0.0, 0.5: 0.01})
             testa.append(test)
         except:
             pass
+
 
 # ba_meta require api 9
 # BroBordd touch grass

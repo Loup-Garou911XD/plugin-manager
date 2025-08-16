@@ -49,8 +49,10 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
     """
 
     name = 'Invisible One'
-    description = ('Be the invisible one for a length of time to win.\n'
-                   'Kill the invisible one to become it.')
+    description = (
+        'Be the invisible one for a length of time to win.\n'
+        'Kill the invisible one to become it.'
+    )
     available_settings = [
         bs.IntSetting(
             'Invicible One Time',
@@ -106,7 +108,7 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
             4: bs.getsound('announceFour'),
             3: bs.getsound('announceThree'),
             2: bs.getsound('announceTwo'),
-            1: bs.getsound('announceOne')
+            1: bs.getsound('announceOne'),
         }
         self._flag_spawn_pos: Optional[Sequence[float]] = None
         self._reset_region_material: Optional[bs.Material] = None
@@ -120,8 +122,9 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
 
         # Base class overrides
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.CHOSEN_ONE)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.CHOSEN_ONE
+        )
 
     def get_instance_description(self) -> Union[str, Sequence]:
         return 'Show your invisibility powers.'
@@ -161,19 +164,19 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', False),
-                ('call', 'at_connect',
-                 bs.WeakCall(self._handle_reset_collide)),
+                ('call', 'at_connect', bs.WeakCall(self._handle_reset_collide)),
             ),
         )
 
-        self._reset_region = bs.newnode('region',
-                                        attrs={
-                                            'position': (pos[0], pos[1] + 0.75,
-                                                         pos[2]),
-                                            'scale': (0.5, 0.5, 0.5),
-                                            'type': 'sphere',
-                                            'materials': [mat]
-                                        })
+        self._reset_region = bs.newnode(
+            'region',
+            attrs={
+                'position': (pos[0], pos[1] + 0.75, pos[2]),
+                'scale': (0.5, 0.5, 0.5),
+                'type': 'sphere',
+                'materials': [mat],
+            },
+        )
 
     def _get_invicible_one_player(self) -> Optional[Player]:
         # Should never return invalid references; return None in that case.
@@ -188,8 +191,11 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
 
         # Attempt to get a Player controlling a Spaz that we hit.
         try:
-            player = bs.getcollision().opposingnode.getdelegate(
-                PlayerSpaz, True).getplayer(Player, True)
+            player = (
+                bs.getcollision()
+                .opposingnode.getdelegate(PlayerSpaz, True)
+                .getplayer(Player, True)
+            )
         except bs.NotFoundError:
             return
 
@@ -197,13 +203,15 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
             self._set_invicible_one_player(player)
 
     def _flash_flag_spawn(self) -> None:
-        light = bs.newnode('light',
-                           attrs={
-                               'position': self._flag_spawn_pos,
-                               'color': (1, 1, 1),
-                               'radius': 0.3,
-                               'height_attenuated': False
-                           })
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': self._flag_spawn_pos,
+                'color': (1, 1, 1),
+                'radius': 0.3,
+                'height_attenuated': False,
+            },
+        )
         bs.animate(light, 'intensity', {0: 0, 0.25: 0.5, 0.5: 0}, loop=True)
         bs.timer(1.0, light.delete)
 
@@ -220,13 +228,13 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
             else:
                 scoring_team = player.team
                 assert self.stats
-                self.stats.player_scored(player,
-                                         3,
-                                         screenmessage=False,
-                                         display=False)
+                self.stats.player_scored(
+                    player, 3, screenmessage=False, display=False
+                )
 
                 scoring_team.time_remaining = max(
-                    0, scoring_team.time_remaining - 1)
+                    0, scoring_team.time_remaining - 1
+                )
 
                 self._update_scoreboard()
 
@@ -243,14 +251,17 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
             # (Chosen-one player ceasing to exist should
             # trigger on_player_leave which resets chosen-one)
             if self._invicible_one_player is not None:
-                babase.print_error('got nonexistent player as chosen one in _tick')
+                babase.print_error(
+                    'got nonexistent player as chosen one in _tick'
+                )
                 self._set_invicible_one_player(None)
 
     def end_game(self) -> None:
         results = bs.GameResults()
         for team in self.teams:
-            results.set_team_score(team,
-                                   self._invicible_one_time - team.time_remaining)
+            results.set_team_score(
+                team, self._invicible_one_time - team.time_remaining
+            )
         self.end(results=results, announce_delay=0)
 
     def _set_invicible_one_player(self, player: Optional[Player]) -> None:
@@ -260,23 +271,27 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
         self._swipsound.play()
         if not player:
             assert self._flag_spawn_pos is not None
-            self._flag = Flag(color=(1, 0.9, 0.2),
-                              position=self._flag_spawn_pos,
-                              touchable=False)
+            self._flag = Flag(
+                color=(1, 0.9, 0.2),
+                position=self._flag_spawn_pos,
+                touchable=False,
+            )
             self._invicible_one_player = None
 
             # Create a light to highlight the flag;
             # this will go away when the flag dies.
-            bs.newnode('light',
-                       owner=self._flag.node,
-                       attrs={
-                           'position': self._flag_spawn_pos,
-                           'intensity': 0.6,
-                           'height_attenuated': False,
-                           'volume_intensity_scale': 0.1,
-                           'radius': 0.1,
-                           'color': (1.2, 1.2, 0.4)
-                       })
+            bs.newnode(
+                'light',
+                owner=self._flag.node,
+                attrs={
+                    'position': self._flag_spawn_pos,
+                    'intensity': 0.6,
+                    'height_attenuated': False,
+                    'volume_intensity_scale': 0.1,
+                    'radius': 0.1,
+                    'color': (1.2, 1.2, 0.4),
+                },
+            )
 
             # Also an extra momentary flash.
             self._flash_flag_spawn()
@@ -287,7 +302,10 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
 
                 if self._invicible_one_is_lazy:
                     player.actor.connect_controls_to_player(
-                        enable_punch=False, enable_pickup=False, enable_bomb=False)
+                        enable_punch=False,
+                        enable_pickup=False,
+                        enable_bomb=False,
+                    )
                 if player.actor.node.torso_mesh != None:
                     player.actor.node.color_mask_texture = None
                     player.actor.node.color_texture = None
@@ -318,16 +336,24 @@ class InvicibleOneGame(bs.TeamGameActivity[Player, Team]):
             player = msg.getplayer(Player)
             if player is self._get_invicible_one_player():
                 killerplayer = msg.getkillerplayer(Player)
-                self._set_invicible_one_player(None if (
-                    killerplayer is None or killerplayer is player
-                    or not killerplayer.is_alive()) else killerplayer)
+                self._set_invicible_one_player(
+                    None
+                    if (
+                        killerplayer is None
+                        or killerplayer is player
+                        or not killerplayer.is_alive()
+                    )
+                    else killerplayer
+                )
             self.respawn_player(player)
         else:
             super().handlemessage(msg)
 
     def _update_scoreboard(self) -> None:
         for team in self.teams:
-            self._scoreboard.set_team_value(team,
-                                            team.time_remaining,
-                                            self._invicible_one_time,
-                                            countdown=True)
+            self._scoreboard.set_team_value(
+                team,
+                team.time_remaining,
+                self._invicible_one_time,
+                countdown=True,
+            )

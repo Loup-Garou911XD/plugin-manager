@@ -1,4 +1,3 @@
-
 # Ported by brostos to api 8
 # ba_meta require api 8
 # (see https://ballistica.net/wiki/meta-tag-system)
@@ -20,7 +19,11 @@ from bascenev1lib.actor.playerspaz import PlayerSpaz
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.powerupbox import PowerupBox
 from bascenev1lib.actor.flag import Flag, FlagPickedUpMessage
-from bascenev1lib.actor.spazbot import SpazBotSet, BrawlerBotLite, SpazBotDiedMessage
+from bascenev1lib.actor.spazbot import (
+    SpazBotSet,
+    BrawlerBotLite,
+    SpazBotDiedMessage,
+)
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -29,10 +32,13 @@ if TYPE_CHECKING:
 lang = bs.app.lang.language
 if lang == 'Spanish':
     name = 'Día de la Bandera'
-    description = ('Recoge las banderas para recibir un premio.\n'
-                   'Pero ten cuidado...')
+    description = (
+        'Recoge las banderas para recibir un premio.\n' 'Pero ten cuidado...'
+    )
     slow_motion_deaths = 'Muertes en Cámara Lenta'
-    credits = 'Creado por MattZ45986 en Github | Actualizado por byANG3L and brostos'
+    credits = (
+        'Creado por MattZ45986 en Github | Actualizado por byANG3L and brostos'
+    )
     you_were = 'Estas'
     cursed_text = 'MALDITO'
     run = 'CORRE'
@@ -61,20 +67,29 @@ else:
 class Icon(Icon):
 
     def __init__(
-            self,
-            player: Player,
-            position: tuple[float, float],
-            scale: float,
-            show_lives: bool = True,
-            show_death: bool = True,
-            name_scale: float = 1.0,
-            name_maxwidth: float = 115.0,
-            flatness: float = 1.0,
-            shadow: float = 1.0,
-            dead: bool = False,
+        self,
+        player: Player,
+        position: tuple[float, float],
+        scale: float,
+        show_lives: bool = True,
+        show_death: bool = True,
+        name_scale: float = 1.0,
+        name_maxwidth: float = 115.0,
+        flatness: float = 1.0,
+        shadow: float = 1.0,
+        dead: bool = False,
     ):
-        super().__init__(player, position, scale, show_lives, show_death,
-                         name_scale, name_maxwidth, flatness, shadow)
+        super().__init__(
+            player,
+            position,
+            scale,
+            show_lives,
+            show_death,
+            name_scale,
+            name_maxwidth,
+            flatness,
+            shadow,
+        )
         if dead:
             self._name_text.opacity = 0.2
             self.node.color = (0.7, 0.3, 0.3)
@@ -133,7 +148,7 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]
+        cls, sessiontype: type[bs.Session]
     ) -> list[babase.Setting]:
         settings = [
             bs.BoolSetting(slow_motion_deaths, default=True),
@@ -213,7 +228,8 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
             self.queue_line.append(player)
         self.spawn_player_spaz(
             self.queue_line[self.player_index % len(self.queue_line)],
-            (0.0, 3.0, -2.0))
+            (0.0, 3.0, -2.0),
+        )
         self.current_player = self.queue_line[0]
         # Declare a set of bots (enemies) that we will use later
         self._bots = SpazBotSet()
@@ -233,8 +249,9 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
                 'flatness': 1.0,
                 'position': (0, 0),
                 'scale': 0.8,
-                'text': credits
-            })
+                'text': credits,
+            },
+        )
 
     def _update_icons(self) -> None:
         # pylint: disable=too-many-branches
@@ -244,43 +261,52 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
                 xval = 0
                 x_offs = -78
                 player.icons.append(
-                    Icon(player,
-                         position=(xval, 65),
-                         scale=1.0,
-                         name_maxwidth=130,
-                         name_scale=0.8,
-                         flatness=0.0,
-                         shadow=0.5,
-                         show_death=True,
-                         show_lives=False))
+                    Icon(
+                        player,
+                        position=(xval, 65),
+                        scale=1.0,
+                        name_maxwidth=130,
+                        name_scale=0.8,
+                        flatness=0.0,
+                        shadow=0.5,
+                        show_death=True,
+                        show_lives=False,
+                    )
+                )
             elif player.dead:
                 xval = 65
                 x_offs = 78
                 player.icons.append(
-                    Icon(player,
-                         position=(xval, 50),
-                         scale=0.5,
-                         name_maxwidth=75,
-                         name_scale=1.0,
-                         flatness=1.0,
-                         shadow=1.0,
-                         show_death=False,
-                         show_lives=False,
-                         dead=True))
+                    Icon(
+                        player,
+                        position=(xval, 50),
+                        scale=0.5,
+                        name_maxwidth=75,
+                        name_scale=1.0,
+                        flatness=1.0,
+                        shadow=1.0,
+                        show_death=False,
+                        show_lives=False,
+                        dead=True,
+                    )
+                )
                 xval += x_offs * 0.56
             else:
                 xval = -65
                 x_offs = 78
                 player.icons.append(
-                    Icon(player,
-                         position=(xval, 50),
-                         scale=0.5,
-                         name_maxwidth=75,
-                         name_scale=1.0,
-                         flatness=1.0,
-                         shadow=1.0,
-                         show_death=False,
-                         show_lives=False))
+                    Icon(
+                        player,
+                        position=(xval, 50),
+                        scale=0.5,
+                        name_maxwidth=75,
+                        name_scale=1.0,
+                        flatness=1.0,
+                        shadow=1.0,
+                        show_death=False,
+                        show_lives=False,
+                    )
+                )
                 xval -= x_offs * 0.56
 
     def give_prize(self, prize: int) -> None:
@@ -307,8 +333,9 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
                     'color': (1.0, 1.0, 1.0),
                     'opacity': 1.0,
                     'draw_beauty': True,
-                    'additive': True
-                })
+                    'additive': True,
+                },
+            )
             bs.broadcastmessage(climb_top, color=(0.5, 0.5, 0.5))
             bs.timer(3.0, babase.Call(self.make_health_box, (0.0, 6.0, -9.0)))
             self.round_timer = bs.Timer(10.0, self.setup_next_round)
@@ -317,9 +344,11 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
             self.make_health_box((6.0, 5.0, -2.0))
             self.make_land_mines()
             self.prize_recipient.actor.connect_controls_to_player(
-                enable_bomb=False)
+                enable_bomb=False
+            )
             self.prize_recipient.actor.node.handlemessage(
-                bs.StandMessage(position=(-6.0, 3.0, -2.0)))
+                bs.StandMessage(position=(-6.0, 3.0, -2.0))
+            )
             self.round_timer = bs.Timer(7.0, self.setup_next_round)
         if prize == 5:
             # Make it rain bombs
@@ -375,8 +404,7 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
         self.kill_flags()
         self._bots.clear()
         self.reset_flags()
-        self.current_player.actor.handlemessage(
-            bs.DieMessage(how='game'))
+        self.current_player.actor.handlemessage(bs.DieMessage(how='game'))
         self.current_player.actor.node.delete()
         c = 0
         self.player_index += 1
@@ -389,7 +417,8 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
                 self.player_index %= len(self.queue_line)
                 c += 1
             self.spawn_player_spaz(
-                self.queue_line[self.player_index], (0.0, 3.0, -2.0))
+                self.queue_line[self.player_index], (0.0, 3.0, -2.0)
+            )
             self.current_player = self.queue_line[self.player_index]
         self.last_prize = 'none'
         self._update_icons()
@@ -401,11 +430,14 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
     def make_land_mines(self) -> None:
         self.bombs = []
         for i in range(-11, 7):
-            self.bombs.append(Bomb(
-                position=(0.0, 6.0, i/2.0),
-                bomb_type='land_mine',
-                blast_radius=2.0))
-            self.bombs[i+10].arm()
+            self.bombs.append(
+                Bomb(
+                    position=(0.0, 6.0, i / 2.0),
+                    bomb_type='land_mine',
+                    blast_radius=2.0,
+                )
+            )
+            self.bombs[i + 10].arm()
 
     def give_points(self) -> None:
         if self.bomb_survivor is not None and self.bomb_survivor.is_alive():
@@ -418,9 +450,11 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
             position = (random.randint(-6, 6), 6, random.randint(-6, 4))
         elif position == (0, 0, 0):
             position = random.choice(
-                ((-7, 6, -5), (7, 6, -5), (-7, 6, 1), (7, 6, 1)))
+                ((-7, 6, -5), (7, 6, -5), (-7, 6, 1), (7, 6, 1))
+            )
         self.health_box = PowerupBox(
-            position=position, poweruptype='health').autoretain()
+            position=position, poweruptype='health'
+        ).autoretain()
 
     # called in prize #5
     def make_bomb(self, xpos: float, zpos: float) -> None:
@@ -431,7 +465,8 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
     def setup_br(self) -> None:
         self.make_bomb_row(6)
         self.prize_recipient.actor.handlemessage(
-            bs.StandMessage(position=(6.0, 3.0, -2.0)))
+            bs.StandMessage(position=(6.0, 3.0, -2.0))
+        )
 
     def make_bomb_row(self, num: int) -> None:
         if not self.prize_recipient.is_alive():
@@ -441,16 +476,20 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
             return
         for i in range(-11, 7):
             self.bombs.append(
-                Bomb(position=(-3, 3, i/2.0),
-                     velocity=(12, 0.0, 0.0),
-                     bomb_type='normal',
-                     blast_radius=1.2))
-        bs.timer(1.0, babase.Call(self.make_bomb_row, num-1))
+                Bomb(
+                    position=(-3, 3, i / 2.0),
+                    velocity=(12, 0.0, 0.0),
+                    bomb_type='normal',
+                    blast_radius=1.2,
+                )
+            )
+        bs.timer(1.0, babase.Call(self.make_bomb_row, num - 1))
 
     def setup_rof(self) -> None:
         self.make_blast_ring(10)
         self.prize_recipient.actor.handlemessage(
-            bs.StandMessage(position=(0.0, 3.0, -2.0)))
+            bs.StandMessage(position=(0.0, 3.0, -2.0))
+        )
 
     def make_blast_ring(self, length: float) -> None:
         if not self.prize_recipient.is_alive():
@@ -465,28 +504,36 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
             angle %= 360
             x = length * math.cos(math.radians(angle))
             z = length * math.sin(math.radians(angle))
-            blast = Blast(position=(x, 2.2, z-2), blast_radius=3.5)
-        bs.timer(0.75, babase.Call(self.make_blast_ring, length-1))
+            blast = Blast(position=(x, 2.2, z - 2), blast_radius=3.5)
+        bs.timer(0.75, babase.Call(self.make_blast_ring, length - 1))
 
     # a method to remake the flags
     def reset_flags(self) -> None:
         # remake the flags
         self._flag = Flag(
-            position=(0.0, 3.0, 1.0), touchable=True, color=(0.0, 0.0, 1.0))
+            position=(0.0, 3.0, 1.0), touchable=True, color=(0.0, 0.0, 1.0)
+        )
         self._flag2 = Flag(
-            position=(0.0, 3.0, -5.0), touchable=True, color=(1.0, 0.0, 0.0))
+            position=(0.0, 3.0, -5.0), touchable=True, color=(1.0, 0.0, 0.0)
+        )
         self._flag3 = Flag(
-            position=(3.0, 3.0, -2.0), touchable=True, color=(0.0, 1.0, 0.0))
+            position=(3.0, 3.0, -2.0), touchable=True, color=(0.0, 1.0, 0.0)
+        )
         self._flag4 = Flag(
-            position=(-3.0, 3.0, -2.0), touchable=True, color=(1.0, 1.0, 1.0))
+            position=(-3.0, 3.0, -2.0), touchable=True, color=(1.0, 1.0, 1.0)
+        )
         self._flag5 = Flag(
-            position=(1.8, 3.0, 0.2), touchable=True, color=(0.0, 1.0, 1.0))
+            position=(1.8, 3.0, 0.2), touchable=True, color=(0.0, 1.0, 1.0)
+        )
         self._flag6 = Flag(
-            position=(-1.8, 3.0, 0.2), touchable=True, color=(1.0, 0.0, 1.0))
+            position=(-1.8, 3.0, 0.2), touchable=True, color=(1.0, 0.0, 1.0)
+        )
         self._flag7 = Flag(
-            position=(1.8, 3.0, -3.8), touchable=True, color=(1.0, 1.0, 0.0))
+            position=(1.8, 3.0, -3.8), touchable=True, color=(1.0, 1.0, 0.0)
+        )
         self._flag8 = Flag(
-            position=(-1.8, 3.0, -3.8), touchable=True, color=(0.0, 0.0, 0.0))
+            position=(-1.8, 3.0, -3.8), touchable=True, color=(0.0, 0.0, 0.0)
+        )
 
     # a method to kill the flags
     def kill_flags(self) -> None:
@@ -508,10 +555,10 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
         self.end_game()
 
     def spawn_player_spaz(
-            self,
-            player: PlayerT,
-            position: Sequence[float] = (0, 0, 0),
-            angle: float | None = None,
+        self,
+        player: PlayerT,
+        position: Sequence[float] = (0, 0, 0),
+        angle: float | None = None,
     ) -> PlayerSpaz:
         from babase import _math
         from bascenev1._gameutils import animate
@@ -525,10 +572,12 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
         light_color = _math.normalized_color(color)
         display_color = babase.safecolor(color, target_intensity=0.75)
 
-        spaz = FlagBearer(color=color,
-                          highlight=highlight,
-                          character=player.character,
-                          player=player)
+        spaz = FlagBearer(
+            color=color,
+            highlight=highlight,
+            character=player.character,
+            player=player,
+        )
 
         player.actor = spaz
         assert spaz.node
@@ -540,8 +589,9 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
         # Move to the stand position and add a flash of light.
         spaz.handlemessage(
             bs.StandMessage(
-                position,
-                angle if angle is not None else random.uniform(0, 360)))
+                position, angle if angle is not None else random.uniform(0, 360)
+            )
+        )
         self._spawn_sound.play(1, position=spaz.node.position)
         light = bs.newnode('light', attrs={'color': light_color})
         spaz.node.connectattr('position', light, 'position')
@@ -558,7 +608,8 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
                 return
             player = msg.getplayer(Player)
             bs.broadcastmessage(
-                diedtxt + str(player.getname()) + diedtxt2, color=player.color)
+                diedtxt + str(player.getname()) + diedtxt2, color=player.color
+            )
             player.dead = True
             if player is self.current_player:
                 self.round_timer = None
@@ -576,9 +627,7 @@ class FlagDayGame(bs.TeamGameActivity[Player, Team]):
             msg.flag.last_player_to_hold = msg.node.getdelegate(
                 FlagBearer, True
             ).getplayer(Player, True)
-            self._player = msg.node.getdelegate(
-                FlagBearer, True
-            )
+            self._player = msg.node.getdelegate(FlagBearer, True)
             self.prize_recipient = msg.node.getdelegate(
                 FlagBearer, True
             ).getplayer(Player, True)

@@ -39,4 +39,5 @@ class BotsCanAcceptPowerupsPlugin(babase.Plugin):
             extras_material.append(pam)
             extras_material = tuple(extras_material)
             self.node.extras_material = extras_material
+
         SpazBot.__init__ = __init__

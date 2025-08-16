@@ -18,7 +18,9 @@ class TestPluginManagerMetadata(unittest.TestCase):
             self.content = json.load(fin)
         self.plugin_manager = "plugin_manager.py"
         self.api_version_regexp = re.compile(b"(?<=ba_meta require api )(.*)")
-        self.plugin_manager_version_regexp = re.compile(b"(?<=PLUGIN_MANAGER_VERSION = )(.*)")
+        self.plugin_manager_version_regexp = re.compile(
+            b"(?<=PLUGIN_MANAGER_VERSION = )(.*)"
+        )
 
         self.current_path = pathlib.Path()
         self.changelog = self.current_path / "CHANGELOG.md"
@@ -48,7 +50,9 @@ class TestPluginManagerMetadata(unittest.TestCase):
 
             md5sum = hashlib.md5(content).hexdigest()
             api_version = self.api_version_regexp.search(content).group()
-            plugin_manager_version = self.plugin_manager_version_regexp.search(content).group()
+            plugin_manager_version = self.plugin_manager_version_regexp.search(
+                content
+            ).group()
 
             if md5sum != version_metadata["md5sum"]:
                 self.fail(
@@ -56,8 +60,13 @@ class TestPluginManagerMetadata(unittest.TestCase):
                     f"{version_metadata['md5sum']} (mentioned in index.json) ->\n"
                     f"{md5sum} (actual)"
                 )
-            self.assertEqual(int(api_version.decode("utf-8")), version_metadata["api_version"])
-            self.assertEqual(plugin_manager_version.decode("utf-8"), f'"{version_name}"')
+            self.assertEqual(
+                int(api_version.decode("utf-8")),
+                version_metadata["api_version"],
+            )
+            self.assertEqual(
+                plugin_manager_version.decode("utf-8"), f'"{version_name}"'
+            )
 
     def test_latest_version(self):
         versions = tuple(self.content["versions"].items())
@@ -68,7 +77,9 @@ class TestPluginManagerMetadata(unittest.TestCase):
 
         md5sum = hashlib.md5(content).hexdigest()
         api_version = self.api_version_regexp.search(content).group()
-        plugin_manager_version = self.plugin_manager_version_regexp.search(content).group()
+        plugin_manager_version = self.plugin_manager_version_regexp.search(
+            content
+        ).group()
 
         if md5sum != latest_version_metadata["md5sum"]:
             self.fail(
@@ -76,8 +87,13 @@ class TestPluginManagerMetadata(unittest.TestCase):
                 f"{latest_version_metadata['md5sum']} (mentioned in index.json) ->\n"
                 f"{md5sum} (actual)"
             )
-        self.assertEqual(int(api_version.decode("utf-8")), latest_version_metadata["api_version"])
-        self.assertEqual(plugin_manager_version.decode("utf-8"), f'"{latest_version_name}"')
+        self.assertEqual(
+            int(api_version.decode("utf-8")),
+            latest_version_metadata["api_version"],
+        )
+        self.assertEqual(
+            plugin_manager_version.decode("utf-8"), f'"{latest_version_name}"'
+        )
 
     def test_changelog_entries(self):
         versions = tuple(self.content["versions"].keys())
@@ -86,14 +102,17 @@ class TestPluginManagerMetadata(unittest.TestCase):
         for version in versions:
             changelog_version_header = f"## {version}"
             if changelog_version_header not in changelog:
-                self.fail(f"Changelog entry for plugin manager {version} is missing.")
+                self.fail(
+                    f"Changelog entry for plugin manager {version} is missing."
+                )
 
 
 class TestPluginMetadata(unittest.TestCase):
     def setUp(self):
         self.category_directories = tuple(
             f'{os.path.join("plugins", path)}'
-            for path in os.listdir("plugins") if os.path.isdir(path)
+            for path in os.listdir("plugins")
+            if os.path.isdir(path)
         )
 
     def test_no_duplicates(self):
@@ -109,7 +128,9 @@ class TestPluginMetadata(unittest.TestCase):
 class BaseCategoryMetadataTestCases:
     class BaseTest(unittest.TestCase):
         def setUp(self):
-            self.api_version_regexp = re.compile(b"(?<=ba_meta require api )(.*)")
+            self.api_version_regexp = re.compile(
+                b"(?<=ba_meta require api )(.*)"
+            )
 
             self.current_path = pathlib.Path()
             self.repository = git.Repo()
@@ -117,7 +138,9 @@ class BaseCategoryMetadataTestCases:
         def test_keys(self):
             self.assertEqual(self.content["name"], self.name)
             self.assertTrue(isinstance(self.content["description"], str))
-            self.assertTrue(self.content["plugins_base_url"].startswith("https"))
+            self.assertTrue(
+                self.content["plugins_base_url"].startswith("https")
+            )
             self.assertTrue(isinstance(self.content["plugins"], dict))
 
         def test_versions_order(self):
@@ -133,7 +156,9 @@ class BaseCategoryMetadataTestCases:
         def test_plugin_keys(self):
             for plugin_metadata in self.content["plugins"].values():
                 self.assertTrue(isinstance(plugin_metadata["description"], str))
-                self.assertTrue(isinstance(plugin_metadata["external_url"], str))
+                self.assertTrue(
+                    isinstance(plugin_metadata["external_url"], str)
+                )
                 self.assertTrue(isinstance(plugin_metadata["authors"], list))
                 self.assertTrue(len(plugin_metadata["authors"]) > 0)
                 for author in plugin_metadata["authors"]:
@@ -145,15 +170,23 @@ class BaseCategoryMetadataTestCases:
 
         def test_versions(self):
             for plugin_name, plugin_metadata in self.content["plugins"].items():
-                for version_name, version_metadata in plugin_metadata["versions"].items():
-                    commit = self.repository.commit(version_metadata["commit_sha"])
+                for version_name, version_metadata in plugin_metadata[
+                    "versions"
+                ].items():
+                    commit = self.repository.commit(
+                        version_metadata["commit_sha"]
+                    )
                     plugin = os.path.join(self.category, f"{plugin_name}.py")
                     plugin_commit_sha = commit.tree / plugin
-                    with io.BytesIO(plugin_commit_sha.data_stream.read()) as fin:
+                    with io.BytesIO(
+                        plugin_commit_sha.data_stream.read()
+                    ) as fin:
                         content = fin.read()
 
                     md5sum = hashlib.md5(content).hexdigest()
-                    api_version = self.api_version_regexp.search(content).group()
+                    api_version = self.api_version_regexp.search(
+                        content
+                    ).group()
 
                     if md5sum != version_metadata["md5sum"]:
                         self.fail(
@@ -161,13 +194,16 @@ class BaseCategoryMetadataTestCases:
                             f"{version_metadata['md5sum']} (mentioned in {self.category_metadata_file}) ->\n"
                             f"{md5sum} (actual)"
                         )
-                    self.assertEqual(int(api_version.decode("utf-8")),
-                                     version_metadata["api_version"])
+                    self.assertEqual(
+                        int(api_version.decode("utf-8")),
+                        version_metadata["api_version"],
+                    )
 
         def test_latest_version(self):
             for plugin_name, plugin_metadata in self.content["plugins"].items():
                 latest_version_name, latest_version_metadata = tuple(
-                    plugin_metadata["versions"].items())[0]
+                    plugin_metadata["versions"].items()
+                )[0]
                 plugin = self.current_path / self.category / f"{plugin_name}.py"
                 with open(plugin, "rb") as fin:
                     content = fin.read()
@@ -182,8 +218,10 @@ class BaseCategoryMetadataTestCases:
                         f"{md5sum} (actual)"
                     )
                 self.assertEqual(md5sum, latest_version_metadata["md5sum"])
-                self.assertEqual(int(api_version.decode("utf-8")),
-                                 latest_version_metadata["api_version"])
+                self.assertEqual(
+                    int(api_version.decode("utf-8")),
+                    latest_version_metadata["api_version"],
+                )
 
 
 class TestUtilitiesCategoryMetadata(BaseCategoryMetadataTestCases.BaseTest):

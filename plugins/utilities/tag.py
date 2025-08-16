@@ -21,16 +21,7 @@ import bauiv1 as bui
 import bascenev1 as bs
 import _babase
 
-from typing import (
-    Tuple,
-    Optional,
-    Sequence,
-    Union,
-    Callable,
-    Any,
-    List,
-    cast
-)
+from typing import Tuple, Optional, Sequence, Union, Callable, Any, List, cast
 
 __version__ = 2.0
 __author__ = "pranav1711#2006"
@@ -44,7 +35,7 @@ Configs = {
     "opacity": 1.0,
     "shadow": 0.0,
     "animtag": False,
-    "frequency": 0.5
+    "frequency": 0.5,
 }
 
 # Useful global fucntions
@@ -73,11 +64,7 @@ def getanimcolor(name: str) -> dict:
     s2 = s1 + freq
     s3 = s2 + freq
 
-    animcolor = {
-        s1: (1, 0, 0),
-        s2: (0, 1, 0),
-        s3: (0, 0, 1)
-    }
+    animcolor = {s1: (1, 0, 0), s2: (0, 1, 0), s3: (0, 0, 1)}
     return animcolor
 
 
@@ -103,32 +90,41 @@ EditProfileWindow.init = EditProfileWindow.__init__
 # PlayerSpaz object at -> bascenev1lib.actor.playerspaz
 
 
-def NewPlayerSzapInit(self,
-                      player: bs.Player,
-                      color: Sequence[float] = (1.0, 1.0, 1.0),
-                      highlight: Sequence[float] = (0.5, 0.5, 0.5),
-                      character: str = 'Spaz',
-                      powerups_expire: bool = True) -> None:
-    self.init(player,
-              color=color,
-              highlight=highlight,
-              character=character,
-              powerups_expire=powerups_expire)
+def NewPlayerSzapInit(
+    self,
+    player: bs.Player,
+    color: Sequence[float] = (1.0, 1.0, 1.0),
+    highlight: Sequence[float] = (0.5, 0.5, 0.5),
+    character: str = 'Spaz',
+    powerups_expire: bool = True,
+) -> None:
+    self.init(
+        player,
+        color=color,
+        highlight=highlight,
+        character=character,
+        powerups_expire=powerups_expire,
+    )
     self.curname = gethostname()
 
     try:
         cnfg = babase.app.config["TagConf"]
         if cnfg[str(self.curname)]["enabletag"]:
             # Tag node
-            self.mnode = bs.newnode('math', owner=self.node, attrs={
-                                    'input1': (0, 1.5, 0), 'operation': 'add'})
+            self.mnode = bs.newnode(
+                'math',
+                owner=self.node,
+                attrs={'input1': (0, 1.5, 0), 'operation': 'add'},
+            )
             self.node.connectattr('torso_position', self.mnode, 'input2')
 
             tagtext = cnfg[str(self.curname)]["tag"]
             opacity = cnfg[str(self.curname)]["opacity"]
             shadow = cnfg[str(self.curname)]["shadow"]
             sl = cnfg[str(self.curname)]["scale"]
-            scale = 0.01 if sl == 'mediam' else 0.009 if not sl == 'large' else 0.02
+            scale = (
+                0.01 if sl == 'mediam' else 0.009 if not sl == 'large' else 0.02
+            )
 
             self.Tag = bs.newnode(
                 type='text',
@@ -141,20 +137,26 @@ def NewPlayerSzapInit(self,
                     'scale': scale,
                     'opacity': opacity,
                     'flatness': 1.0,
-                    'h_align': 'center'})
+                    'h_align': 'center',
+                },
+            )
             self.mnode.connectattr('output', self.Tag, 'position')
 
             if cnfg[str(self.curname)]["animtag"]:
                 kys = getanimcolor(self.curname)
-                bs.animate_array(node=self.Tag, attr='color', size=3, keys=kys, loop=True)
+                bs.animate_array(
+                    node=self.Tag, attr='color', size=3, keys=kys, loop=True
+                )
     except Exception:
         pass
 
 
-def NewEditProfileWindowInit(self,
-                             existing_profile: Optional[str],
-                             transition: str = 'in_right',
-                             origin_widget: bui.Widget | None = None) -> None:
+def NewEditProfileWindowInit(
+    self,
+    existing_profile: Optional[str],
+    transition: str = 'in_right',
+    origin_widget: bui.Widget | None = None,
+) -> None:
     """
     New boilerplate for editprofilewindow, addeds button to call TagSettings window
     """
@@ -175,12 +177,13 @@ def NewEditProfileWindowInit(self,
         label='Tag',
         button_type='square',
         text_scale=1.2,
-        on_activate_call=babase.Call(_on_tagwinbtn_press, self))
+        on_activate_call=babase.Call(_on_tagwinbtn_press, self),
+    )
 
 
 def _on_tagwinbtn_press(self):
     """
-    Calls tag config window passes all paramisters 
+    Calls tag config window passes all paramisters
     """
     if not self.main_window_has_control():
         return
@@ -190,9 +193,10 @@ def _on_tagwinbtn_press(self):
             self.existing_profile,
             self._name,
             transition='in_right',
-            origin_widget=self.tagwinbtn
+            origin_widget=self.tagwinbtn,
         )
     )
+
 
 # ba_meta require api 9
 
@@ -211,7 +215,7 @@ class Tag(babase.Plugin):
 
     def Replace(self) -> None:
         """
-        Replacing bolierplates no harm to relative funtionality only extending 
+        Replacing bolierplates no harm to relative funtionality only extending
         """
         PlayerSpaz.__init__ = NewPlayerSzapInit
         EditProfileWindow.__init__ = NewEditProfileWindowInit
@@ -219,18 +223,23 @@ class Tag(babase.Plugin):
 
 class TagWindow(bui.MainWindow):
 
-    def __init__(self,
-                 existing_profile: Optional[str],
-                 profilename: str,
-                 transition: Optional[str] = 'in_right',
-                 origin_widget: bui.Widget | None = None):
+    def __init__(
+        self,
+        existing_profile: Optional[str],
+        profilename: str,
+        transition: Optional[str] = 'in_right',
+        origin_widget: bui.Widget | None = None,
+    ):
         self.existing_profile = existing_profile
         self.profilename = profilename
 
         uiscale = bui.app.ui_v1.uiscale
         self._width = 870.0 if uiscale is babase.UIScale.SMALL else 670.0
-        self._height = (390.0 if uiscale is babase.UIScale.SMALL else
-                        450.0 if uiscale is babase.UIScale.MEDIUM else 520.0)
+        self._height = (
+            390.0
+            if uiscale is babase.UIScale.SMALL
+            else 450.0 if uiscale is babase.UIScale.MEDIUM else 520.0
+        )
         extra_x = 100 if uiscale is babase.UIScale.SMALL else 0
         self.extra_x = extra_x
         top_extra = 20 if uiscale is babase.UIScale.SMALL else 0
@@ -238,11 +247,15 @@ class TagWindow(bui.MainWindow):
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
-                scale=(2.06 if uiscale is babase.UIScale.SMALL else
-                       1.4 if uiscale is babase.UIScale.MEDIUM else 1.0)
+                scale=(
+                    2.06
+                    if uiscale is babase.UIScale.SMALL
+                    else 1.4 if uiscale is babase.UIScale.MEDIUM else 1.0
+                ),
             ),
             transition=transition,
-            origin_widget=origin_widget)
+            origin_widget=origin_widget,
+        )
 
         self._back_button = bui.buttonwidget(
             parent=self._root_widget,
@@ -253,23 +266,28 @@ class TagWindow(bui.MainWindow):
             scale=0.8,
             label=babase.charstr(babase.SpecialChar.BACK),
             button_type='backSmall',
-            on_activate_call=self.main_window_back)
-        bui.containerwidget(edit=self._root_widget, cancel_button=self._back_button)
+            on_activate_call=self.main_window_back,
+        )
+        bui.containerwidget(
+            edit=self._root_widget, cancel_button=self._back_button
+        )
 
         self._save_button = bui.buttonwidget(
             parent=self._root_widget,
-            position=(self._width - (177 + extra_x),
-                      self._height - 60),
+            position=(self._width - (177 + extra_x), self._height - 60),
             size=(155, 60),
             color=(0, 0.7, 0.5),
             autoselect=True,
             selectable=False,  # FIXME: when press a in text field it selets to button
             scale=0.8,
             label=babase.Lstr(resource='saveText'),
-            on_activate_call=self.on_save)
+            on_activate_call=self.on_save,
+        )
         bui.widget(edit=self._save_button, left_widget=self._back_button)
         bui.widget(edit=self._back_button, right_widget=self._save_button)
-        bui.containerwidget(edit=self._root_widget, start_button=self._save_button)
+        bui.containerwidget(
+            edit=self._root_widget, start_button=self._save_button
+        )
 
         self._title_text = bui.textwidget(
             parent=self._root_widget,
@@ -279,7 +297,8 @@ class TagWindow(bui.MainWindow):
             color=bui.app.ui_v1.title_color,
             scale=1.5,
             h_align='center',
-            v_align='top')
+            v_align='top',
+        )
 
         self._scroll_width = self._width - (100 + 2 * extra_x)
         self._scroll_height = self._height - 115.0
@@ -293,17 +312,17 @@ class TagWindow(bui.MainWindow):
             position=(50 + extra_x, 50),
             simple_culling_v=20.0,
             highlight=False,
-            size=(self._scroll_width,
-                  self._scroll_height),
-            selection_loops_to_parent=True)
+            size=(self._scroll_width, self._scroll_height),
+            selection_loops_to_parent=True,
+        )
         bui.widget(edit=self._scrollwidget, right_widget=self._scrollwidget)
 
         self._subcontainer = bui.containerwidget(
             parent=self._scrollwidget,
-            size=(self._sub_width,
-                  self._sub_height),
+            size=(self._sub_width, self._sub_height),
             background=False,
-            selection_loops_to_parent=True)
+            selection_loops_to_parent=True,
+        )
 
         v = self._sub_height - 35
         v -= self._spacing * 1.2
@@ -317,9 +336,12 @@ class TagWindow(bui.MainWindow):
             text='Enable Tag',
             textcolor=(0.8, 0.8, 0.8),
             value=self._prof['enabletag'],
-            on_value_change_call=babase.Call(self.change_val, [f'{self.profilename}', 'enabletag']),
+            on_value_change_call=babase.Call(
+                self.change_val, [f'{self.profilename}', 'enabletag']
+            ),
             scale=1.1 if uiscale is babase.UIScale.SMALL else 1.5,
-            maxwidth=430)
+            maxwidth=430,
+        )
 
         self.tag_text = bui.textwidget(
             parent=self._subcontainer,
@@ -330,7 +352,8 @@ class TagWindow(bui.MainWindow):
             maxwidth=430,
             h_align='center',
             v_align='center',
-            color=(0.8, 0.8, 0.8))
+            color=(0.8, 0.8, 0.8),
+        )
 
         self.tagtextfield = bui.textwidget(
             parent=self._subcontainer,
@@ -343,7 +366,8 @@ class TagWindow(bui.MainWindow):
             autoselect=True,
             editable=True,
             padding=4,
-            color=(0.9, 0.9, 0.9, 1.0))
+            color=(0.9, 0.9, 0.9, 1.0),
+        )
 
         self.tag_color_text = bui.textwidget(
             parent=self._subcontainer,
@@ -354,7 +378,8 @@ class TagWindow(bui.MainWindow):
             maxwidth=430,
             h_align='center',
             v_align='center',
-            color=(0.8, 0.8, 0.8))
+            color=(0.8, 0.8, 0.8),
+        )
 
         self.tag_scale_text = bui.textwidget(
             parent=self._subcontainer,
@@ -365,7 +390,8 @@ class TagWindow(bui.MainWindow):
             maxwidth=430,
             h_align='center',
             v_align='center',
-            color=(0.8, 0.8, 0.8))
+            color=(0.8, 0.8, 0.8),
+        )
 
         self.tag_scale_button = PopupMenu(
             parent=self._subcontainer,
@@ -376,7 +402,8 @@ class TagWindow(bui.MainWindow):
             choices=['large', 'medium', 'small'],
             button_size=(150, 50),
             # choices_display=('large', 'medium', 'small'),
-            current_choice=self._prof["scale"])
+            current_choice=self._prof["scale"],
+        )
 
         CustomConfigNumberEdit(
             parent=self._subcontainer,
@@ -388,7 +415,8 @@ class TagWindow(bui.MainWindow):
             minval=0.5,
             maxval=2.0,
             increment=0.1,
-            textscale=1.25)
+            textscale=1.25,
+        )
 
         CustomConfigNumberEdit(
             parent=self._subcontainer,
@@ -400,7 +428,8 @@ class TagWindow(bui.MainWindow):
             minval=0.0,
             maxval=2.0,
             increment=0.1,
-            textscale=1.25)
+            textscale=1.25,
+        )
 
         self.enabletaganim = bui.checkboxwidget(
             parent=self._subcontainer,
@@ -410,9 +439,12 @@ class TagWindow(bui.MainWindow):
             text='Animate tag',
             textcolor=(0.8, 0.8, 0.8),
             value=self._prof['enabletag'],
-            on_value_change_call=babase.Call(self.change_val, [f'{self.profilename}', 'animtag']),
+            on_value_change_call=babase.Call(
+                self.change_val, [f'{self.profilename}', 'animtag']
+            ),
             scale=1.1 if uiscale is babase.UIScale.SMALL else 1.5,
-            maxwidth=430)
+            maxwidth=430,
+        )
 
         CustomConfigNumberEdit(
             parent=self._subcontainer,
@@ -424,7 +456,8 @@ class TagWindow(bui.MainWindow):
             minval=0.1,
             maxval=5.0,
             increment=0.1,
-            textscale=1.25)
+            textscale=1.25,
+        )
 
     def change_val(self, config: List[str], val: bool) -> None:
         """
@@ -485,24 +518,28 @@ class CustomConfigNumberEdit:
             The button widget used to increase the value.
     """
 
-    def __init__(self,
-                 parent: bui.Widget,
-                 configkey: List[str],
-                 position: Tuple[float, float],
-                 minval: float = 0.0,
-                 maxval: float = 100.0,
-                 increment: float = 1.0,
-                 callback: Callable[[float], Any] = None,
-                 xoffset: float = 0.0,
-                 displayname: Union[str, babase.Lstr] = None,
-                 changesound: bool = True,
-                 textscale: float = 1.0):
+    def __init__(
+        self,
+        parent: bui.Widget,
+        configkey: List[str],
+        position: Tuple[float, float],
+        minval: float = 0.0,
+        maxval: float = 100.0,
+        increment: float = 1.0,
+        callback: Callable[[float], Any] = None,
+        xoffset: float = 0.0,
+        displayname: Union[str, babase.Lstr] = None,
+        changesound: bool = True,
+        textscale: float = 1.0,
+    ):
         self._minval = minval
         self._maxval = maxval
         self._increment = increment
         self._callback = callback
         self._configkey = configkey
-        self._value = babase.app.config[configkey[0]][configkey[1]][configkey[2]]
+        self._value = babase.app.config[configkey[0]][configkey[1]][
+            configkey[2]
+        ]
 
         self.nametext = bui.textwidget(
             parent=parent,
@@ -513,7 +550,8 @@ class CustomConfigNumberEdit:
             color=(0.8, 0.8, 0.8, 1.0),
             h_align='left',
             v_align='center',
-            scale=textscale)
+            scale=textscale,
+        )
 
         self.valuetext = bui.textwidget(
             parent=parent,
@@ -524,7 +562,8 @@ class CustomConfigNumberEdit:
             h_align='right',
             v_align='center',
             text=str(self._value),
-            padding=2)
+            padding=2,
+        )
 
         self.minusbutton = bui.buttonwidget(
             parent=parent,
@@ -534,16 +573,19 @@ class CustomConfigNumberEdit:
             autoselect=True,
             on_activate_call=babase.Call(self._down),
             repeat=True,
-            enable_sound=changesound)
+            enable_sound=changesound,
+        )
 
-        self.plusbutton = bui.buttonwidget(parent=parent,
-                                           position=(380 + xoffset, position[1]),
-                                           size=(28, 28),
-                                           label='+',
-                                           autoselect=True,
-                                           on_activate_call=babase.Call(self._up),
-                                           repeat=True,
-                                           enable_sound=changesound)
+        self.plusbutton = bui.buttonwidget(
+            parent=parent,
+            position=(380 + xoffset, position[1]),
+            size=(28, 28),
+            label='+',
+            autoselect=True,
+            on_activate_call=babase.Call(self._up),
+            repeat=True,
+            enable_sound=changesound,
+        )
 
         bui.uicleanupcheck(self, self.nametext)
         self._update_display()
@@ -560,8 +602,9 @@ class CustomConfigNumberEdit:
         self._update_display()
         if self._callback:
             self._callback(self._value)
-        babase.app.config[self._configkey[0]][self._configkey[1]
-                                              ][self._configkey[2]] = float(str(f'{self._value:.1f}'))
+        babase.app.config[self._configkey[0]][self._configkey[1]][
+            self._configkey[2]
+        ] = float(str(f'{self._value:.1f}'))
         babase.app.config.apply_and_commit()
 
     def _update_display(self) -> None:

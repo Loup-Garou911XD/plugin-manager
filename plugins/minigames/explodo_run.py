@@ -11,7 +11,11 @@ from typing import TYPE_CHECKING
 import babase
 import bauiv1 as bui
 import bascenev1 as bs
-from bascenev1lib.actor.spazbot import SpazBotSet, ExplodeyBot, SpazBotDiedMessage
+from bascenev1lib.actor.spazbot import (
+    SpazBotSet,
+    ExplodeyBot,
+    SpazBotDiedMessage,
+)
 from bascenev1lib.actor.onscreentimer import OnScreenTimer
 
 if TYPE_CHECKING:
@@ -25,6 +29,7 @@ class Player(bs.Player['Team']):
 class Team(bs.Team[Player]):
     """Our team type for this game."""
 
+
 # ba_meta export bascenev1.GameActivity
 
 
@@ -32,9 +37,9 @@ class ExplodoRunGame(bs.TeamGameActivity[Player, Team]):
     name = "Explodo Run"
     description = "Run For Your Life :))"
     available_settings = [bs.BoolSetting('Epic Mode', default=False)]
-    scoreconfig = bs.ScoreConfig(label='Time',
-                                 scoretype=bs.ScoreType.MILLISECONDS,
-                                 lower_is_better=False)
+    scoreconfig = bs.ScoreConfig(
+        label='Time', scoretype=bs.ScoreType.MILLISECONDS, lower_is_better=False
+    )
 
     @classmethod
     def get_preview_texture_name(cls) -> str:
@@ -71,7 +76,9 @@ class ExplodoRunGame(bs.TeamGameActivity[Player, Team]):
             p1 = random.choice([-5, -2.5, 0, 2.5, 5])
             p3 = random.choice([-4.5, -4.14, -5, -3])
             time = random.choice([1, 1.5, 2.5, 2])
-            self._bots.spawn_bot(ExplodeyBot, pos=(p1, 5.5, p3), spawn_time=time)
+            self._bots.spawn_bot(
+                ExplodeyBot, pos=(p1, 5.5, p3), spawn_time=time
+            )
         self.wave += 1
 
     def botrespawn(self):
@@ -132,12 +139,19 @@ class ExplodoRunGame(bs.TeamGameActivity[Player, Team]):
 class plugin(babase.Plugin):
     def __init__(self):
         ## Campaign support ##
-        babase.app.classic.add_coop_practice_level(bs.Level(
-            name='Explodo Run',
-            gametype=ExplodoRunGame,
-            settings={},
-            preview_texture_name='rampagePreview'))
-        babase.app.classic.add_coop_practice_level(bs.Level('Epic Explodo Run',
-                                                            gametype=ExplodoRunGame,
-                                                            settings={'Epic Mode': True},
-                                                            preview_texture_name='rampagePreview'))
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                name='Explodo Run',
+                gametype=ExplodoRunGame,
+                settings={},
+                preview_texture_name='rampagePreview',
+            )
+        )
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                'Epic Explodo Run',
+                gametype=ExplodoRunGame,
+                settings={'Epic Mode': True},
+                preview_texture_name='rampagePreview',
+            )
+        )

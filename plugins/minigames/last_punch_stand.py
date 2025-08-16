@@ -34,12 +34,14 @@ class ChooseingSpazDieMessage:
 
 class ChooseingSpaz(Spaz):
     def __init__(
-            self,
-            pos: Sequence[float],
-            color: Sequence[float] = (1.0, 1.0, 1.0),
-            highlight: Sequence[float] = (0.5, 0.5, 0.5),
+        self,
+        pos: Sequence[float],
+        color: Sequence[float] = (1.0, 1.0, 1.0),
+        highlight: Sequence[float] = (0.5, 0.5, 0.5),
     ):
-        super().__init__(color, highlight, "Spaz", None, True, True, False, False)
+        super().__init__(
+            color, highlight, "Spaz", None, True, True, False, False
+        )
         self.last_player_attacked_by = None
         self.stand(pos)
         self.loc = bs.newnode(
@@ -54,7 +56,21 @@ class ChooseingSpaz(Spaz):
             },
         )
         self.node.connectattr("position", self.loc, "position")
-        bs.animate_array(self.loc, "size", 1, keys={0: [0.5,], 1: [2,], 1.5: [0.5]}, loop=True)
+        bs.animate_array(
+            self.loc,
+            "size",
+            1,
+            keys={
+                0: [
+                    0.5,
+                ],
+                1: [
+                    2,
+                ],
+                1.5: [0.5],
+            },
+            loop=True,
+        )
 
     def handlemessage(self, msg):
         if isinstance(msg, bs.FreezeMessage):
@@ -110,7 +126,7 @@ class ChooseBilbord(bs.Actor):
                 'tint2_color': icon['tint2_color'],
                 'opacity': 1.0,
                 'absolute_scale': True,
-                'attach': "topLeft"
+                'attach': "topLeft",
             },
         )
 
@@ -127,25 +143,37 @@ class ChooseBilbord(bs.Actor):
                 'flatness': 1.0,
                 'h_attach': 'left',
                 'v_attach': 'top',
-                'maxwidth': self.scale
+                'maxwidth': self.scale,
             },
         )
 
-        bs.animate_array(self.node, "scale", keys={
-                         0 + delay: [0, 0], 0.05 + delay: [self.scale, self.scale]}, size=1)
+        bs.animate_array(
+            self.node,
+            "scale",
+            keys={0 + delay: [0, 0], 0.05 + delay: [self.scale, self.scale]},
+            size=1,
+        )
         bs.animate(self.name_node, "scale", {0 + delay: 0, 0.07 + delay: 1})
 
     def handlemessage(self, msg):
         super().handlemessage(msg)
         if isinstance(msg, bs.DieMessage):
-            bs.animate_array(self.node, "scale", keys={0: self.node.scale, 0.05: [0, 0]}, size=1)
-            bs.animate(self.name_node, "scale", {0: self.name_node.scale, 0.07: 0})
+            bs.animate_array(
+                self.node,
+                "scale",
+                keys={0: self.node.scale, 0.05: [0, 0]},
+                size=1,
+            )
+            bs.animate(
+                self.name_node, "scale", {0: self.name_node.scale, 0.07: 0}
+            )
 
             def __delete():
                 self.node.delete()
                 self.name_node.delete()
 
             bs.timer(0.2, __delete)
+
 
 # ba_meta export bascenev1.GameActivity
 
@@ -164,14 +192,13 @@ class LastPunchStand(bs.TeamGameActivity[Player, Team]):
     available_settings = [
         bs.FloatSetting("min time limit (in seconds)", 50.0, min_value=30.0),
         bs.FloatSetting("max time limit (in seconds)", 160.0, 60),
-
     ]
 
     def __init__(self, settings: dict):
         super().__init__(settings)
         self._min_timelimit = settings["min time limit (in seconds)"]
         self._max_timelimit = settings["max time limit (in seconds)"]
-        if (self._min_timelimit > self._max_timelimit):
+        if self._min_timelimit > self._max_timelimit:
             self._max_timelimit = self._min_timelimit
 
         self._choosing_spaz_defcolor = (0.5, 0.5, 0.5)
@@ -184,7 +211,9 @@ class LastPunchStand(bs.TeamGameActivity[Player, Team]):
         self.times_uped = True
 
         for player in self.players:
-            if self.choosed_player and (player.team.id != self.choosed_player.team.id):
+            if self.choosed_player and (
+                player.team.id != self.choosed_player.team.id
+            ):
                 player.actor._cursed = True
                 player.actor.curse_explode()
 
@@ -192,7 +221,9 @@ class LastPunchStand(bs.TeamGameActivity[Player, Team]):
 
     def __get_spaz_bot_spawn_point(self):
         if len(self.map.tnt_points) > 0:
-            return self.map.tnt_points[random.randint(0, len(self.map.tnt_points)-1)]
+            return self.map.tnt_points[
+                random.randint(0, len(self.map.tnt_points) - 1)
+            ]
         else:
             return (0, 6, 0)
 
@@ -269,7 +300,9 @@ class LastPunchStand(bs.TeamGameActivity[Player, Team]):
             if not (self.has_ended() or self.times_uped):
                 self.respawn_player(player, 0)
 
-            if self.choosed_player and (player.getname(True) == self.choosed_player.getname(True)):
+            if self.choosed_player and (
+                player.getname(True) == self.choosed_player.getname(True)
+            ):
                 self.change_choosed_player(None)
 
         self._watch_dog_()

@@ -29,7 +29,21 @@ class GFGame(EliminationGame):
         if player.is_alive():
             try:
                 player.actor.node.handlemessage(
-                    "impulse", player.actor.node.position[0], player.actor.node.position[1]+.5, player.actor.node.position[2], 0, 5, 0, 3, 10, 0, 0, 0, 5, 0)
+                    "impulse",
+                    player.actor.node.position[0],
+                    player.actor.node.position[1] + 0.5,
+                    player.actor.node.position[2],
+                    0,
+                    5,
+                    0,
+                    3,
+                    10,
+                    0,
+                    0,
+                    0,
+                    5,
+                    0,
+                )
             except:
                 pass
             bs.timer(0.05, babase.Call(self.raise_player, player))

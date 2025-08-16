@@ -23,7 +23,7 @@ lmao = [
     "%, didn't mean to mess up",
     "Ah % $",
     "$, forgive the error",
-    "%, $ entirely"
+    "%, $ entirely",
 ]
 
 
@@ -38,13 +38,15 @@ class SorryPW(bauiv1lib.party.PartyWindow):
             label='Sorry',
             button_type='square',
             position=(s._width - 60, s._height - 83),
-            on_activate_call=s._apologize
+            on_activate_call=s._apologize,
         )
 
     def _ok(s, a):
         if s._btn.exists():
-            bui.buttonwidget(edit=s._btn, label=str((s._delay - a) / 10)
-                             if a != s._delay else 'Sorry')
+            bui.buttonwidget(
+                edit=s._btn,
+                label=str((s._delay - a) / 10) if a != s._delay else 'Sorry',
+            )
             s._a = a
         else:
             return
@@ -54,10 +56,14 @@ class SorryPW(bauiv1lib.party.PartyWindow):
             push("Too fast!")
             return
         else:
-            bs.chatmessage(random.choice(lmao).replace(
-                '%', random.choice(sory)).replace('$', random.choice(cash)))
-            for i in range(10, s._delay+1):
-                bs.apptimer((i-10)/10, bs.Call(s._ok, i))
+            bs.chatmessage(
+                random.choice(lmao)
+                .replace('%', random.choice(sory))
+                .replace('$', random.choice(cash))
+            )
+            for i in range(10, s._delay + 1):
+                bs.apptimer((i - 10) / 10, bs.Call(s._ok, i))
+
 
 # ba_meta require api 9
 

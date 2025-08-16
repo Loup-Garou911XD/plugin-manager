@@ -61,16 +61,18 @@ else:
 
 class Snowball(bs.Actor):
 
-    def __init__(self,
-                 position: Sequence[float] = (0.0, 1.0, 0.0),
-                 velocity: Sequence[float] = (0.0, 0.0, 0.0),
-                 blast_radius: float = 0.7,
-                 bomb_scale: float = 0.8,
-                 source_player: bs.Player | None = None,
-                 owner: bs.Node | None = None,
-                 melt: bool = True,
-                 bounce: bool = True,
-                 explode: bool = False):
+    def __init__(
+        self,
+        position: Sequence[float] = (0.0, 1.0, 0.0),
+        velocity: Sequence[float] = (0.0, 0.0, 0.0),
+        blast_radius: float = 0.7,
+        bomb_scale: float = 0.8,
+        source_player: bs.Player | None = None,
+        owner: bs.Node | None = None,
+        melt: bool = True,
+        bounce: bool = True,
+        explode: bool = False,
+    ):
         super().__init__()
         shared = SharedObjects.get()
         self._exploded = False
@@ -111,21 +113,28 @@ class Snowball(bs.Actor):
             actions=('modify_part_collision', 'use_node_collide', False),
         )
 
-        self.snowball_material.add_actions(actions=('modify_part_collision',
-                                                    'friction', 0.3))
+        self.snowball_material.add_actions(
+            actions=('modify_part_collision', 'friction', 0.3)
+        )
 
         self.snowball_material.add_actions(
             conditions=('they_have_material', shared.player_material),
-            actions=(('modify_part_collision', 'physical', False),
-                     ('call', 'at_connect', self.hit)))
+            actions=(
+                ('modify_part_collision', 'physical', False),
+                ('call', 'at_connect', self.hit),
+            ),
+        )
 
         self.snowball_material.add_actions(
-            conditions=(('they_dont_have_material', shared.player_material),
-                        'and',
-                        ('they_have_material', shared.object_material),
-                        'or',
-                        ('they_have_material', shared.footing_material)),
-            actions=('call', 'at_connect', self.bounce))
+            conditions=(
+                ('they_dont_have_material', shared.player_material),
+                'and',
+                ('they_have_material', shared.object_material),
+                'or',
+                ('they_have_material', shared.footing_material),
+            ),
+            actions=('call', 'at_connect', self.bounce),
+        )
 
         self.node = bs.newnode(
             'prop',
@@ -134,34 +143,36 @@ class Snowball(bs.Actor):
                 'position': position,
                 'velocity': velocity,
                 'body': 'sphere',
-                        'body_scale': self.scale,
-                        'mesh': bs.getmesh('frostyPelvis'),
-                        'shadow_size': shadow_size,
-                        'color_texture': bs.gettexture('bunnyColor'),
-                        'reflection': 'soft',
-                        'reflection_scale': [0.15],
-                        'density': 1.0,
-                        'materials': [self.snowball_material]
-            })
+                'body_scale': self.scale,
+                'mesh': bs.getmesh('frostyPelvis'),
+                'shadow_size': shadow_size,
+                'color_texture': bs.gettexture('bunnyColor'),
+                'reflection': 'soft',
+                'reflection_scale': [0.15],
+                'density': 1.0,
+                'materials': [self.snowball_material],
+            },
+        )
         self.light = bs.newnode(
             'light',
             owner=self.node,
             attrs={
                 'color': (0.6, 0.6, 1.0),
                 'intensity': 0.8,
-                'radius': self.radius
-            })
+                'radius': self.radius,
+            },
+        )
         self.node.connectattr('position', self.light, 'position')
-        bs.animate(self.node, 'mesh_scale', {
-            0: 0,
-            0.2: 1.3 * self.scale,
-            0.26: self.scale
-        })
-        bs.animate(self.light, 'radius', {
-            0: 0,
-            0.2: 1.3 * self.radius,
-            0.26: self.radius
-        })
+        bs.animate(
+            self.node,
+            'mesh_scale',
+            {0: 0, 0.2: 1.3 * self.scale, 0.26: self.scale},
+        )
+        bs.animate(
+            self.light,
+            'radius',
+            {0: 0, 0.2: 1.3 * self.radius, 0.26: self.radius},
+        )
         if self.snowball_melt:
             bs.timer(1.5, bs.WeakCall(self._disappear))
 
@@ -181,8 +192,7 @@ class Snowball(bs.Actor):
         v = self.node.velocity
         if babase.Vec3(*v).length() > 5.0:
             node = bs.getcollision().opposingnode
-            if node is not None and node and not (
-                    node in self._hit_nodes):
+            if node is not None and node and not (node in self._hit_nodes):
                 t = self.node.position
                 hitdir = self.node.velocity
                 self._hit_nodes.add(node)
@@ -190,25 +200,29 @@ class Snowball(bs.Actor):
                     bs.HitMessage(
                         pos=t,
                         velocity=v,
-                        magnitude=babase.Vec3(*v).length()*0.5,
-                        velocity_magnitude=babase.Vec3(*v).length()*0.5,
+                        magnitude=babase.Vec3(*v).length() * 0.5,
+                        velocity_magnitude=babase.Vec3(*v).length() * 0.5,
                         radius=0,
                         srcnode=self.node,
                         source_player=self._source_player,
                         force_direction=hitdir,
                         hit_type='snoBall',
-                        hit_subtype='default'))
+                        hit_subtype='default',
+                    )
+                )
 
         if not self.snowball_bounce:
             bs.timer(0.05, bs.WeakCall(self.do_bounce))
 
     def do_explode(self) -> None:
-        Blast(position=self.node.position,
-              velocity=self.node.velocity,
-              blast_radius=self.blast_radius,
-              source_player=babase.existing(self._source_player),
-              blast_type='impact',
-              hit_subtype='explode').autoretain()
+        Blast(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            blast_radius=self.blast_radius,
+            source_player=babase.existing(self._source_player),
+            blast_type='impact',
+            hit_subtype='explode',
+        ).autoretain()
 
     def bounce(self) -> None:
         if not self.node:
@@ -225,8 +239,8 @@ class Snowball(bs.Actor):
         if not self.node:
             return
         ospd = babase.Vec3(*vel).length()
-        dot = sum(x*y for x, y in zip(vel, self.node.velocity))
-        if ospd*ospd - dot > 50.0:
+        dot = sum(x * y for x, y in zip(vel, self.node.velocity))
+        if ospd * ospd - dot > 50.0:
             bs.timer(0.05, bs.WeakCall(self.do_bounce))
 
     def do_bounce(self) -> None:
@@ -237,46 +251,42 @@ class Snowball(bs.Actor):
 
     def do_effect(self) -> None:
         self._exploded = True
-        bs.emitfx(position=self.node.position,
-                  velocity=[v*0.1 for v in self.node.velocity],
-                  count=10,
-                  spread=0.1,
-                  scale=0.4,
-                  chunk_type='ice')
+        bs.emitfx(
+            position=self.node.position,
+            velocity=[v * 0.1 for v in self.node.velocity],
+            count=10,
+            spread=0.1,
+            scale=0.4,
+            chunk_type='ice',
+        )
         sound = bs.getsound('impactMedium')
         sound.play(1.0, position=self.node.position)
         scl = self.node.mesh_scale
-        bs.animate(self.node, 'mesh_scale', {
-            0.0: scl*1.0,
-            0.02: scl*0.5,
-            0.05: 0.0
-        })
+        bs.animate(
+            self.node,
+            'mesh_scale',
+            {0.0: scl * 1.0, 0.02: scl * 0.5, 0.05: 0.0},
+        )
         lr = self.light.radius
-        bs.animate(self.light, 'radius', {
-            0.0: lr*1.0,
-            0.02: lr*0.5,
-            0.05: 0.0
-        })
-        bs.timer(0.08,
-                 bs.WeakCall(self.handlemessage, bs.DieMessage()))
+        bs.animate(
+            self.light, 'radius', {0.0: lr * 1.0, 0.02: lr * 0.5, 0.05: 0.0}
+        )
+        bs.timer(0.08, bs.WeakCall(self.handlemessage, bs.DieMessage()))
 
     def _disappear(self) -> None:
         self._exploded = True
         if self.node:
             scl = self.node.mesh_scale
-            bs.animate(self.node, 'mesh_scale', {
-                0.0: scl*1.0,
-                0.3: scl*0.5,
-                0.5: 0.0
-            })
+            bs.animate(
+                self.node,
+                'mesh_scale',
+                {0.0: scl * 1.0, 0.3: scl * 0.5, 0.5: 0.0},
+            )
             lr = self.light.radius
-            bs.animate(self.light, 'radius', {
-                0.0: lr*1.0,
-                0.3: lr*0.5,
-                0.5: 0.0
-            })
-            bs.timer(0.55,
-                     bs.WeakCall(self.handlemessage, bs.DieMessage()))
+            bs.animate(
+                self.light, 'radius', {0.0: lr * 1.0, 0.3: lr * 0.5, 0.5: 0.0}
+            )
+            bs.timer(0.55, bs.WeakCall(self.handlemessage, bs.DieMessage()))
 
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, bs.DieMessage):
@@ -310,19 +320,21 @@ class NewPlayerSpaz(PlayerSpaz):
             pos = self.node.position
             p1 = self.node.position_center
             p2 = self.node.position_forward
-            direction = [p1[0]-p2[0], p2[1]-p1[1], p1[2]-p2[2]]
+            direction = [p1[0] - p2[0], p2[1] - p1[1], p1[2] - p2[2]]
             direction[1] = 0.03
-            mag = 20.0/babase.Vec3(*direction).length()
+            mag = 20.0 / babase.Vec3(*direction).length()
             vel = [v * mag for v in direction]
-            Snowball(position=(pos[0], pos[1] + 0.1, pos[2]),
-                     velocity=vel,
-                     blast_radius=self.blast_radius,
-                     bomb_scale=self.snowball_scale,
-                     source_player=self.source_player,
-                     owner=self.node,
-                     melt=self.snowball_melt,
-                     bounce=self.snowball_bounce,
-                     explode=self.snowball_explode).autoretain()
+            Snowball(
+                position=(pos[0], pos[1] + 0.1, pos[2]),
+                velocity=vel,
+                blast_radius=self.blast_radius,
+                bomb_scale=self.snowball_scale,
+                source_player=self.source_player,
+                owner=self.node,
+                melt=self.snowball_melt,
+                bounce=self.snowball_bounce,
+                explode=self.snowball_explode,
+            ).autoretain()
 
             self._punched_nodes = set()  # Reset this.
             self.last_punch_time_ms = t_ms
@@ -330,8 +342,12 @@ class NewPlayerSpaz(PlayerSpaz):
             if not self.node.hold_node:
                 bs.timer(
                     0.1,
-                    bs.WeakCall(self._safe_play_sound,
-                                SpazFactory.get().swish_sound, 0.8))
+                    bs.WeakCall(
+                        self._safe_play_sound,
+                        SpazFactory.get().swish_sound,
+                        0.8,
+                    ),
+                )
         self._turbo_filter_add_press('punch')
 
     def handlemessage(self, msg: Any) -> Any:
@@ -365,7 +381,8 @@ class SnowballFightGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]) -> list[babase.Setting]:
+        cls, sessiontype: type[bs.Session]
+    ) -> list[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
@@ -433,14 +450,16 @@ class SnowballFightGame(bs.TeamGameActivity[Player, Team]):
         # suiciding until you get a good drop)
         if issubclass(sessiontype, bs.FreeForAllSession):
             settings.append(
-                bs.BoolSetting('Allow Negative Scores', default=False))
+                bs.BoolSetting('Allow Negative Scores', default=False)
+            )
 
         return settings
 
     @classmethod
     def supports_session_type(cls, sessiontype: type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.DualTeamSession)
-                or issubclass(sessiontype, bs.FreeForAllSession))
+        return issubclass(sessiontype, bs.DualTeamSession) or issubclass(
+            sessiontype, bs.FreeForAllSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: type[bs.Session]) -> list[str]:
@@ -452,11 +471,11 @@ class SnowballFightGame(bs.TeamGameActivity[Player, Team]):
         self._score_to_win: int | None = None
         self._dingsound = bs.getsound('dingSmall')
         self._epic_mode = bool(settings['Epic Mode'])
-        self._kills_to_win_per_player = int(
-            settings['Kills to Win Per Player'])
+        self._kills_to_win_per_player = int(settings['Kills to Win Per Player'])
         self._time_limit = float(settings['Time Limit'])
         self._allow_negative_scores = bool(
-            settings.get('Allow Negative Scores', False))
+            settings.get('Allow Negative Scores', False)
+        )
         self._snowball_rate = int(settings[snowball_rate])
         self._snowball_scale = float(settings[snowball_scale])
         self._snowball_melt = bool(settings[snowball_melt])
@@ -466,8 +485,9 @@ class SnowballFightGame(bs.TeamGameActivity[Player, Team]):
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC if self._epic_mode else
-                              bs.MusicType.TO_THE_DEATH)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.TO_THE_DEATH
+        )
 
     def get_instance_description(self) -> str | Sequence:
         return 'Crush ${ARG1} of your enemies.', self._score_to_win
@@ -492,27 +512,33 @@ class SnowballFightGame(bs.TeamGameActivity[Player, Team]):
         # self.setup_standard_powerup_drops()
 
         # Base kills needed to win on the size of the largest team.
-        self._score_to_win = (self._kills_to_win_per_player *
-                              max(1, max(len(t.players) for t in self.teams)))
+        self._score_to_win = self._kills_to_win_per_player * max(
+            1, max(len(t.players) for t in self.teams)
+        )
         self._update_scoreboard()
 
     def emit_snowball(self) -> None:
-        pos = (-10 + (random.random() * 30), 15,
-               -10 + (random.random() * 30))
-        vel = ((-5.0 + random.random() * 30.0) * (-1.0 if pos[0] > 0 else 1.0),
-               -50.0, (-5.0 + random.random() * 30.0) * (
-            -1.0 if pos[0] > 0 else 1.0))
-        bs.emitfx(position=pos,
-                  velocity=vel,
-                  count=10,
-                  scale=1.0 + random.random(),
-                  spread=0.0,
-                  chunk_type='spark')
+        pos = (-10 + (random.random() * 30), 15, -10 + (random.random() * 30))
+        vel = (
+            (-5.0 + random.random() * 30.0) * (-1.0 if pos[0] > 0 else 1.0),
+            -50.0,
+            (-5.0 + random.random() * 30.0) * (-1.0 if pos[0] > 0 else 1.0),
+        )
+        bs.emitfx(
+            position=pos,
+            velocity=vel,
+            count=10,
+            scale=1.0 + random.random(),
+            spread=0.0,
+            chunk_type='spark',
+        )
 
-    def spawn_player_spaz(self,
-                          player: Player,
-                          position: Sequence[float] = (0, 0, 0),
-                          angle: float | None = None) -> PlayerSpaz:
+    def spawn_player_spaz(
+        self,
+        player: Player,
+        position: Sequence[float] = (0, 0, 0),
+        angle: float | None = None,
+    ) -> PlayerSpaz:
         from babase import _math
         from bascenev1._gameutils import animate
         from bascenev1._coopsession import CoopSession
@@ -530,10 +556,12 @@ class SnowballFightGame(bs.TeamGameActivity[Player, Team]):
         light_color = _math.normalized_color(color)
         display_color = babase.safecolor(color, target_intensity=0.75)
 
-        spaz = NewPlayerSpaz(color=color,
-                             highlight=highlight,
-                             character=player.character,
-                             player=player)
+        spaz = NewPlayerSpaz(
+            color=color,
+            highlight=highlight,
+            character=player.character,
+            player=player,
+        )
 
         player.actor = spaz
         assert spaz.node
@@ -542,24 +570,25 @@ class SnowballFightGame(bs.TeamGameActivity[Player, Team]):
         # material that allows us to collide with the player-walls.
         # FIXME: Need to generalize this.
         if isinstance(self.session, CoopSession) and self.map.getname() in [
-            'Courtyard', 'Tower D'
+            'Courtyard',
+            'Tower D',
         ]:
             mat = self.map.preloaddata['collide_with_wall_material']
             assert isinstance(spaz.node.materials, tuple)
             assert isinstance(spaz.node.roller_materials, tuple)
-            spaz.node.materials += (mat, )
-            spaz.node.roller_materials += (mat, )
+            spaz.node.materials += (mat,)
+            spaz.node.roller_materials += (mat,)
 
         spaz.node.name = name
         spaz.node.name_color = display_color
-        spaz.connect_controls_to_player(
-            enable_pickup=False, enable_bomb=False)
+        spaz.connect_controls_to_player(enable_pickup=False, enable_bomb=False)
 
         # Move to the stand position and add a flash of light.
         spaz.handlemessage(
             bs.StandMessage(
-                position,
-                angle if angle is not None else random.uniform(0, 360)))
+                position, angle if angle is not None else random.uniform(0, 360)
+            )
+        )
         self._spawn_sound.play(1, position=spaz.node.position)
         light = bs.newnode('light', attrs={'color': light_color})
         spaz.node.connectattr('position', light, 'position')
@@ -613,10 +642,11 @@ class SnowballFightGame(bs.TeamGameActivity[Player, Team]):
 
                 # In FFA show scores since its hard to find on the scoreboard.
                 if isinstance(killer.actor, PlayerSpaz) and killer.actor:
-                    killer.actor.set_score_text(str(killer.team.score) + '/' +
-                                                str(self._score_to_win),
-                                                color=killer.team.color,
-                                                flash=True)
+                    killer.actor.set_score_text(
+                        str(killer.team.score) + '/' + str(self._score_to_win),
+                        color=killer.team.color,
+                        flash=True,
+                    )
 
             self._update_scoreboard()
 
@@ -633,8 +663,9 @@ class SnowballFightGame(bs.TeamGameActivity[Player, Team]):
 
     def _update_scoreboard(self) -> None:
         for team in self.teams:
-            self._scoreboard.set_team_value(team, team.score,
-                                            self._score_to_win)
+            self._scoreboard.set_team_value(
+                team, team.score, self._score_to_win
+            )
 
     def end_game(self) -> None:
         results = bs.GameResults()

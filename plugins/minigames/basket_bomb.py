@@ -21,26 +21,31 @@ bsuSpaz = None
 def getlanguage(text, sub: str = ''):
     lang = bs.app.lang.language
     translate = {
-        "Name":
-        {"Spanish": "Baloncesto",
-         "English": "Basketbomb",
-         "Portuguese": "Basketbomb"},
-        "Info":
-        {"Spanish": "Anota todas las canastas y sé el MVP.",
-         "English": "Score all the baskets and be the MVP.",
-         "Portuguese": "Marque cada cesta e seja o MVP."},
-        "Info-Short":
-        {"Spanish": f"Anota {sub} canasta(s) para ganar",
-         "English": f"Score {sub} baskets to win",
-         "Portuguese": f"Cestas de {sub} pontos para ganhar"},
-        "S: Powerups":
-        {"Spanish": "Aparecer Potenciadores",
-         "English": "Powerups Spawn",
-         "Portuguese": "Habilitar Potenciadores"},
-        "S: Velocity":
-            {"Spanish": "Activar velocidad",
-             "English": "Enable speed",
-             "Portuguese": "Ativar velocidade"},
+        "Name": {
+            "Spanish": "Baloncesto",
+            "English": "Basketbomb",
+            "Portuguese": "Basketbomb",
+        },
+        "Info": {
+            "Spanish": "Anota todas las canastas y sé el MVP.",
+            "English": "Score all the baskets and be the MVP.",
+            "Portuguese": "Marque cada cesta e seja o MVP.",
+        },
+        "Info-Short": {
+            "Spanish": f"Anota {sub} canasta(s) para ganar",
+            "English": f"Score {sub} baskets to win",
+            "Portuguese": f"Cestas de {sub} pontos para ganhar",
+        },
+        "S: Powerups": {
+            "Spanish": "Aparecer Potenciadores",
+            "English": "Powerups Spawn",
+            "Portuguese": "Habilitar Potenciadores",
+        },
+        "S: Velocity": {
+            "Spanish": "Activar velocidad",
+            "English": "Enable speed",
+            "Portuguese": "Ativar velocidade",
+        },
     }
 
     languages = ['Spanish', 'Portuguese', 'English']
@@ -73,23 +78,28 @@ class Ball(bs.Actor):
         assert isinstance(activity, BasketGame)
 
         pmats = [shared.object_material, activity.ball_material]
-        self.node = bs.newnode('prop',
-                               delegate=self,
-                               attrs={
-                                   'mesh': activity.ball_mesh,
-                                   'color_texture': activity.ball_tex,
-                                   'body': 'sphere',
-                                   'reflection': 'soft',
-                                   'body_scale': 1.0 * _scale,
-                                   'reflection_scale': [1.3],
-                                   'shadow_size': 1.0,
-                                   'gravity_scale': 0.92,
-                                   'density': max(0.4 * _scale, 0.3),
-                                   'position': self._spawn_pos,
-                                   'velocity': velocty,
-                                   'materials': pmats})
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'mesh': activity.ball_mesh,
+                'color_texture': activity.ball_tex,
+                'body': 'sphere',
+                'reflection': 'soft',
+                'body_scale': 1.0 * _scale,
+                'reflection_scale': [1.3],
+                'shadow_size': 1.0,
+                'gravity_scale': 0.92,
+                'density': max(0.4 * _scale, 0.3),
+                'position': self._spawn_pos,
+                'velocity': velocty,
+                'materials': pmats,
+            },
+        )
         self.scale = scale = 0.25 * _scale
-        bs.animate(self.node, 'mesh_scale', {0: 0, 0.2: scale*1.3, 0.26: scale})
+        bs.animate(
+            self.node, 'mesh_scale', {0: 0, 0.2: scale * 1.3, 0.26: scale}
+        )
 
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, bs.DieMessage):
@@ -108,11 +118,21 @@ class Ball(bs.Actor):
             assert self.node
             assert msg.force_direction is not None
             self.node.handlemessage(
-                'impulse', msg.pos[0], msg.pos[1], msg.pos[2], msg.velocity[0],
-                msg.velocity[1], msg.velocity[2], 1.0 * msg.magnitude,
-                1.0 * msg.velocity_magnitude, msg.radius, 0,
-                msg.force_direction[0], msg.force_direction[1],
-                msg.force_direction[2])
+                'impulse',
+                msg.pos[0],
+                msg.pos[1],
+                msg.pos[2],
+                msg.velocity[0],
+                msg.velocity[1],
+                msg.velocity[2],
+                1.0 * msg.magnitude,
+                1.0 * msg.velocity_magnitude,
+                msg.radius,
+                0,
+                msg.force_direction[0],
+                msg.force_direction[1],
+                msg.force_direction[2],
+            )
 
             s_player = msg.get_source_player(Player)
             if s_player is not None:
@@ -138,8 +158,17 @@ class Team(bs.Team[Player]):
 class Points:
     postes = dict()
     # 10.736066818237305, 0.3002409040927887, 0.5281256437301636
-    postes['pal_0'] = (10.64702320098877, 0.0000000000000000, 0.0000000000000000)
-    postes['pal_1'] = (-10.64702320098877, 0.0000000000000000, 0.0000000000000000)
+    postes['pal_0'] = (
+        10.64702320098877,
+        0.0000000000000000,
+        0.0000000000000000,
+    )
+    postes['pal_1'] = (
+        -10.64702320098877,
+        0.0000000000000000,
+        0.0000000000000000,
+    )
+
 
 # ba_meta export bascenev1.GameActivity
 
@@ -210,12 +239,13 @@ class BasketGame(bs.TeamGameActivity[Player, Team]):
         self.slow_motion = self._epic_mode
 
         self.ball_material = bs.Material()
-        self.ball_material.add_actions(actions=(('modify_part_collision',
-                                                 'friction', 0.5)))
-        self.ball_material.add_actions(conditions=('they_have_material',
-                                                   shared.pickup_material),
-                                       actions=('modify_part_collision',
-                                                'collide', True))
+        self.ball_material.add_actions(
+            actions=(('modify_part_collision', 'friction', 0.5))
+        )
+        self.ball_material.add_actions(
+            conditions=('they_have_material', shared.pickup_material),
+            actions=('modify_part_collision', 'collide', True),
+        )
         self.ball_material.add_actions(
             conditions=(
                 ('we_are_younger_than', 100),
@@ -224,23 +254,26 @@ class BasketGame(bs.TeamGameActivity[Player, Team]):
             ),
             actions=('modify_node_collision', 'collide', False),
         )
-        self.ball_material.add_actions(conditions=('they_have_material',
-                                                   shared.footing_material),
-                                       actions=('impact_sound',
-                                                self._ball_sound, 0.2, 5))
+        self.ball_material.add_actions(
+            conditions=('they_have_material', shared.footing_material),
+            actions=('impact_sound', self._ball_sound, 0.2, 5),
+        )
 
         # Keep track of which player last touched the ball
         self.ball_material.add_actions(
             conditions=('they_have_material', shared.player_material),
-            actions=(('call', 'at_connect',
-                      self._handle_ball_player_collide), ))
+            actions=(('call', 'at_connect', self._handle_ball_player_collide),),
+        )
 
         self._score_region_material = bs.Material()
         self._score_region_material.add_actions(
             conditions=('they_have_material', self.ball_material),
-            actions=(('modify_part_collision', 'collide',
-                      True), ('modify_part_collision', 'physical', False),
-                     ('call', 'at_connect', self._handle_score)))
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', False),
+                ('call', 'at_connect', self._handle_score),
+            ),
+        )
         self._ball_spawn_pos: Optional[Sequence[float]] = None
         self._score_regions: Optional[List[bs.NodeActor]] = None
         self._ball: Optional[Ball] = None
@@ -268,22 +301,30 @@ class BasketGame(bs.TeamGameActivity[Player, Team]):
         self._score_regions = []
         self._score_regions.append(
             bs.NodeActor(
-                bs.newnode('region',
-                           attrs={
-                               'position': defs.boxes['goal1'][0:3],
-                               'scale': defs.boxes['goal1'][6:9],
-                               'type': 'box',
-                               'materials': []
-                           })))
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': defs.boxes['goal1'][0:3],
+                        'scale': defs.boxes['goal1'][6:9],
+                        'type': 'box',
+                        'materials': [],
+                    },
+                )
+            )
+        )
         self._score_regions.append(
             bs.NodeActor(
-                bs.newnode('region',
-                           attrs={
-                               'position': defs.boxes['goal2'][0:3],
-                               'scale': defs.boxes['goal2'][6:9],
-                               'type': 'box',
-                               'materials': []
-                           })))
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': defs.boxes['goal2'][0:3],
+                        'scale': defs.boxes['goal2'][6:9],
+                        'type': 'box',
+                        'materials': [],
+                    },
+                )
+            )
+        )
         self._update_scoreboard()
         self._chant_sound.play()
 
@@ -297,9 +338,9 @@ class BasketGame(bs.TeamGameActivity[Player, Team]):
         collision = bs.getcollision()
         try:
             ball = collision.sourcenode.getdelegate(Ball, True)
-            player = collision.opposingnode.getdelegate(PlayerSpaz,
-                                                        True).getplayer(
-                                                            Player, True)
+            player = collision.opposingnode.getdelegate(
+                PlayerSpaz, True
+            ).getplayer(Player, True)
         except bs.NotFoundError:
             return
 
@@ -333,11 +374,15 @@ class BasketGame(bs.TeamGameActivity[Player, Team]):
                     if player.actor:
                         player.actor.handlemessage(bs.CelebrateMessage(2.0))
 
-                if (scoring_team.id in self._ball.last_players_to_touch
-                        and self._ball.last_players_to_touch[scoring_team.id]):
+                if (
+                    scoring_team.id in self._ball.last_players_to_touch
+                    and self._ball.last_players_to_touch[scoring_team.id]
+                ):
                     self.stats.player_scored(
                         self._ball.last_players_to_touch[scoring_team.id],
-                        100, big_message=True)
+                        100,
+                        big_message=True,
+                    )
 
                 if team.score >= self._score_to_win:
                     self.end_game()
@@ -350,12 +395,14 @@ class BasketGame(bs.TeamGameActivity[Player, Team]):
         # Kill the ball (it'll respawn itself shortly).
         bs.timer(1.0, self._kill_ball)
 
-        light = bs.newnode('light',
-                           attrs={
-                               'position': bs.getcollision().position,
-                               'height_attenuated': False,
-                               'color': (1, 0, 0)
-                           })
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': bs.getcollision().position,
+                'height_attenuated': False,
+                'color': (1, 0, 0),
+            },
+        )
         bs.animate(light, 'intensity', {0: 0, 0.5: 1, 1.0: 0}, loop=True)
         bs.timer(1.0, light.delete)
 
@@ -397,19 +444,24 @@ class BasketGame(bs.TeamGameActivity[Player, Team]):
             super().handlemessage(msg)
 
     def postes(self, team_id: int):
-        if not hasattr(self._map, 'poste_'+str(team_id)):
-            setattr(self._map, 'poste_'+str(team_id),
-                    Palos(team=team_id,
-                          position=Points.postes['pal_' +
-                                                 str(team_id)]).autoretain())
+        if not hasattr(self._map, 'poste_' + str(team_id)):
+            setattr(
+                self._map,
+                'poste_' + str(team_id),
+                Palos(
+                    team=team_id, position=Points.postes['pal_' + str(team_id)]
+                ).autoretain(),
+            )
 
     def _flash_ball_spawn(self) -> None:
-        light = bs.newnode('light',
-                           attrs={
-                               'position': self._ball_spawn_pos,
-                               'height_attenuated': False,
-                               'color': (1, 0, 0)
-                           })
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': self._ball_spawn_pos,
+                'height_attenuated': False,
+                'color': (1, 0, 0),
+            },
+        )
         bs.animate(light, 'intensity', {0.0: 0, 0.25: 1, 0.5: 0}, loop=True)
         bs.timer(1.0, light.delete)
 
@@ -422,8 +474,9 @@ class BasketGame(bs.TeamGameActivity[Player, Team]):
 
 
 class Aro(bs.Actor):
-    def __init__(self, team: int = 0,
-                 position: Sequence[float] = (0.0, 1.0, 0.0)):
+    def __init__(
+        self, team: int = 0, position: Sequence[float] = (0.0, 1.0, 0.0)
+    ):
         super().__init__()
         act = self.getactivity()
         shared = SharedObjects.get()
@@ -433,56 +486,70 @@ class Aro(bs.Actor):
         # Material Para; Traspasar Objetos
         self.no_collision = bs.Material()
         self.no_collision.add_actions(
-            actions=(('modify_part_collision', 'collide', False)))
+            actions=(('modify_part_collision', 'collide', False))
+        )
 
         self.collision = bs.Material()
         self.collision.add_actions(
-            actions=(('modify_part_collision', 'collide', True)))
+            actions=(('modify_part_collision', 'collide', True))
+        )
 
         # Score
         self._score_region_material = bs.Material()
         self._score_region_material.add_actions(
             conditions=('they_have_material', act.ball_material),
-            actions=(('modify_part_collision', 'collide',
-                      True), ('modify_part_collision', 'physical', False),
-                     ('call', 'at_connect', self._annotation)))
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('modify_part_collision', 'physical', False),
+                ('call', 'at_connect', self._annotation),
+            ),
+        )
 
         self._spawn_pos = (position[0], position[1], position[2])
-        self._materials_region0 = [self.collision,
-                                   shared.footing_material]
+        self._materials_region0 = [self.collision, shared.footing_material]
 
         mesh = None
         tex = bs.gettexture('null')
 
         pmats = [self.no_collision]
-        self.node = bs.newnode('prop',
-                               delegate=self,
-                               attrs={
-                                   'mesh': mesh,
-                                   'color_texture': tex,
-                                   'body': 'box',
-                                   'reflection': 'soft',
-                                   'reflection_scale': [1.5],
-                                   'shadow_size': 0.1,
-                                   'position': self._spawn_pos,
-                                   'materials': pmats})
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'mesh': mesh,
+                'color_texture': tex,
+                'body': 'box',
+                'reflection': 'soft',
+                'reflection_scale': [1.5],
+                'shadow_size': 0.1,
+                'position': self._spawn_pos,
+                'materials': pmats,
+            },
+        )
 
         self.scale = scale = 1.4
-        bs.animate(self.node, 'mesh_scale', {0:  0})
+        bs.animate(self.node, 'mesh_scale', {0: 0})
 
-        pos = (position[0], position[1]+0.6, position[2])
+        pos = (position[0], position[1] + 0.6, position[2])
         self.regions: List[bs.Node] = [
-            bs.newnode('region',
-                       attrs={'position': position,
-                              'scale': (0.6, 0.05, 0.6),
-                              'type': 'box',
-                              'materials': self._materials_region0}),
-
-            bs.newnode('region',
-                       attrs={'position': pos,
-                              'scale': (0.5, 0.3, 0.9),
-                              'type': 'box',
-                              'materials': [self._score_region_material]})
+            bs.newnode(
+                'region',
+                attrs={
+                    'position': position,
+                    'scale': (0.6, 0.05, 0.6),
+                    'type': 'box',
+                    'materials': self._materials_region0,
+                },
+            ),
+            bs.newnode(
+                'region',
+                attrs={
+                    'position': pos,
+                    'scale': (0.5, 0.3, 0.9),
+                    'type': 'box',
+                    'materials': [self._score_region_material],
+                },
+            ),
         ]
         self.regions[0].connectattr('position', self.node, 'position')
         # self.regions[0].connectattr('position', self.regions[1], 'position')
@@ -499,15 +566,21 @@ class Aro(bs.Actor):
         while locs_count > 1:
             scale = (1.5 * 0.1 * locs_count) + 0.8
 
-            self.locs.append(bs.newnode('locator',
-                                        owner=self.node,
-                                        attrs={'shape': 'circleOutline',
-                                               'position': pos,
-                                               'color': color,
-                                               'opacity': 1.0,
-                                               'size': [scale],
-                                               'draw_beauty': True,
-                                               'additive': False}))
+            self.locs.append(
+                bs.newnode(
+                    'locator',
+                    owner=self.node,
+                    attrs={
+                        'shape': 'circleOutline',
+                        'position': pos,
+                        'color': color,
+                        'opacity': 1.0,
+                        'size': [scale],
+                        'draw_beauty': True,
+                        'additive': False,
+                    },
+                )
+            )
 
             pos[1] -= 0.1
             locs_count -= 1
@@ -533,8 +606,9 @@ class Aro(bs.Actor):
 
 
 class Cuadro(bs.Actor):
-    def __init__(self, team: int = 0,
-                 position: Sequence[float] = (0.0, 1.0, 0.0)):
+    def __init__(
+        self, team: int = 0, position: Sequence[float] = (0.0, 1.0, 0.0)
+    ):
         super().__init__()
         act = self.getactivity()
         shared = SharedObjects.get()
@@ -542,20 +616,24 @@ class Cuadro(bs.Actor):
 
         self.collision = bs.Material()
         self.collision.add_actions(
-            actions=(('modify_part_collision', 'collide', True)))
+            actions=(('modify_part_collision', 'collide', True))
+        )
 
-        pos = (position[0], position[1]+0.9, position[2]+1.5)
-        self.region: bs.Node = bs.newnode('region',
-                                          attrs={'position': pos,
-                                                 'scale': (0.5, 2.7, 2.5),
-                                                 'type': 'box',
-                                                 'materials': [self.collision,
-                                                               shared.footing_material]})
+        pos = (position[0], position[1] + 0.9, position[2] + 1.5)
+        self.region: bs.Node = bs.newnode(
+            'region',
+            attrs={
+                'position': pos,
+                'scale': (0.5, 2.7, 2.5),
+                'type': 'box',
+                'materials': [self.collision, shared.footing_material],
+            },
+        )
 
         # self.shield = bs.newnode('shield', attrs={'radius': 1.0, 'color': (0,10,0)})
         # self.region.connectattr('position', self.shield, 'position')
 
-        position = (position[0], position[1], position[2]+0.09)
+        position = (position[0], position[1], position[2] + 0.09)
         pos = list(position)
         oldpos = list(position)
         old_count = 14
@@ -569,21 +647,26 @@ class Cuadro(bs.Actor):
         except:
             color = (1, 1, 1)
 
-        while (count_y != 1):
+        while count_y != 1:
 
-            while (count != 1):
+            while count != 1:
                 pos[2] += 0.19
 
                 self.locs.append(
-                    bs.newnode('locator',
-                               owner=self.region,
-                               attrs={'shape': 'circle',
-                                      'position': pos,
-                                      'size': [0.5],
-                                      'color': color,
-                                      'opacity': 1.0,
-                                      'draw_beauty': True,
-                                      'additive': False}))
+                    bs.newnode(
+                        'locator',
+                        owner=self.region,
+                        attrs={
+                            'shape': 'circle',
+                            'position': pos,
+                            'size': [0.5],
+                            'color': color,
+                            'opacity': 1.0,
+                            'draw_beauty': True,
+                            'additive': False,
+                        },
+                    )
+                )
                 count -= 1
 
             count = old_count
@@ -600,8 +683,9 @@ class Cuadro(bs.Actor):
 
 
 class Palos(bs.Actor):
-    def __init__(self, team: int = 0,
-                 position: Sequence[float] = (0.0, 1.0, 0.0)):
+    def __init__(
+        self, team: int = 0, position: Sequence[float] = (0.0, 1.0, 0.0)
+    ):
         super().__init__()
         shared = SharedObjects.get()
         activity = self.getactivity()
@@ -612,68 +696,79 @@ class Palos(bs.Actor):
         # Material Para; Traspasar Objetos
         self.no_collision = bs.Material()
         self.no_collision.add_actions(
-            actions=(('modify_part_collision', 'collide', False)))
+            actions=(('modify_part_collision', 'collide', False))
+        )
 
         #
         self.collision = bs.Material()
         self.collision.add_actions(
-            actions=(('modify_part_collision', 'collide', True)))
+            actions=(('modify_part_collision', 'collide', True))
+        )
 
         # Spawn just above the provided point.
-        self._spawn_pos = (position[0], position[2]+2.5, position[2])
+        self._spawn_pos = (position[0], position[2] + 2.5, position[2])
 
         mesh = bs.getmesh('flagPole')
         tex = bs.gettexture('flagPoleColor')
 
         pmats = [self.no_collision]
-        self.node = bs.newnode('prop',
-                               delegate=self,
-                               attrs={
-                                   'mesh': mesh,
-                                   'color_texture': tex,
-                                   'body': 'puck',
-                                   'reflection': 'soft',
-                                   'reflection_scale': [2.6],
-                                   'shadow_size': 0,
-                                   'is_area_of_interest': True,
-                                   'position': self._spawn_pos,
-                                   'materials': pmats
-                               })
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'mesh': mesh,
+                'color_texture': tex,
+                'body': 'puck',
+                'reflection': 'soft',
+                'reflection_scale': [2.6],
+                'shadow_size': 0,
+                'is_area_of_interest': True,
+                'position': self._spawn_pos,
+                'materials': pmats,
+            },
+        )
         self.scale = scale = 4.0
-        bs.animate(self.node, 'mesh_scale', {0:  scale})
+        bs.animate(self.node, 'mesh_scale', {0: scale})
 
-        self.loc = bs.newnode('locator',
-                              owner=self.node,
-                              attrs={'shape': 'circle',
-                                     'position': position,
-                                     'color': (1, 1, 0),
-                                     'opacity': 1.0,
-                                     'draw_beauty': False,
-                                     'additive': True})
+        self.loc = bs.newnode(
+            'locator',
+            owner=self.node,
+            attrs={
+                'shape': 'circle',
+                'position': position,
+                'color': (1, 1, 0),
+                'opacity': 1.0,
+                'draw_beauty': False,
+                'additive': True,
+            },
+        )
 
         self._y = _y = 0.30
         _x = -0.25 if team == 1 else 0.25
-        _pos = (position[0]+_x, position[1]-1.5 + _y, position[2])
-        self.region = bs.newnode('region',
-                                 attrs={
-                                     'position': _pos,
-                                     'scale': (0.4, 8, 0.4),
-                                     'type': 'box',
-                                     'materials': [self.collision]})
+        _pos = (position[0] + _x, position[1] - 1.5 + _y, position[2])
+        self.region = bs.newnode(
+            'region',
+            attrs={
+                'position': _pos,
+                'scale': (0.4, 8, 0.4),
+                'type': 'box',
+                'materials': [self.collision],
+            },
+        )
         self.region.connectattr('position', self.node, 'position')
 
         _y = self._y
         position = self._pos
         if team == 0:
-            pos = (position[0]-0.8, position[1] + 2.0 + _y, position[2])
+            pos = (position[0] - 0.8, position[1] + 2.0 + _y, position[2])
         else:
-            pos = (position[0]+0.8, position[1] + 2.0 + _y, position[2])
+            pos = (position[0] + 0.8, position[1] + 2.0 + _y, position[2])
 
         if self.aro is None:
             self.aro = Aro(team, pos).autoretain()
 
         if self.cua is None:
-            pos = (position[0], position[1] + 1.8 + _y, position[2]-1.4)
+            pos = (position[0], position[1] + 1.8 + _y, position[2] - 1.4)
             self.cua = Cuadro(team, pos).autoretain()
 
     def handlemessage(self, msg: Any) -> Any:
@@ -719,12 +814,16 @@ class BasketMapV2(maps.HockeyStadium):
         self.floor.reflection_scale = [1.6]
         self.floor.color = (1.1, 0.05, 0.8)
 
-        self.background = bs.newnode('terrain',
-                                     attrs={'mesh': bs.getmesh('thePadBG'),
-                                            'lighting': False,
-                                            'background': True,
-                                            'color': (1.0, 0.2, 1.0),
-                                            'color_texture': bs.gettexture('menuBG')})
+        self.background = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': bs.getmesh('thePadBG'),
+                'lighting': False,
+                'background': True,
+                'color': (1.0, 0.2, 1.0),
+                'color_texture': bs.gettexture('menuBG'),
+            },
+        )
 
         gnode = bs.getactivity().globalsnode
         gnode.floor_reflection = True
@@ -741,26 +840,49 @@ class BasketMapV2(maps.HockeyStadium):
         ##################
         self.collision = bs.Material()
         self.collision.add_actions(
-            actions=(('modify_part_collision', 'collide', True)))
+            actions=(('modify_part_collision', 'collide', True))
+        )
 
         self.regions: List[bs.Node] = [
-            bs.newnode('region',
-                       attrs={'position': (12.676897048950195, 0.2997918128967285, 5.583303928375244),
-                              'scale': (1.01, 12, 28),
-                              'type': 'box',
-                              'materials': [self.collision]}),
-
-            bs.newnode('region',
-                       attrs={'position': (11.871315956115723, 0.29975247383117676, 5.711406707763672),
-                              'scale': (50, 12, 0.9),
-                              'type': 'box',
-                              'materials': [self.collision]}),
-
-            bs.newnode('region',
-                       attrs={'position': (-12.776557922363281, 0.30036890506744385, 4.96237850189209),
-                              'scale': (1.01, 12, 28),
-                              'type': 'box',
-                              'materials': [self.collision]}),
+            bs.newnode(
+                'region',
+                attrs={
+                    'position': (
+                        12.676897048950195,
+                        0.2997918128967285,
+                        5.583303928375244,
+                    ),
+                    'scale': (1.01, 12, 28),
+                    'type': 'box',
+                    'materials': [self.collision],
+                },
+            ),
+            bs.newnode(
+                'region',
+                attrs={
+                    'position': (
+                        11.871315956115723,
+                        0.29975247383117676,
+                        5.711406707763672,
+                    ),
+                    'scale': (50, 12, 0.9),
+                    'type': 'box',
+                    'materials': [self.collision],
+                },
+            ),
+            bs.newnode(
+                'region',
+                attrs={
+                    'position': (
+                        -12.776557922363281,
+                        0.30036890506744385,
+                        4.96237850189209,
+                    ),
+                    'scale': (1.01, 12, 28),
+                    'type': 'box',
+                    'materials': [self.collision],
+                },
+            ),
         ]
 
 

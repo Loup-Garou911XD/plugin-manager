@@ -19,23 +19,24 @@ from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
 
 if TYPE_CHECKING:
-    from typing import (Any, Tuple, Type, List, Sequence, Optional,
-                        Union)
+    from typing import Any, Tuple, Type, List, Sequence, Optional, Union
 
 
 class Icon(bs.Actor):
     """Creates in in-game icon on screen."""
 
-    def __init__(self,
-                 player: Player,
-                 position: Tuple[float, float],
-                 scale: float,
-                 show_lives: bool = True,
-                 show_death: bool = True,
-                 name_scale: float = 1.0,
-                 name_maxwidth: float = 115.0,
-                 flatness: float = 1.0,
-                 shadow: float = 1.0):
+    def __init__(
+        self,
+        player: Player,
+        position: Tuple[float, float],
+        scale: float,
+        show_lives: bool = True,
+        show_death: bool = True,
+        name_scale: float = 1.0,
+        name_maxwidth: float = 115.0,
+        flatness: float = 1.0,
+        shadow: float = 1.0,
+    ):
         super().__init__()
 
         self._player = player
@@ -45,19 +46,21 @@ class Icon(bs.Actor):
         self._outline_tex = bs.gettexture('characterIconMask')
 
         icon = player.get_icon()
-        self.node = bs.newnode('image',
-                               delegate=self,
-                               attrs={
-                                   'texture': icon['texture'],
-                                   'tint_texture': icon['tint_texture'],
-                                   'tint_color': icon['tint_color'],
-                                   'vr_depth': 400,
-                                   'tint2_color': icon['tint2_color'],
-                                   'mask_texture': self._outline_tex,
-                                   'opacity': 1.0,
-                                   'absolute_scale': True,
-                                   'attach': 'bottomCenter'
-                               })
+        self.node = bs.newnode(
+            'image',
+            delegate=self,
+            attrs={
+                'texture': icon['texture'],
+                'tint_texture': icon['tint_texture'],
+                'tint_color': icon['tint_color'],
+                'vr_depth': 400,
+                'tint2_color': icon['tint2_color'],
+                'mask_texture': self._outline_tex,
+                'opacity': 1.0,
+                'absolute_scale': True,
+                'attach': 'bottomCenter',
+            },
+        )
         self._name_text = bs.newnode(
             'text',
             owner=self.node,
@@ -71,25 +74,29 @@ class Icon(bs.Actor):
                 'shadow': shadow,
                 'flatness': flatness,
                 'h_attach': 'center',
-                'v_attach': 'bottom'
-            })
+                'v_attach': 'bottom',
+            },
+        )
         if self._show_lives:
-            self._lives_text = bs.newnode('text',
-                                          owner=self.node,
-                                          attrs={
-                                              'text': 'x0',
-                                              'color': (1, 1, 0.5),
-                                              'h_align': 'left',
-                                              'vr_depth': 430,
-                                              'shadow': 1.0,
-                                              'flatness': 1.0,
-                                              'h_attach': 'center',
-                                              'v_attach': 'bottom'
-                                          })
+            self._lives_text = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': 'x0',
+                    'color': (1, 1, 0.5),
+                    'h_align': 'left',
+                    'vr_depth': 430,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'h_attach': 'center',
+                    'v_attach': 'bottom',
+                },
+            )
         self.set_position_and_scale(position, scale)
 
-    def set_position_and_scale(self, position: Tuple[float, float],
-                               scale: float) -> None:
+    def set_position_and_scale(
+        self, position: Tuple[float, float], scale: float
+    ) -> None:
         """(Re)position the icon."""
         assert self.node
         self.node.position = position
@@ -97,8 +104,10 @@ class Icon(bs.Actor):
         self._name_text.position = (position[0], position[1] + scale * 52.0)
         self._name_text.scale = 1.0 * scale * self._name_scale
         if self._show_lives:
-            self._lives_text.position = (position[0] + scale * 10.0,
-                                         position[1] - scale * 43.0)
+            self._lives_text.position = (
+                position[0] + scale * 10.0,
+                position[1] - scale * 43.0,
+            )
             self._lives_text.scale = 1.0 * scale
 
     def update_for_lives(self) -> None:
@@ -131,7 +140,9 @@ class Icon(bs.Actor):
             return
         if self._show_death:
             bs.animate(
-                self.node, 'opacity', {
+                self.node,
+                'opacity',
+                {
                     0.00: 1.0,
                     0.05: 0.0,
                     0.10: 1.0,
@@ -143,8 +154,9 @@ class Icon(bs.Actor):
                     0.40: 1.0,
                     0.45: 0.0,
                     0.50: 1.0,
-                    0.55: 0.2
-                })
+                    0.55: 0.2,
+                },
+            )
             lives = self._player.lives
             if lives == 0:
                 bs.timer(0.6, self.update_for_lives)
@@ -178,15 +190,16 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
 
     name = 'Bttr Elimination'
     description = 'Last remaining alive wins.\nbyFREAK'
-    scoreconfig = bs.ScoreConfig(label='Survived',
-                                 scoretype=bs.ScoreType.SECONDS,
-                                 none_is_winner=True)
+    scoreconfig = bs.ScoreConfig(
+        label='Survived', scoretype=bs.ScoreType.SECONDS, none_is_winner=True
+    )
     # Show messages when players die since it's meaningful here.
     announce_player_deaths = True
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]
+    ) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Life\'s Per Player',
@@ -219,8 +232,6 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
                 default=1.0,
             ),
             bs.BoolSetting('Epic Mode', default=False),
-
-
             ## Add settings ##
             bs.BoolSetting('Live Team Balance (by Nippy#2677)', True),
             bs.BoolSetting('Enable Gloves', False),
@@ -235,13 +246,17 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
         if issubclass(sessiontype, bs.DualTeamSession):
             settings.append(bs.BoolSetting('Solo Mode', default=False))
             settings.append(
-                bs.BoolSetting('Balance Total Life\'s (on spawn only)', default=False))
+                bs.BoolSetting(
+                    'Balance Total Life\'s (on spawn only)', default=False
+                )
+            )
         return settings
 
     @classmethod
     def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.DualTeamSession)
-                or issubclass(sessiontype, bs.FreeForAllSession))
+        return issubclass(sessiontype, bs.DualTeamSession) or issubclass(
+            sessiontype, bs.FreeForAllSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: Type[bs.Session]) -> List[str]:
@@ -254,8 +269,10 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
         self._vs_text: Optional[bs.Actor] = None
         self._round_end_timer: Optional[bs.Timer] = None
 
-## Take applied settings ##
-        self._live_team_balance = bool(settings['Live Team Balance (by Nippy#2677)'])
+        ## Take applied settings ##
+        self._live_team_balance = bool(
+            settings['Live Team Balance (by Nippy#2677)']
+        )
         self._boxing_gloves = bool(settings['Enable Gloves'])
         self._enable_powerups = bool(settings['Enable Powerups'])
         self._night_mode = bool(settings['Night Mode'])
@@ -263,27 +280,35 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
         self._one_punch_kill = bool(settings['One Punch Kill'])
         self._shield_ = bool(settings['Spawn with Shield'])
         self._only_punch = bool(settings['Punching Only'])
-## Take applied settings ##
+        ## Take applied settings ##
 
         self._epic_mode = bool(settings['Epic Mode'])
         self._lives_per_player = int(settings['Life\'s Per Player'])
         self._time_limit = float(settings['Time Limit'])
         self._balance_total_lives = bool(
-            settings.get('Balance Total Life\'s (on spawn only)', False))
+            settings.get('Balance Total Life\'s (on spawn only)', False)
+        )
         self._solo_mode = bool(settings.get('Solo Mode', False))
 
         # Base class overrides:
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
 
     def get_instance_description(self) -> Union[str, Sequence]:
-        return 'Last team standing wins. byFREAK' if isinstance(
-            self.session, bs.DualTeamSession) else 'Last one standing wins.'
+        return (
+            'Last team standing wins. byFREAK'
+            if isinstance(self.session, bs.DualTeamSession)
+            else 'Last one standing wins.'
+        )
 
     def get_instance_description_short(self) -> Union[str, Sequence]:
-        return 'last team standing wins. byFREAK' if isinstance(
-            self.session, bs.DualTeamSession) else 'last one standing wins'
+        return (
+            'last team standing wins. byFREAK'
+            if isinstance(self.session, bs.DualTeamSession)
+            else 'last one standing wins'
+        )
 
     def on_player_join(self, player: Player) -> None:
 
@@ -293,12 +318,16 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
             # Make sure their team has survival seconds set if they're all dead
             # (otherwise blocked new ffa players are considered 'still alive'
             # in score tallying).
-            if (self._get_total_team_lives(player.team) == 0
-                    and player.team.survival_seconds is None):
+            if (
+                self._get_total_team_lives(player.team) == 0
+                and player.team.survival_seconds is None
+            ):
                 player.team.survival_seconds = 0
             bui.screenmessage(
-                babase.Lstr(resource='playerDelayedJoinText',
-                            subs=[('${PLAYER}', player.getname(full=True))]),
+                babase.Lstr(
+                    resource='playerDelayedJoinText',
+                    subs=[('${PLAYER}', player.getname(full=True))],
+                ),
                 color=(0, 1, 0),
             )
             return
@@ -318,9 +347,7 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
         if self.has_begun():
             self._update_icons()
 
-
-## Run settings related: IcyFloor ##
-
+    ## Run settings related: IcyFloor ##
 
     def on_transition_in(self) -> None:
         super().on_transition_in()
@@ -329,58 +356,66 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
             activity.map.is_hockey = True
         else:
             return
-## Run settings related: IcyFloor ##
+
+    ## Run settings related: IcyFloor ##
 
     def on_begin(self) -> None:
         super().on_begin()
         self._start_time = bs.time()
         self.setup_standard_time_limit(self._time_limit)
 
-
-## Run settings related: NightMode,Powerups ##
+        ## Run settings related: NightMode,Powerups ##
         if self._night_mode:
             bs.getactivity().globalsnode.tint = (0.5, 0.7, 1)
         else:
             pass
-# -# Tried return here, pfft. Took me 30mins to figure out why pwps spawning only on NightMode
-# -# Now its fixed :)
+        # -# Tried return here, pfft. Took me 30mins to figure out why pwps spawning only on NightMode
+        # -# Now its fixed :)
         if self._enable_powerups:
             self.setup_standard_powerup_drops()
         else:
             pass
-## Run settings related: NightMode,Powerups ##
+        ## Run settings related: NightMode,Powerups ##
 
         if self._solo_mode:
             self._vs_text = bs.NodeActor(
-                bs.newnode('text',
-                           attrs={
-                               'position': (0, 105),
-                               'h_attach': 'center',
-                               'h_align': 'center',
-                               'maxwidth': 200,
-                               'shadow': 0.5,
-                               'vr_depth': 390,
-                               'scale': 0.6,
-                               'v_attach': 'bottom',
-                               'color': (0.8, 0.8, 0.3, 1.0),
-                               'text': babase.Lstr(resource='vsText')
-                           }))
+                bs.newnode(
+                    'text',
+                    attrs={
+                        'position': (0, 105),
+                        'h_attach': 'center',
+                        'h_align': 'center',
+                        'maxwidth': 200,
+                        'shadow': 0.5,
+                        'vr_depth': 390,
+                        'scale': 0.6,
+                        'v_attach': 'bottom',
+                        'color': (0.8, 0.8, 0.3, 1.0),
+                        'text': babase.Lstr(resource='vsText'),
+                    },
+                )
+            )
 
         # If balance-team-lives is on, add lives to the smaller team until
         # total lives match.
-        if (isinstance(self.session, bs.DualTeamSession)
-                and self._balance_total_lives and self.teams[0].players
-                and self.teams[1].players):
+        if (
+            isinstance(self.session, bs.DualTeamSession)
+            and self._balance_total_lives
+            and self.teams[0].players
+            and self.teams[1].players
+        ):
             if self._get_total_team_lives(
-                    self.teams[0]) < self._get_total_team_lives(self.teams[1]):
+                self.teams[0]
+            ) < self._get_total_team_lives(self.teams[1]):
                 lesser_team = self.teams[0]
                 greater_team = self.teams[1]
             else:
                 lesser_team = self.teams[1]
                 greater_team = self.teams[0]
             add_index = 0
-            while (self._get_total_team_lives(lesser_team) <
-                   self._get_total_team_lives(greater_team)):
+            while self._get_total_team_lives(
+                lesser_team
+            ) < self._get_total_team_lives(greater_team):
                 lesser_team.players[add_index].lives += 1
                 add_index = (add_index + 1) % len(lesser_team.players)
 
@@ -439,22 +474,26 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
                     test_lives = 1
                     while True:
                         players_with_lives = [
-                            p for p in team.spawn_order
+                            p
+                            for p in team.spawn_order
                             if p and p.lives >= test_lives
                         ]
                         if not players_with_lives:
                             break
                         for player in players_with_lives:
                             player.icons.append(
-                                Icon(player,
-                                     position=(xval, (40 if is_first else 25)),
-                                     scale=1.0 if is_first else 0.5,
-                                     name_maxwidth=130 if is_first else 75,
-                                     name_scale=0.8 if is_first else 1.0,
-                                     flatness=0.0 if is_first else 1.0,
-                                     shadow=0.5 if is_first else 1.0,
-                                     show_death=is_first,
-                                     show_lives=False))
+                                Icon(
+                                    player,
+                                    position=(xval, (40 if is_first else 25)),
+                                    scale=1.0 if is_first else 0.5,
+                                    name_maxwidth=130 if is_first else 75,
+                                    name_scale=0.8 if is_first else 1.0,
+                                    flatness=0.0 if is_first else 1.0,
+                                    shadow=0.5 if is_first else 1.0,
+                                    show_death=is_first,
+                                    show_lives=False,
+                                )
+                            )
                             xval += x_offs * (0.8 if is_first else 0.56)
                             is_first = False
                         test_lives += 1
@@ -494,9 +533,12 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
                 player_pos = babase.Vec3(living_player_pos)
                 points: List[Tuple[float, babase.Vec3]] = []
                 for team in self.teams:
-                    start_pos = babase.Vec3(self.map.get_start_position(team.id))
+                    start_pos = babase.Vec3(
+                        self.map.get_start_position(team.id)
+                    )
                     points.append(
-                        ((start_pos - player_pos).length(), start_pos))
+                        ((start_pos - player_pos).length(), start_pos)
+                    )
                 # Hmm.. we need to sorting vectors too?
                 points.sort(key=lambda x: x[0])
                 return points[-1][1]
@@ -511,7 +553,7 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
         for icon in player.icons:
             icon.handle_player_spawned()
 
-## Run settings related: Spaz ##
+        ## Run settings related: Spaz ##
         if self._boxing_gloves:
             actor.equip_boxing_gloves()
         if self._one_punch_kill:
@@ -519,10 +561,13 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
         if self._shield_:
             actor.equip_shields()
         if self._only_punch:
-            actor.connect_controls_to_player(enable_bomb=False, enable_pickup=False)
+            actor.connect_controls_to_player(
+                enable_bomb=False, enable_pickup=False
+            )
 
         return actor
-## Run settings related: Spaz ##
+
+    ## Run settings related: Spaz ##
 
     def _print_lives(self, player: Player) -> None:
         from bascenev1lib.actor import popuptext
@@ -531,12 +576,14 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
         if not player or not player.is_alive() or not player.node:
             return
 
-        popuptext.PopupText('x' + str(player.lives - 1),
-                            color=(1, 1, 0, 1),
-                            offset=(0, -0.8, 0),
-                            random_offset=0.0,
-                            scale=1.8,
-                            position=player.node.position).autoretain()
+        popuptext.PopupText(
+            'x' + str(player.lives - 1),
+            color=(1, 1, 0, 1),
+            offset=(0, -0.8, 0),
+            random_offset=0.0,
+            scale=1.8,
+            position=player.node.position,
+        ).autoretain()
 
     def on_player_leave(self, player: Player) -> None:
         # Nippy#2677
@@ -549,7 +596,7 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
             live = player.lives
             team_count = len(team_mem)
             # Extending Player List for Sorted Players
-            for i in range(int((live if live % 2 == 0 else live+1)/2)):
+            for i in range(int((live if live % 2 == 0 else live + 1) / 2)):
                 team_mem.extend(team_mem)
             if team_count > 0:
                 for i in range(live):
@@ -590,8 +637,9 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
             player.lives -= 1
             if player.lives < 0:
                 babase.print_error(
-                    "Got lives < 0 in Elim; this shouldn't happen. solo:" +
-                    str(self._solo_mode))
+                    "Got lives < 0 in Elim; this shouldn't happen. solo:"
+                    + str(self._solo_mode)
+                )
                 player.lives = 0
 
             # If we have any icons, update their state.
@@ -608,8 +656,9 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
                 # If the whole team is now dead, mark their survival time.
                 if self._get_total_team_lives(player.team) == 0:
                     assert self._start_time is not None
-                    player.team.survival_seconds = int(bs.time() -
-                                                       self._start_time)
+                    player.team.survival_seconds = int(
+                        bs.time() - self._start_time
+                    )
             else:
                 # Otherwise, in regular mode, respawn.
                 if not self._solo_mode:
@@ -643,9 +692,10 @@ class BetterEliminationGame(bs.TeamGameActivity[Player, Team]):
 
     def _get_living_teams(self) -> List[Team]:
         return [
-            team for team in self.teams
-            if len(team.players) > 0 and any(player.lives > 0
-                                             for player in team.players)
+            team
+            for team in self.teams
+            if len(team.players) > 0
+            and any(player.lives > 0 for player in team.players)
         ]
 
     def end_game(self) -> None:

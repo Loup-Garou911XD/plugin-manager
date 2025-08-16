@@ -158,7 +158,9 @@ if ANDROID:  # !can add ios in future
                 shutil.rmtree(Path(f"{install_path}/websocket-client-1.6.1"))
             except Exception as e:
                 if type(e) == shutil.Error:
-                    shutil.rmtree(Path(f"{install_path}/websocket-client-1.6.1"))
+                    shutil.rmtree(
+                        Path(f"{install_path}/websocket-client-1.6.1")
+                    )
                 else:
                     pass
 
@@ -221,9 +223,13 @@ if ANDROID:  # !can add ios in future
                                 "size": [self.party_size, self.party_max],
                             },
                             "assets": {
-                                "large_image": self.media_proxy.format(largetxt),
+                                "large_image": self.media_proxy.format(
+                                    largetxt
+                                ),
                                 "large_text": self.large_image_text,
-                                "small_image": self.media_proxy.format(smalltxt),
+                                "small_image": self.media_proxy.format(
+                                    smalltxt
+                                ),
                                 "small_text": self.small_image_text,
                             },
                             "client_info": {
@@ -315,7 +321,9 @@ if ANDROID:  # !can add ios in future
                         self.stop_heartbeat_thread.clear()
                         break
 
-            threading.Thread(target=heartbeats, daemon=True, name="heartbeat").start()
+            threading.Thread(
+                target=heartbeats, daemon=True, name="heartbeat"
+            ).start()
 
         def start(self):
             if (
@@ -360,7 +368,9 @@ if ANDROID:  # !can add ios in future
                     while True:
                         urlopen("http://www.google.com", timeout=5)
                         threading.Thread(
-                            target=self.ws.run_forever, daemon=True, name="websocket"
+                            target=self.ws.run_forever,
+                            daemon=True,
+                            name="websocket",
                         ).start()
                         return
                 except Exception:
@@ -388,7 +398,9 @@ if ANDROID:  # !can add ios in future
             ).strip("pb-==")
 
             # Initialize the characters
-            chars = " " + string.punctuation + string.digits + string.ascii_letters
+            chars = (
+                " " + string.punctuation + string.digits + string.ascii_letters
+            )
             chars = list(chars)
 
             # Function to encrypt or decrypt text with a given key
@@ -433,7 +445,9 @@ if ANDROID:  # !can add ios in future
 
             def decrypt():
                 # Split the master key to get individual key
-                master_key = babase.app.config.get("encrypted_tokey")["master_key"]
+                master_key = babase.app.config.get("encrypted_tokey")[
+                    "master_key"
+                ]
                 encrypted_parts = babase.app.config.get("encrypted_tokey")[
                     "encrypted_parts"
                 ]
@@ -449,7 +463,7 @@ if ANDROID:  # !can add ios in future
                         decrypted_parts[char] = process_text(
                             encrypted_parts[char],
                             keys_dict[char],
-                            mode="decrypt"
+                            mode="decrypt",
                         )
 
                 token = ""
@@ -581,7 +595,9 @@ if not ANDROID:
                     addr = _last_server_addr
                     port = _last_server_port
                 else:
-                    with urlopen("https://legacy.ballistica.net/bsAccessCheck") as resp:
+                    with urlopen(
+                        "https://legacy.ballistica.net/bsAccessCheck"
+                    ) as resp:
                         resp = resp.read().decode()
                     resp = ast.literal_eval(resp)
                     addr = resp["address"]
@@ -599,12 +615,16 @@ if not ANDROID:
 
         def _update_secret(self):
             #! use in game thread
-            threading.Thread(target=self._generate_join_secret, daemon=True).start()
+            threading.Thread(
+                target=self._generate_join_secret, daemon=True
+            ).start()
             self._last_secret_update_time = time.time()
 
         def run(self) -> None:
             if sys.platform == "win32":
-                asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+                asyncio.set_event_loop_policy(
+                    asyncio.WindowsProactorEventLoopPolicy()
+                )
             asyncio.set_event_loop(get_event_loop())
 
             while not self.should_close:
@@ -664,7 +684,12 @@ if not ANDROID:
                         join=self.join_secret,
                     )
                     self.handle_event(data)
-                except (PipeClosed, DiscordError, AssertionError, AttributeError):
+                except (
+                    PipeClosed,
+                    DiscordError,
+                    AssertionError,
+                    AttributeError,
+                ):
                     try:
                         self._reconnect()
                     except (DiscordNotFound, DiscordError):
@@ -704,7 +729,8 @@ if not ANDROID:
 
         def _connect_to_party(self, hostname, port) -> None:
             babase.pushcall(
-                babase.Call(bs.connect_to_party, hostname, port), from_other_thread=True
+                babase.Call(bs.connect_to_party, hostname, port),
+                from_other_thread=True,
             )
 
         def on_join_request(self, username, uid, avatar) -> None:
@@ -744,7 +770,9 @@ class Discordlogin(PopupWindow):
             else (1.00, 0.15, 0.15)
         )
         log_txt = (
-            "LOG IN" if not babase.app.config.get("encrypted_tokey") else "LOG OUT"
+            "LOG IN"
+            if not babase.app.config.get("encrypted_tokey")
+            else "LOG OUT"
         )
         self.code = False
         self.resp = "Placeholder"
@@ -825,7 +853,9 @@ class Discordlogin(PopupWindow):
             maxwidth=220,
         )
 
-        bui.containerwidget(edit=self.root_widget, cancel_button=self._cancel_button)
+        bui.containerwidget(
+            edit=self.root_widget, cancel_button=self._cancel_button
+        )
 
         bui.textwidget(
             parent=self.root_widget,
@@ -896,10 +926,12 @@ class Discordlogin(PopupWindow):
             "code": bui.textwidget(query=self.backup_2fa_widget),
             "ticket": ticket,
             "login_source": None,
-            "gift_code_sku_id": None
+            "gift_code_sku_id": None,
         }
         code = mfa_json["code"]
-        if len(code) == 6 and code.isdigit():  # len the backup code and check if it number for 2fa
+        if (
+            len(code) == 6 and code.isdigit()
+        ):  # len the backup code and check if it number for 2fa
             try:
                 payload_2FA = json.dumps(mfa_json, separators=(',', ':'))
                 conn_2FA = http.client.HTTPSConnection("discord.com")
@@ -933,13 +965,17 @@ class Discordlogin(PopupWindow):
                 conn = http.client.HTTPSConnection("discord.com")
 
                 login_payload = json.dumps(login_json, separators=(",", ":"))
-                conn.request("POST", "/api/v9/auth/login", login_payload, self.headers)
+                conn.request(
+                    "POST", "/api/v9/auth/login", login_payload, self.headers
+                )
                 login_res = conn.getresponse().read()
 
                 try:
                     token = json.loads(login_res)["token"]
                     PresenceUpdate.brosCrypt(token)
-                    bui.screenmessage("Successfully logged in", (0.21, 1.0, 0.20))
+                    bui.screenmessage(
+                        "Successfully logged in", (0.21, 1.0, 0.20)
+                    )
                     bui.getsound("shieldUp").play()
                     self.on_bascenev1libup_cancel()
                     PresenceUpdate().start()
@@ -947,14 +983,17 @@ class Discordlogin(PopupWindow):
                     try:
                         ticket = json.loads(login_res)["ticket"]
                         bui.screenmessage(
-                            "Input your 2FA or Discord Backup code", (0.21, 1.0, 0.20)
+                            "Input your 2FA or Discord Backup code",
+                            (0.21, 1.0, 0.20),
                         )
                         bui.getsound("error").play()
                         self.resp = ticket
                         self.backup_2fa_code(ticket=ticket)
                         self.code = True
                     except KeyError:
-                        bui.screenmessage("Incorrect credentials", (1.00, 0.15, 0.15))
+                        bui.screenmessage(
+                            "Incorrect credentials", (1.00, 0.15, 0.15)
+                        )
                         bui.getsound("error").play()
 
             except:
@@ -971,7 +1010,9 @@ class Discordlogin(PopupWindow):
             del babase.app.config["encrypted_tokey"]
             babase.app.config.commit()
             bui.getsound("shieldDown").play()
-            bui.screenmessage("Account successfully removed!!", (0.10, 0.10, 1.00))
+            bui.screenmessage(
+                "Account successfully removed!!", (0.10, 0.10, 1.00)
+            )
             self.on_bascenev1libup_cancel()
             PresenceUpdate().close()
 
@@ -1113,13 +1154,17 @@ class DiscordRP(babase.Plugin):
                 self.rpc_thread.party_max = max(8, self.rpc_thread.party_size)
                 if len(servername) == 19 and "Private Party" in servername:
                     self.rpc_thread.state = "Private Party"
-                elif servername == "":  # A local game joinable from the internet
+                elif (
+                    servername == ""
+                ):  # A local game joinable from the internet
                     try:
                         offlinename = json.loads(
                             bs.get_game_roster()[0]["spec_string"]
                         )["n"]
                         if len(offlinename) > 19:  # Thanks Rikko
-                            self.rpc_thread.state = offlinename[slice(19)] + "..."
+                            self.rpc_thread.state = (
+                                offlinename[slice(19)] + "..."
+                            )
                         else:
                             self.rpc_thread.state = offlinename
                     except IndexError:
@@ -1131,12 +1176,12 @@ class DiscordRP(babase.Plugin):
                         self.rpc_thread.state = servername[slice(19)]
 
             if not connection_info:
-                self.rpc_thread.details = (
-                    "Local"  # ! replace with something like ballistica github cause
-                )
+                self.rpc_thread.details = "Local"  # ! replace with something like ballistica github cause
                 self.rpc_thread.state = self._get_current_activity_name()
                 self.rpc_thread.party_size = max(1, len(roster))
-                self.rpc_thread.party_max = max(1, bs.get_public_party_max_size())
+                self.rpc_thread.party_max = max(
+                    1, bs.get_public_party_max_size()
+                )
 
                 if (
                     bs.get_foreground_host_session() is not None
@@ -1154,7 +1199,9 @@ class DiscordRP(babase.Plugin):
                         self.rpc_thread.small_image_key = session.replace(
                             ": ", ""
                         ).lower()
-                        self.rpc_thread.small_image_text = session.replace(": ", "")
+                        self.rpc_thread.small_image_text = session.replace(
+                            ": ", ""
+                        )
                     self.rpc_thread.details = self.rpc_thread.details
                 if (
                     self.rpc_thread.state == "NoneType"
@@ -1241,9 +1288,7 @@ class DiscordRP(babase.Plugin):
         if _babase.get_idle_time() / (1000 * 60) % 60 >= 0.4:
             self.rpc_thread.details = f"AFK in {self.rpc_thread.details}"
             if not ANDROID:
-                self.rpc_thread.large_image_key = (
-                    "https://media.tenor.com/uAqNn6fv7x4AAAAM/bombsquad-spaz.gif"
-                )
+                self.rpc_thread.large_image_key = "https://media.tenor.com/uAqNn6fv7x4AAAAM/bombsquad-spaz.gif"
         if babase.app.config.get("encrypted_tokey") and ANDROID:
             #! This function might cause some errors
             try:

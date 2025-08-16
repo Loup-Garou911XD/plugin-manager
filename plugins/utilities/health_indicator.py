@@ -28,21 +28,25 @@ import bascenev1lib
 def new_init_spaz_(func):
     def wrapper(*args, **kwargs):
         func(*args, **kwargs)
-        m = bs.newnode('math',
-                       owner=args[0].node,
-                       attrs={'input1': (0, 0.7, 0),
-                              'operation': 'add'})
+        m = bs.newnode(
+            'math',
+            owner=args[0].node,
+            attrs={'input1': (0, 0.7, 0), 'operation': 'add'},
+        )
         args[0].node.connectattr('position', m, 'input2')
         args[0]._hitpoint_text = bs.newnode(
             'text',
             owner=args[0].node,
-            attrs={'text': "\ue047" + str(args[0].hitpoints),
-                   'in_world': True,
-                   'shadow': 1.0,
-                   'flatness': 1.0,
-                   'color': (1, 1, 1),
-                   'scale': 0.0,
-                   'h_align': 'center'})
+            attrs={
+                'text': "\ue047" + str(args[0].hitpoints),
+                'in_world': True,
+                'shadow': 1.0,
+                'flatness': 1.0,
+                'color': (1, 1, 1),
+                'scale': 0.0,
+                'h_align': 'center',
+            },
+        )
         m.connectattr('output', args[0]._hitpoint_text, 'position')
         bs.animate(args[0]._hitpoint_text, 'scale', {0: 0.0, 1.0: 0.01})
 
@@ -60,9 +64,9 @@ def new_handlemessage_spaz_(func):
         if isinstance(args[1], bs.PowerupMessage):
             if args[1].poweruptype == 'health':
                 update_hitpoint_text(args[0])
-        if isinstance(
-                args[1], bs.HitMessage) or isinstance(
-                args[1], bs.ImpactDamageMessage):
+        if isinstance(args[1], bs.HitMessage) or isinstance(
+            args[1], bs.ImpactDamageMessage
+        ):
             update_hitpoint_text(args[0])
 
     return wrapper

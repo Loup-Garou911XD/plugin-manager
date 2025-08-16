@@ -6,11 +6,11 @@ def semantic_to_str(semantic_version: str):
     """Convert version in the form of v1.2.3 to 001002003
     for comparing 2 version in semantic versioning format"""
     out = ""
-    for i in (semantic_version.split(".")):
+    for i in semantic_version.split("."):
         if len(i) == 1:
-            out += "00"+i
+            out += "00" + i
         if len(i) == 2:
-            out += "0"+i
+            out += "0" + i
     return out
 
 

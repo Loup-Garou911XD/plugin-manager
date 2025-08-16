@@ -21,10 +21,16 @@ def j(address, port=43210, print_progress=False):
 
 def R(s):
     def w(t, *f, **g):
-        z(parent=t._root_widget, size=(23, 26), icon=x('replayIcon'),
-          on_activate_call=bs.Call(j, m.i, m.p))
+        z(
+            parent=t._root_widget,
+            size=(23, 26),
+            icon=x('replayIcon'),
+            on_activate_call=bs.Call(j, m.i, m.p),
+        )
         return s(t, *f, **g)
+
     return w
+
 
 # ba_meta export babase.Plugin
 

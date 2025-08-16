@@ -62,7 +62,9 @@ class AvalanchaGame(MeteorShowerGame):
     description = "Dodge the ice-bombs."
     available_settings = [
         bs.BoolSetting("Epic Mode", default=False),
-        bs.IntSetting("Difficulty", default=1, min_value=1, max_value=3, increment=1),
+        bs.IntSetting(
+            "Difficulty", default=1, min_value=1, max_value=3, increment=1
+        ),
     ]
     scoreconfig = bs.ScoreConfig(
         label="Survived", scoretype=bs.ScoreType.MILLISECONDS, version="B"
@@ -112,7 +114,8 @@ class AvalanchaGame(MeteorShowerGame):
 
     def _set_meteor_timer(self) -> None:
         bs.timer(
-            (1.0 + 0.2 * random.random()) * self._meteor_time, self._drop_bomb_cluster
+            (1.0 + 0.2 * random.random()) * self._meteor_time,
+            self._drop_bomb_cluster,
         )
 
     def _drop_bomb_cluster(self) -> None:
@@ -127,7 +130,9 @@ class AvalanchaGame(MeteorShowerGame):
             delay += 0.1
         self._set_meteor_timer()
 
-    def _drop_bomb(self, position: Sequence[float], velocity: Sequence[float]) -> None:
+    def _drop_bomb(
+        self, position: Sequence[float], velocity: Sequence[float]
+    ) -> None:
         Bomb(position=position, velocity=velocity, bomb_type="ice").autoretain()
 
     def _decrement_meteor_time(self) -> None:

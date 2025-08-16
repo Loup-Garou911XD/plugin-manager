@@ -22,4 +22,6 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(f"Usage: python3 {__file__.split('/')[-1]} function")
         sys.exit(1)
-    print(globals()[sys.argv[1]]())  # used to call the fucntion passed as cli parameter
+    print(
+        globals()[sys.argv[1]]()
+    )  # used to call the fucntion passed as cli parameter

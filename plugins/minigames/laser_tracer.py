@@ -1,5 +1,3 @@
-
-
 # Released under the MIT License. See LICENSE for details.
 # https://youtu.be/wTgwZKiykQw?si=Cr0ybDYAcKCUNFN4
 # https://discord.gg/ucyaesh
@@ -21,6 +19,7 @@ import bascenev1 as bs
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
+
 if TYPE_CHECKING:
     from typing import Any, Sequence, Optional, Union
 import random
@@ -29,16 +28,18 @@ import random
 class Icon(bs.Actor):
     """Creates in in-game icon on screen."""
 
-    def __init__(self,
-                 player: Player,
-                 position: tuple[float, float],
-                 scale: float,
-                 show_lives: bool = True,
-                 show_death: bool = True,
-                 name_scale: float = 1.0,
-                 name_maxwidth: float = 115.0,
-                 flatness: float = 1.0,
-                 shadow: float = 1.0):
+    def __init__(
+        self,
+        player: Player,
+        position: tuple[float, float],
+        scale: float,
+        show_lives: bool = True,
+        show_death: bool = True,
+        name_scale: float = 1.0,
+        name_maxwidth: float = 115.0,
+        flatness: float = 1.0,
+        shadow: float = 1.0,
+    ):
         super().__init__()
 
         self._player = player
@@ -48,19 +49,21 @@ class Icon(bs.Actor):
         self._outline_tex = bs.gettexture('characterIconMask')
 
         icon = player.get_icon()
-        self.node = bs.newnode('image',
-                               delegate=self,
-                               attrs={
-                                   'texture': icon['texture'],
-                                   'tint_texture': icon['tint_texture'],
-                                   'tint_color': icon['tint_color'],
-                                   'vr_depth': 400,
-                                   'tint2_color': icon['tint2_color'],
-                                   'mask_texture': self._outline_tex,
-                                   'opacity': 1.0,
-                                   'absolute_scale': True,
-                                   'attach': 'bottomCenter'
-                               })
+        self.node = bs.newnode(
+            'image',
+            delegate=self,
+            attrs={
+                'texture': icon['texture'],
+                'tint_texture': icon['tint_texture'],
+                'tint_color': icon['tint_color'],
+                'vr_depth': 400,
+                'tint2_color': icon['tint2_color'],
+                'mask_texture': self._outline_tex,
+                'opacity': 1.0,
+                'absolute_scale': True,
+                'attach': 'bottomCenter',
+            },
+        )
         self._name_text = bs.newnode(
             'text',
             owner=self.node,
@@ -74,25 +77,29 @@ class Icon(bs.Actor):
                 'shadow': shadow,
                 'flatness': flatness,
                 'h_attach': 'center',
-                'v_attach': 'bottom'
-            })
+                'v_attach': 'bottom',
+            },
+        )
         if self._show_lives:
-            self._lives_text = bs.newnode('text',
-                                          owner=self.node,
-                                          attrs={
-                                              'text': 'x0',
-                                              'color': (1, 1, 0.5),
-                                              'h_align': 'left',
-                                              'vr_depth': 430,
-                                              'shadow': 1.0,
-                                              'flatness': 1.0,
-                                              'h_attach': 'center',
-                                              'v_attach': 'bottom'
-                                          })
+            self._lives_text = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': 'x0',
+                    'color': (1, 1, 0.5),
+                    'h_align': 'left',
+                    'vr_depth': 430,
+                    'shadow': 1.0,
+                    'flatness': 1.0,
+                    'h_attach': 'center',
+                    'v_attach': 'bottom',
+                },
+            )
         self.set_position_and_scale(position, scale)
 
-    def set_position_and_scale(self, position: tuple[float, float],
-                               scale: float) -> None:
+    def set_position_and_scale(
+        self, position: tuple[float, float], scale: float
+    ) -> None:
         """(Re)position the icon."""
         assert self.node
         self.node.position = position
@@ -100,8 +107,10 @@ class Icon(bs.Actor):
         self._name_text.position = (position[0], position[1] + scale * 52.0)
         self._name_text.scale = 1.0 * scale * self._name_scale
         if self._show_lives:
-            self._lives_text.position = (position[0] + scale * 10.0,
-                                         position[1] - scale * 43.0)
+            self._lives_text.position = (
+                position[0] + scale * 10.0,
+                position[1] - scale * 43.0,
+            )
             self._lives_text.scale = 1.0 * scale
 
     def update_for_lives(self) -> None:
@@ -134,7 +143,9 @@ class Icon(bs.Actor):
             return
         if self._show_death:
             bs.animate(
-                self.node, 'opacity', {
+                self.node,
+                'opacity',
+                {
                     0.00: 1.0,
                     0.05: 0.0,
                     0.10: 1.0,
@@ -146,8 +157,9 @@ class Icon(bs.Actor):
                     0.40: 1.0,
                     0.45: 0.0,
                     0.50: 1.0,
-                    0.55: 0.2
-                })
+                    0.55: 0.2,
+                },
+            )
             lives = self._player.lives
             if lives == 0:
                 bs.timer(0.6, self.update_for_lives)
@@ -181,9 +193,9 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
 
     name = 'Laser Tracer'
     description = 'Last remaining alive wins.'
-    scoreconfig = bs.ScoreConfig(label='Survived',
-                                 scoretype=bs.ScoreType.SECONDS,
-                                 none_is_winner=True)
+    scoreconfig = bs.ScoreConfig(
+        label='Survived', scoretype=bs.ScoreType.SECONDS, none_is_winner=True
+    )
     # Show messages when players die since it's meaningful here.
     announce_player_deaths = True
 
@@ -191,7 +203,8 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]) -> list[babase.Setting]:
+        cls, sessiontype: type[bs.Session]
+    ) -> list[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Lives Per Player',
@@ -228,13 +241,15 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
         if issubclass(sessiontype, bs.DualTeamSession):
             settings.append(bs.BoolSetting('Solo Mode', default=False))
             settings.append(
-                bs.BoolSetting('Balance Total Lives', default=False))
+                bs.BoolSetting('Balance Total Lives', default=False)
+            )
         return settings
 
     @classmethod
     def supports_session_type(cls, sessiontype: type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.DualTeamSession)
-                or issubclass(sessiontype, bs.FreeForAllSession))
+        return issubclass(sessiontype, bs.DualTeamSession) or issubclass(
+            sessiontype, bs.FreeForAllSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: type[bs.Session]) -> list[str]:
@@ -251,28 +266,37 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
         self._lives_per_player = 1
         self._time_limit = float(settings['Time Limit'])
         self._balance_total_lives = bool(
-            settings.get('Balance Total Lives', False))
+            settings.get('Balance Total Lives', False)
+        )
         self._solo_mode = bool(settings.get('Solo Mode', False))
 
         # Base class overrides:
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
         self.laser_material = bs.Material()
         self.laser_material.add_actions(
-            conditions=('they_have_material',
-                        shared.player_material),
-            actions=(('modify_part_collision', 'collide', True),
-                     ('message', 'their_node', 'at_connect', bs.DieMessage()))
+            conditions=('they_have_material', shared.player_material),
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('message', 'their_node', 'at_connect', bs.DieMessage()),
+            ),
         )
 
     def get_instance_description(self) -> Union[str, Sequence]:
-        return 'Last team standing wins.' if isinstance(
-            self.session, bs.DualTeamSession) else 'Last one standing wins.'
+        return (
+            'Last team standing wins.'
+            if isinstance(self.session, bs.DualTeamSession)
+            else 'Last one standing wins.'
+        )
 
     def get_instance_description_short(self) -> Union[str, Sequence]:
-        return 'last team standing wins' if isinstance(
-            self.session, bs.DualTeamSession) else 'last one standing wins'
+        return (
+            'last team standing wins'
+            if isinstance(self.session, bs.DualTeamSession)
+            else 'last one standing wins'
+        )
 
     def on_player_join(self, player: Player) -> None:
         player.lives = self._lives_per_player
@@ -299,35 +323,43 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
         self.create_laser()
         if self._solo_mode:
             self._vs_text = bs.NodeActor(
-                bs.newnode('text',
-                           attrs={
-                               'position': (0, 105),
-                               'h_attach': 'center',
-                               'h_align': 'center',
-                               'maxwidth': 200,
-                               'shadow': 0.5,
-                               'vr_depth': 390,
-                               'scale': 0.6,
-                               'v_attach': 'bottom',
-                               'color': (0.8, 0.8, 0.3, 1.0),
-                               'text': babase.Lstr(resource='vsText')
-                           }))
+                bs.newnode(
+                    'text',
+                    attrs={
+                        'position': (0, 105),
+                        'h_attach': 'center',
+                        'h_align': 'center',
+                        'maxwidth': 200,
+                        'shadow': 0.5,
+                        'vr_depth': 390,
+                        'scale': 0.6,
+                        'v_attach': 'bottom',
+                        'color': (0.8, 0.8, 0.3, 1.0),
+                        'text': babase.Lstr(resource='vsText'),
+                    },
+                )
+            )
 
         # If balance-team-lives is on, add lives to the smaller team until
         # total lives match.
-        if (isinstance(self.session, bs.DualTeamSession)
-                and self._balance_total_lives and self.teams[0].players
-                and self.teams[1].players):
+        if (
+            isinstance(self.session, bs.DualTeamSession)
+            and self._balance_total_lives
+            and self.teams[0].players
+            and self.teams[1].players
+        ):
             if self._get_total_team_lives(
-                    self.teams[0]) < self._get_total_team_lives(self.teams[1]):
+                self.teams[0]
+            ) < self._get_total_team_lives(self.teams[1]):
                 lesser_team = self.teams[0]
                 greater_team = self.teams[1]
             else:
                 lesser_team = self.teams[1]
                 greater_team = self.teams[0]
             add_index = 0
-            while (self._get_total_team_lives(lesser_team) <
-                   self._get_total_team_lives(greater_team)):
+            while self._get_total_team_lives(
+                lesser_team
+            ) < self._get_total_team_lives(greater_team):
                 lesser_team.players[add_index].lives += 1
                 add_index = (add_index + 1) % len(lesser_team.players)
 
@@ -388,22 +420,26 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
                     test_lives = 1
                     while True:
                         players_with_lives = [
-                            p for p in team.spawn_order
+                            p
+                            for p in team.spawn_order
                             if p and p.lives >= test_lives
                         ]
                         if not players_with_lives:
                             break
                         for player in players_with_lives:
                             player.icons.append(
-                                Icon(player,
-                                     position=(xval, (40 if is_first else 25)),
-                                     scale=1.0 if is_first else 0.5,
-                                     name_maxwidth=130 if is_first else 75,
-                                     name_scale=0.8 if is_first else 1.0,
-                                     flatness=0.0 if is_first else 1.0,
-                                     shadow=0.5 if is_first else 1.0,
-                                     show_death=is_first,
-                                     show_lives=False))
+                                Icon(
+                                    player,
+                                    position=(xval, (40 if is_first else 25)),
+                                    scale=1.0 if is_first else 0.5,
+                                    name_maxwidth=130 if is_first else 75,
+                                    name_scale=0.8 if is_first else 1.0,
+                                    flatness=0.0 if is_first else 1.0,
+                                    shadow=0.5 if is_first else 1.0,
+                                    show_death=is_first,
+                                    show_lives=False,
+                                )
+                            )
                             xval += x_offs * (0.8 if is_first else 0.56)
                             is_first = False
                         test_lives += 1
@@ -444,9 +480,11 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
                 points: list[tuple[float, babase.Vec3]] = []
                 for team in self.teams:
                     start_pos = babase.Vec3(
-                        self.map.get_start_position(team.id))
+                        self.map.get_start_position(team.id)
+                    )
                     points.append(
-                        ((start_pos - player_pos).length(), start_pos))
+                        ((start_pos - player_pos).length(), start_pos)
+                    )
                 # Hmm.. we need to sorting vectors too?
                 points.sort(key=lambda x: x[0])
                 return points[-1][1]
@@ -454,9 +492,9 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
 
     def spawn_player(self, player: Player) -> bs.Actor:
         actor = self.spawn_player_spaz(player, self._get_spawn_point(player))
-        actor.connect_controls_to_player(enable_punch=False,
-                                         enable_bomb=False,
-                                         enable_pickup=False)
+        actor.connect_controls_to_player(
+            enable_punch=False, enable_bomb=False, enable_pickup=False
+        )
         if not self._solo_mode:
             bs.timer(0.3, babase.Call(self._print_lives, player))
 
@@ -472,12 +510,14 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
         if not player or not player.is_alive() or not player.node:
             return
 
-        popuptext.PopupText('x' + str(player.lives - 1),
-                            color=(1, 1, 0, 1),
-                            offset=(0, -0.8, 0),
-                            random_offset=0.0,
-                            scale=1.8,
-                            position=player.node.position).autoretain()
+        popuptext.PopupText(
+            'x' + str(player.lives - 1),
+            color=(1, 1, 0, 1),
+            offset=(0, -0.8, 0),
+            random_offset=0.0,
+            scale=1.8,
+            position=player.node.position,
+        ).autoretain()
 
     def on_player_leave(self, player: Player) -> None:
         super().on_player_leave(player)
@@ -512,8 +552,9 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
             player.lives -= 1
             if player.lives < 0:
                 babase.print_error(
-                    "Got lives < 0 in Elim; this shouldn't happen. solo:" +
-                    str(self._solo_mode))
+                    "Got lives < 0 in Elim; this shouldn't happen. solo:"
+                    + str(self._solo_mode)
+                )
                 player.lives = 0
 
             # If we have any icons, update their state.
@@ -530,8 +571,9 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
                 # If the whole team is now dead, mark their survival time.
                 if self._get_total_team_lives(player.team) == 0:
                     assert self._start_time is not None
-                    player.team.survival_seconds = int(bs.time() -
-                                                       self._start_time)
+                    player.team.survival_seconds = int(
+                        bs.time() - self._start_time
+                    )
             else:
                 # Otherwise, in regular mode, respawn.
                 if not self._solo_mode:
@@ -565,9 +607,10 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
 
     def _get_living_teams(self) -> list[Team]:
         return [
-            team for team in self.teams
-            if len(team.players) > 0 and any(player.lives > 0
-                                             for player in team.players)
+            team
+            for team in self.teams
+            if len(team.players) > 0
+            and any(player.lives > 0 for player in team.players)
         ]
 
     def end_game(self) -> None:
@@ -584,22 +627,22 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
         shared = SharedObjects.get()
         pwm = bs.Material()
         cwwm = bs.Material()
-        pwm.add_actions(
-            actions=('modify_part_collision', 'friction', 0.0))
+        pwm.add_actions(actions=('modify_part_collision', 'friction', 0.0))
         # anything that needs to hit the wall should apply this.
 
         pwm.add_actions(
-            conditions=('they_have_material',
-                        shared.player_material),
-            actions=('modify_part_collision', 'collide', True))
+            conditions=('they_have_material', shared.player_material),
+            actions=('modify_part_collision', 'collide', True),
+        )
         cmesh = bs.getcollisionmesh('courtyardPlayerWall')
         self.player_wall = bs.newnode(
             'terrain',
             attrs={
                 'collision_mesh': cmesh,
                 'affect_bg_dynamics': False,
-                'materials': [pwm]
-            })
+                'materials': [pwm],
+            },
+        )
 
     def create_laser(self) -> None:
         bs.timer(6, babase.Call(self.LRlaser, True))
@@ -608,80 +651,88 @@ class LasorTracerGame(bs.TeamGameActivity[Player, Team]):
         bs.timer(30, babase.Call(self.create_laser))
 
     def LRlaser(self, left):
-        ud_1_r = bs.newnode('region', attrs={'position': (-5, 2.6, 0), 'scale': (
-            0.1, 0.6, 15), 'type': 'box', 'materials': [self.laser_material]})
+        ud_1_r = bs.newnode(
+            'region',
+            attrs={
+                'position': (-5, 2.6, 0),
+                'scale': (0.1, 0.6, 15),
+                'type': 'box',
+                'materials': [self.laser_material],
+            },
+        )
         shields = []
         x = -6
         for i in range(0, 30):
-            x = x+0.4
-            node = bs.newnode('shield', owner=ud_1_r, attrs={
-                              'color': (1, 0, 0), 'radius': 0.28})
-            mnode = bs.newnode('math',
-                               owner=ud_1_r,
-                               attrs={
-                                   'input1': (0, 0.0, x),
-                                   'operation': 'add'
-                               })
+            x = x + 0.4
+            node = bs.newnode(
+                'shield',
+                owner=ud_1_r,
+                attrs={'color': (1, 0, 0), 'radius': 0.28},
+            )
+            mnode = bs.newnode(
+                'math',
+                owner=ud_1_r,
+                attrs={'input1': (0, 0.0, x), 'operation': 'add'},
+            )
             ud_1_r.connectattr('position', mnode, 'input2')
             mnode.connectattr('output', node, 'position')
 
-        _rcombine = bs.newnode('combine',
-                               owner=ud_1_r,
-                               attrs={
-                                   'input1': 2.6,
-                                   'input2': -2,
-                                   'size': 3
-                               })
+        _rcombine = bs.newnode(
+            'combine',
+            owner=ud_1_r,
+            attrs={'input1': 2.6, 'input2': -2, 'size': 3},
+        )
         if left:
             x1 = -10
             x2 = 10
         else:
             x1 = 10
             x2 = -10
-        bs.animate(_rcombine, 'input0', {
-            0: x1,
-            20: x2
-        })
+        bs.animate(_rcombine, 'input0', {0: x1, 20: x2})
         _rcombine.connectattr('output', ud_1_r, 'position')
         bs.timer(20, babase.Call(ud_1_r.delete))
         t = random.randrange(7, 13)
         bs.timer(t, babase.Call(self.LRlaser, random.randrange(0, 2)))
 
     def UDlaser(self, up):
-        ud_2_r = bs.newnode('region', attrs={'position': (-3, 2.6, -6), 'scale': (
-            20, 0.6, 0.1), 'type': 'box', 'materials': [self.laser_material]})
+        ud_2_r = bs.newnode(
+            'region',
+            attrs={
+                'position': (-3, 2.6, -6),
+                'scale': (20, 0.6, 0.1),
+                'type': 'box',
+                'materials': [self.laser_material],
+            },
+        )
         shields = []
         x = -6
         for i in range(0, 40):
-            x = x+0.4
-            node = bs.newnode('shield', owner=ud_2_r, attrs={
-                              'color': (1, 0, 0), 'radius': 0.28})
-            mnode = bs.newnode('math',
-                               owner=ud_2_r,
-                               attrs={
-                                   'input1': (x, 0.0, 0),
-                                   'operation': 'add'
-                               })
+            x = x + 0.4
+            node = bs.newnode(
+                'shield',
+                owner=ud_2_r,
+                attrs={'color': (1, 0, 0), 'radius': 0.28},
+            )
+            mnode = bs.newnode(
+                'math',
+                owner=ud_2_r,
+                attrs={'input1': (x, 0.0, 0), 'operation': 'add'},
+            )
             ud_2_r.connectattr('position', mnode, 'input2')
             mnode.connectattr('output', node, 'position')
 
-        _rcombine = bs.newnode('combine',
-                               owner=ud_2_r,
-                               attrs={
-                                   'input0': -2,
-                                   'input1': 2.6,
-                                   'size': 3
-                               })
+        _rcombine = bs.newnode(
+            'combine',
+            owner=ud_2_r,
+            attrs={'input0': -2, 'input1': 2.6, 'size': 3},
+        )
         if up:
             x1 = -9
             x2 = 6
         else:
             x1 = 6
             x2 = -9
-        bs.animate(_rcombine, 'input2', {
-            0: x1,
-            17: x2
-        })
+        bs.animate(_rcombine, 'input2', {0: x1, 17: x2})
         _rcombine.connectattr('output', ud_2_r, 'position')
 
         bs.timer(17, babase.Call(ud_2_r.delete))

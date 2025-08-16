@@ -2,15 +2,15 @@
 # ba_meta require api 9
 
 """
-    Ragdoll-B-Gone by TheMikirog
-    
-    Removes ragdolls. 
-    Thanos snaps those pesky feet-tripping body sacks out of existence.
-    Literally that's it.
-    
-    Heavily commented for easy modding learning!
-    
-    No Rights Reserved
+Ragdoll-B-Gone by TheMikirog
+
+Removes ragdolls.
+Thanos snaps those pesky feet-tripping body sacks out of existence.
+Literally that's it.
+
+Heavily commented for easy modding learning!
+
+No Rights Reserved
 
 """
 
@@ -45,7 +45,9 @@ class RagdollBGone(babase.Plugin):
         # We're working kind of blindly here, so it's good to have the original function
         # open in a second window for argument reference.
         def wrapper(*args, **kwargs):
-            if isinstance(args[1], bs.DieMessage):  # Replace Spaz death behavior
+            if isinstance(
+                args[1], bs.DieMessage
+            ):  # Replace Spaz death behavior
 
                 # Here we play the gamey death noise in Co-op.
                 if not args[1].immediate:
@@ -76,29 +78,37 @@ class RagdollBGone(babase.Plugin):
                             # "i" will start at 0 and becomes higher each iteration until it reaches 3.
                             for i in range(4):
                                 # XYZ position of our sparks, we'll take the Spaz position as a base.
-                                pos = (args[0].node.position[0],
-                                       # Let's spread the sparks across the body, assuming Spaz is standing straight.
-                                       # We're gonna change the Y axis position, which is height.
-                                       args[0].node.position[1] + i * 0.2,
-                                       args[0].node.position[2])
-                               # This function allows us to spawn particles like sparks and bomb shrapnel.
-                               # We're gonna use sparks here.
-                                bs.emitfx(position=pos,  # Here we place our edited position.
-                                          velocity=args[0].node.velocity,
-                                          # Random amount of sparks between 2 and 5
-                                          count=random.randrange(2, 5),
-                                          scale=3.0,
-                                          spread=0.2,
-                                          chunk_type='spark')
+                                pos = (
+                                    args[0].node.position[0],
+                                    # Let's spread the sparks across the body, assuming Spaz is standing straight.
+                                    # We're gonna change the Y axis position, which is height.
+                                    args[0].node.position[1] + i * 0.2,
+                                    args[0].node.position[2],
+                                )
+                                # This function allows us to spawn particles like sparks and bomb shrapnel.
+                                # We're gonna use sparks here.
+                                bs.emitfx(
+                                    position=pos,  # Here we place our edited position.
+                                    velocity=args[0].node.velocity,
+                                    # Random amount of sparks between 2 and 5
+                                    count=random.randrange(2, 5),
+                                    scale=3.0,
+                                    spread=0.2,
+                                    chunk_type='spark',
+                                )
 
                             # Make a Spaz death noise if we're not gibbed.
                             if not args[0].shattered:
                                 # Get our Spaz's death noises, these change depending on character skins
                                 death_sounds = args[0].node.death_sounds
                                 # Pick a random death noise
-                                sound = death_sounds[random.randrange(len(death_sounds))]
+                                sound = death_sounds[
+                                    random.randrange(len(death_sounds))
+                                ]
                                 # Play the sound where our Spaz is
-                                bs.Sound.play(sound, position=args[0].node.position)
+                                bs.Sound.play(
+                                    sound, position=args[0].node.position
+                                )
                         # Delete our Spaz node immediately.
                         # Removing stuff is weird and prone to errors, so we're gonna delay it.
                         bs.timer(0.001, args[0].node.delete)
@@ -115,9 +125,11 @@ class RagdollBGone(babase.Plugin):
             # Here's where we bring it all back.
             # If I wanted to add extra code at the end of the base game's behavior, I would just put that at the beginning of my function.
             func(*args, **kwargs)
+
         return wrapper
 
     # Finally we """travel through the game files""" to replace the function we want with our own version.
     # We transplant the old function's arguments into our version.
     bascenev1lib.actor.spaz.Spaz.handlemessage = new_handlemessage(
-        bascenev1lib.actor.spaz.Spaz.handlemessage)
+        bascenev1lib.actor.spaz.Spaz.handlemessage
+    )

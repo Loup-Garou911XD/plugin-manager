@@ -59,17 +59,19 @@ def ba_get_api_version():
 
 
 def ba_get_levels():
-    return [bs._level.Level(
-        name,
-        gametype=Infection,
-        settings={},
-        preview_texture_name='footballStadiumPreview')]
+    return [
+        bs._level.Level(
+            name,
+            gametype=Infection,
+            settings={},
+            preview_texture_name='footballStadiumPreview',
+        )
+    ]
 
 
 class myMine(Bomb):
     # reason for the mine class is so we can add the death zone
-    def __init__(self,
-                 pos: Sequence[float] = (0.0, 1.0, 0.0)):
+    def __init__(self, pos: Sequence[float] = (0.0, 1.0, 0.0)):
         Bomb.__init__(self, position=pos, bomb_type='land_mine')
         showInSpace = False
         self.died = False
@@ -82,12 +84,10 @@ class myMine(Bomb):
                 'color': (1, 0, 0),
                 'opacity': 0.5,
                 'draw_beauty': showInSpace,
-                'additive': True})
-        bs.animate_array(
-            self.zone,
-            'size',
-            1,
-            {0: [0.0], 0.05: [2*self.rad]})
+                'additive': True,
+            },
+        )
+        bs.animate_array(self.zone, 'size', 1, {0: [0.0], 0.05: [2 * self.rad]})
 
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, bs.DieMessage):
@@ -95,10 +95,8 @@ class myMine(Bomb):
                 self.getactivity().mine_count -= 1
                 self.died = True
                 bs.animate_array(
-                    self.zone,
-                    'size',
-                    1,
-                    {0: [2*self.rad], 0.05: [0]})
+                    self.zone, 'size', 1, {0: [2 * self.rad], 0.05: [0]}
+                )
                 self.zone = None
             super().handlemessage(msg)
         else:
@@ -130,7 +128,8 @@ class Infection(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]
+    ) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 mines,
@@ -179,13 +178,20 @@ class Infection(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.CoopSession)
-                or issubclass(sessiontype, bs.MultiTeamSession))
+        return issubclass(sessiontype, bs.CoopSession) or issubclass(
+            sessiontype, bs.MultiTeamSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: Type[bs.Session]) -> List[str]:
-        return ['Doom Shroom', 'Rampage', 'Hockey Stadium',
-                'Crag Castle', 'Big G', 'Football Stadium']
+        return [
+            'Doom Shroom',
+            'Rampage',
+            'Hockey Stadium',
+            'Crag Castle',
+            'Big G',
+            'Football Stadium',
+        ]
 
     def __init__(self, settings: dict):
         super().__init__(settings)
@@ -204,8 +210,9 @@ class Infection(bs.TeamGameActivity[Player, Team]):
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC if self._epic_mode else
-                              bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
 
     def get_instance_description(self) -> Union[str, Sequence]:
         return instance_description
@@ -217,15 +224,17 @@ class Infection(bs.TeamGameActivity[Player, Team]):
         super().on_begin()
         self._start_time = bs.time()
         self.mine_count = 0
-        bs.timer(self._update_rate,
-                 bs.WeakCall(self._mine_update),
-                 repeat=True)
-        bs.timer(self._max_size_increases*1.0,
-                 bs.WeakCall(self._max_size_update),
-                 repeat=True)
-        bs.timer(self._extra_mines*1.0,
-                 bs.WeakCall(self._max_mine_update),
-                 repeat=True)
+        bs.timer(self._update_rate, bs.WeakCall(self._mine_update), repeat=True)
+        bs.timer(
+            self._max_size_increases * 1.0,
+            bs.WeakCall(self._max_size_update),
+            repeat=True,
+        )
+        bs.timer(
+            self._extra_mines * 1.0,
+            bs.WeakCall(self._max_mine_update),
+            repeat=True,
+        )
         self._timer = OnScreenTimer()
         self._timer.start()
 
@@ -237,8 +246,10 @@ class Infection(bs.TeamGameActivity[Player, Team]):
             assert self._timer is not None
             player.survival_seconds = self._timer.getstarttime()
             bs.broadcastmessage(
-                babase.Lstr(resource='playerDelayedJoinText',
-                            subs=[('${PLAYER}', player.getname(full=True))]),
+                babase.Lstr(
+                    resource='playerDelayedJoinText',
+                    subs=[('${PLAYER}', player.getname(full=True))],
+                ),
                 color=(0, 1, 0),
             )
             return
@@ -267,18 +278,25 @@ class Infection(bs.TeamGameActivity[Player, Team]):
                         if player.actor.is_alive():
                             p1 = player.actor.node.position
                             p2 = m.node.position
-                            diff = (babase.Vec3(p1[0]-p2[0],
-                                                0.0,
-                                                p1[2]-p2[2]))
-                            dist = (diff.length())
+                            diff = babase.Vec3(
+                                p1[0] - p2[0], 0.0, p1[2] - p2[2]
+                            )
+                            dist = diff.length()
                             if dist < m.rad:
                                 player.actor.handlemessage(bs.DieMessage())
                 # Now tell the circle to grow to the new size
                 if m.rad < self._max_size:
                     bs.animate_array(
-                        m.zone, 'size', 1,
-                        {0: [m.rad*2],
-                         self._update_rate: [(m.rad+self._growth_rate)*2]})
+                        m.zone,
+                        'size',
+                        1,
+                        {
+                            0: [m.rad * 2],
+                            self._update_rate: [
+                                (m.rad + self._growth_rate) * 2
+                            ],
+                        },
+                    )
                     # Tell the circle to be the new size.
                     # This will be the new check radius next time.
                     m.rad += self._growth_rate
@@ -295,13 +313,15 @@ class Infection(bs.TeamGameActivity[Player, Team]):
         self.mines.append(m)
 
     def _flash_mine(self, pos: Sequence[float]) -> None:
-        light = bs.newnode('light',
-                           attrs={
-                               'position': pos,
-                               'color': (1, 0.2, 0.2),
-                               'radius': 0.1,
-                               'height_attenuated': False
-                           })
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': pos,
+                'color': (1, 0.2, 0.2),
+                'radius': 0.1,
+                'height_attenuated': False,
+            },
+        )
         bs.animate(light, 'intensity', {0.0: 0, 0.1: 1.0, 0.2: 0}, loop=True)
         bs.timer(1.0, light.delete)
 
@@ -315,13 +335,15 @@ class Infection(bs.TeamGameActivity[Player, Team]):
         assert isinstance(player.actor, PlayerSpaz)
         assert player.actor.node
         pos = player.actor.node.position
-        light = bs.newnode('light',
-                           attrs={
-                               'position': pos,
-                               'color': (1, 1, 0),
-                               'height_attenuated': False,
-                               'radius': 0.4
-                           })
+        light = bs.newnode(
+            'light',
+            attrs={
+                'position': pos,
+                'color': (1, 1, 0),
+                'height_attenuated': False,
+                'radius': 0.4,
+            },
+        )
         bs.timer(0.5, light.delete)
         bs.animate(light, 'intensity', {0: 0, 0.1: 1.0 * scale, 0.5: 0})
 
@@ -372,18 +394,22 @@ class Infection(bs.TeamGameActivity[Player, Team]):
 
         # Let's reconnect this player's controls to this
         # spaz but *without* the ability to attack or pick stuff up.
-        spaz.connect_controls_to_player(enable_punch=False,
-                                        enable_bomb=self._enable_bombs,
-                                        enable_pickup=False)
+        spaz.connect_controls_to_player(
+            enable_punch=False,
+            enable_bomb=self._enable_bombs,
+            enable_pickup=False,
+        )
 
         # Also lets have them make some noise when they die.
         spaz.play_big_death_sound = True
         return spaz
 
-    def spawn_player_spaz(self,
-                          player: PlayerType,
-                          position: Sequence[float] = (0, 0, 0),
-                          angle: float = None) -> PlayerSpaz:
+    def spawn_player_spaz(
+        self,
+        player: PlayerType,
+        position: Sequence[float] = (0, 0, 0),
+        angle: float = None,
+    ) -> PlayerSpaz:
         """Create and wire up a bs.PlayerSpaz for the provided bs.Player."""
         # pylint: disable=too-many-locals
         # pylint: disable=cyclic-import
@@ -394,10 +420,12 @@ class Infection(bs.TeamGameActivity[Player, Team]):
 
         light_color = babase._math.normalized_color(color)
         display_color = _babase.safecolor(color, target_intensity=0.75)
-        spaz = PlayerSpaz(color=color,
-                          highlight=highlight,
-                          character=player.character,
-                          player=player)
+        spaz = PlayerSpaz(
+            color=color,
+            highlight=highlight,
+            character=player.character,
+            player=player,
+        )
 
         player.actor = spaz
         assert spaz.node
@@ -406,13 +434,14 @@ class Infection(bs.TeamGameActivity[Player, Team]):
         # material that allows us to collide with the player-walls.
         # FIXME: Need to generalize this.
         if isinstance(self.session, bs.CoopSession) and self.map.getname() in [
-                'Courtyard', 'Tower D'
+            'Courtyard',
+            'Tower D',
         ]:
             mat = self.map.preloaddata['collide_with_wall_material']
             assert isinstance(spaz.node.materials, tuple)
             assert isinstance(spaz.node.roller_materials, tuple)
-            spaz.node.materials += (mat, )
-            spaz.node.roller_materials += (mat, )
+            spaz.node.materials += (mat,)
+            spaz.node.roller_materials += (mat,)
 
         spaz.node.name = name
         spaz.node.name_color = display_color
@@ -421,8 +450,9 @@ class Infection(bs.TeamGameActivity[Player, Team]):
         # Move to the stand position and add a flash of light.
         spaz.handlemessage(
             bs.StandMessage(
-                position,
-                angle if angle is not None else random.uniform(0, 360)))
+                position, angle if angle is not None else random.uniform(0, 360)
+            )
+        )
         self._spawn_sound.play(1, position=spaz.node.position)
         light = bs.newnode('light', attrs={'color': light_color})
         spaz.node.connectattr('position', light, 'position')
@@ -441,37 +471,37 @@ class Infection(bs.TeamGameActivity[Player, Team]):
             while True:
                 x = random.uniform(-1.0, 1.0)
                 y = random.uniform(-1.0, 1.0)
-                if x*x+y*y < 1.0:
+                if x * x + y * y < 1.0:
                     break
-            return ((8.0*x, 2.5, -3.5+5.0*y))
+            return (8.0 * x, 2.5, -3.5 + 5.0 * y)
         elif myMap == 'Rampage':
             x = random.uniform(-6.0, 7.0)
             y = random.uniform(-6.0, -2.5)
-            return ((x, 5.2, y))
+            return (x, 5.2, y)
         elif myMap == 'Hockey Stadium':
             x = random.uniform(-11.5, 11.5)
             y = random.uniform(-4.5, 4.5)
-            return ((x, 0.2, y))
+            return (x, 0.2, y)
         elif myMap == 'Courtyard':
             x = random.uniform(-4.3, 4.3)
             y = random.uniform(-4.4, 0.3)
-            return ((x, 3.0, y))
+            return (x, 3.0, y)
         elif myMap == 'Crag Castle':
             x = random.uniform(-6.7, 8.0)
             y = random.uniform(-6.0, 0.0)
-            return ((x, 10.0, y))
+            return (x, 10.0, y)
         elif myMap == 'Big G':
             x = random.uniform(-8.7, 8.0)
             y = random.uniform(-7.5, 6.5)
-            return ((x, 3.5, y))
+            return (x, 3.5, y)
         elif myMap == 'Football Stadium':
             x = random.uniform(-12.5, 12.5)
             y = random.uniform(-5.0, 5.5)
-            return ((x, 0.32, y))
+            return (x, 0.32, y)
         else:
             x = random.uniform(-5.0, 5.0)
             y = random.uniform(-6.0, 0.0)
-            return ((x, 8.0, y))
+            return (x, 8.0, y)
 
     def end_game(self) -> None:
         cur_time = bs.time()
@@ -517,8 +547,7 @@ class Infection(bs.TeamGameActivity[Player, Team]):
             longest_life = 0.0
             for player in team.players:
                 assert player.death_time is not None
-                longest_life = max(longest_life,
-                                   player.death_time - start_time)
+                longest_life = max(longest_life, player.death_time - start_time)
 
             # Submit the score value in milliseconds.
             results.set_team_score(team, int(1000.0 * longest_life))

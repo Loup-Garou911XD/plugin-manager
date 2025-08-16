@@ -53,7 +53,9 @@ class RandomPlaySessionMixin(MultiTeamSession, Session):
 
         self._current_game_spec: dict[str, Any] | None = None
         self._next_game_spec: dict[str, Any] = self._playlist.pull_next()
-        self._next_game: type[GameActivity] = self._next_game_spec["resolved_type"]
+        self._next_game: type[GameActivity] = self._next_game_spec[
+            "resolved_type"
+        ]
 
         self._instantiate_next_game()
         self.setactivity(newactivity(MultiTeamJoinActivity))
@@ -110,7 +112,8 @@ class RandomPlaylist:
         self.last_game = game.name
         game_map = choice(game.get_supported_maps(self.sessiontype))
         settings = {
-            s.name: s.default for s in game.get_available_settings(self.sessiontype)
+            s.name: s.default
+            for s in game.get_available_settings(self.sessiontype)
         }
         settings["map"] = game_map
 
@@ -135,8 +138,16 @@ def patched__init__(
 
     ui_scale = babase.app.ui_v1.uiscale
 
-    y_offset = -95 if ui_scale is UIScale.SMALL else -35 if ui_scale is UIScale.MEDIUM else 115
-    x_offset = 140 if ui_scale is UIScale.SMALL else 80 if ui_scale is UIScale.MEDIUM else 240
+    y_offset = (
+        -95
+        if ui_scale is UIScale.SMALL
+        else -35 if ui_scale is UIScale.MEDIUM else 115
+    )
+    x_offset = (
+        140
+        if ui_scale is UIScale.SMALL
+        else 80 if ui_scale is UIScale.MEDIUM else 240
+    )
 
     self.old__init__(sessiontype, transition, origin_widget)
     # pylint: disable=protected-access
@@ -152,6 +163,7 @@ def patched__init__(
         color=(0.54, 0.52, 0.67),
         textcolor=(0.7, 0.65, 0.7),
     )
+
 
 # Returns a function that starts the game
 

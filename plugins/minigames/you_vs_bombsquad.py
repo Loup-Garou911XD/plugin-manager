@@ -13,7 +13,11 @@ import bauiv1 as bui
 import bascenev1 as bs
 import _babase
 import random
-from bascenev1lib.actor.spazbot import SpazBotSet, BrawlerBot, SpazBotDiedMessage
+from bascenev1lib.actor.spazbot import (
+    SpazBotSet,
+    BrawlerBot,
+    SpazBotDiedMessage,
+)
 from bascenev1lib.actor.onscreentimer import OnScreenTimer
 
 if TYPE_CHECKING:
@@ -147,13 +151,14 @@ class TUvsBombSquad(bs.TeamGameActivity[Player, Team]):
 
     name = name
     description = 'Defeat all enemies.'
-    scoreconfig = bs.ScoreConfig(label='Time',
-                                 scoretype=bs.ScoreType.MILLISECONDS,
-                                 lower_is_better=True)
+    scoreconfig = bs.ScoreConfig(
+        label='Time', scoretype=bs.ScoreType.MILLISECONDS, lower_is_better=True
+    )
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]
+    ) -> List[babase.Setting]:
         settings = [
             bs.BoolSetting('Hard Mode', default=False),
             bs.BoolSetting('Epic Mode', default=False),
@@ -162,8 +167,9 @@ class TUvsBombSquad(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.CoopSession)
-                or issubclass(sessiontype, bs.MultiTeamSession))
+        return issubclass(sessiontype, bs.CoopSession) or issubclass(
+            sessiontype, bs.MultiTeamSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: Type[bs.Session]) -> List[str]:
@@ -180,108 +186,173 @@ class TUvsBombSquad(bs.TeamGameActivity[Player, Team]):
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC if self._epic_mode else
-                              bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
 
-        self._spaz_easy: list = [[(-5.4146, 0.9515, -3.0379), 23.0],
-                                 [(-5.4146, 0.9515, 1.0379), 23.0]]
-        self._spaz_hard: list = [[(11.4146, 0.9515, -5.0379), 3.0],
-                                 [(-8.4146, 0.9515, -5.0379), 5.0],
-                                 [(5.4146, 0.9515, -3.0379), 8.0],
-                                 [(5.4146, 0.9515, 1.0379), 8.0]]
-        self._zoe_easy: list = [[(5.4146, 0.9515, -1.0379), 23.0],
-                                [(-5.4146, 0.9515, 5.0379), 23.0]]
-        self._zoe_hard: list = [[(-11.4146, 0.9515, -5.0379), 3.0],
-                                [(8.4146, 0.9515, -3.0379), 5.0],
-                                [(-5.4146, 0.9515, -3.0379), 8.0],
-                                [(-5.4146, 0.9515, 1.0379), 8.0]]
-        self._snake_easy: list = [[(-5.4146, 0.9515, -1.0379), 23.0],
-                                  [(5.4146, 0.9515, -5.0379), 23.0]]
-        self._snake_hard: list = [[(11.4146, 0.9515, -3.0379), 3.0],
-                                  [(-8.4146, 0.9515, -3.0379), 5.0],
-                                  [(5.4146, 0.9515, -1.0379), 8.0],
-                                  [(5.4146, 0.9515, 1.0379), 8.0]]
-        self._kronk_easy: list = [[(8.4146, 0.9515, 1.0379), 10.0],
-                                  [(5.4146, 0.9515, 3.0379), 23.0]]
-        self._kronk_hard: list = [[(-11.4146, 0.9515, -3.0379), 3.0],
-                                  [(8.4146, 0.9515, -1.0379), 5.0],
-                                  [(-5.4146, 0.9515, -1.0379), 8.0],
-                                  [(5.4146, 0.9515, 1.0379), 8.0]]
-        self._mel_easy: list = [[(5.4146, 0.9515, 1.0379), 23.0],
-                                [(-11.4146, 0.9515, 1.0379), 3.0]]
-        self._mel_hard: list = [[(11.4146, 0.9515, -1.0379), 3.0],
-                                [(-8.4146, 0.9515, -1.0379), 5.0],
-                                [(5.4146, 0.9515, 1.0379), 8.0],
-                                [(5.4146, 0.9515, 5.0379), 8.0]]
-        self._jack_easy: list = [[(-8.4146, 0.9515, 1.0379), 10.0],
-                                 [(5.4146, 0.9515, 1.0379), 23.0]]
-        self._jack_hard: list = [[(-11.4146, 0.9515, -1.0379), 3.0],
-                                 [(8.4146, 0.9515, 1.0379), 5.0],
-                                 [(-5.4146, 0.9515, 1.0379), 8.0],
-                                 [(-5.4146, 0.9515, 5.0379), 8.0],
-                                 [(5.4146, 0.9515, -5.0379), 8.0]]
-        self._frosty_easy: list = [[(8.4146, 0.9515, 1.0379), 10.0],
-                                   [(8.4146, 0.9515, -5.0379), 10.0]]
-        self._frosty_hard: list = [[(-11.4146, 0.9515, 1.0379), 3.0],
-                                   [(-5.4146, 0.9515, 3.0379), 8.0],
-                                   [(-5.4146, 0.9515, -5.0379), 8.0],
-                                   [(5.4146, 0.9515, 3.0379), 8.0]]
-        self._bunny_easy: list = [[(-8.4146, 0.9515, 3.0379), 10.0],
-                                  [(5.4146, 0.9515, 5.0379), 23.0]]
-        self._bunny_hard: list = [[(8.4146, 0.9515, -5.0379), 5.0],
-                                  [(-5.4146, 0.9515, -5.0379), 8.0],
-                                  [(-5.4146, 0.9515, 3.0379), 8.0],
-                                  [(8.4146, 0.9515, 3.0379), 5.0]]
-        self._bones_easy: list = [[(11.4146, 0.9515, -5.0379), 3.0],
-                                  [(-8.4146, 0.9515, -5.0379), 10.0]]
-        self._bones_hard: list = [[(5.4146, 0.9515, -3.0379), 8.0],
-                                  [(-5.4146, 0.9515, 3.0379), 8.0],
-                                  [(5.4146, 0.9515, 1.0379), 8.0],
-                                  [(8.4146, 0.9515, 3.0379), 5.0]]
-        self._bernard_easy: list = [[(-11.4146, 0.9515, -5.0379), 3.0],
-                                    [(8.4146, 0.9515, -3.0379), 10.0]]
-        self._bernard_hard: list = [[(-5.4146, 0.9515, -3.0379), 8.0],
-                                    [(5.4146, 0.9515, 1.0379), 8.0],
-                                    [(-5.4146, 0.9515, 1.0379), 8.0],
-                                    [(-8.4146, 0.9515, 3.0379), 5.0]]
-        self._pascal_easy: list = [[(11.4146, 0.9515, -3.0379), 3.0],
-                                   [(-8.4146, 0.9515, -3.0379), 10.0]]
-        self._pascal_hard: list = [[(5.4146, 0.9515, -1.0379), 8.0],
-                                   [(-5.4146, 0.9515, 1.0379), 8.0],
-                                   [(5.4146, 0.9515, 1.0379), 8.0],
-                                   [(8.4146, 0.9515, 1.0379), 5.0]]
-        self._taobao_easy: list = [[(-11.4146, 0.9515, -3.0379), 3.0],
-                                   [(8.4146, 0.9515, -1.0379), 10.0]]
-        self._taobao_hard: list = [[(-5.4146, 0.9515, -1.0379), 8.0],
-                                   [(5.4146, 0.9515, 1.0379), 8.0],
-                                   [(-5.4146, 0.9515, 1.0379), 8.0],
-                                   [(-5.4146, 0.9515, 1.0379), 8.0]]
-        self._bbot_easy: list = [[(11.4146, 0.9515, -1.0379), 3.0],
-                                 [(-8.4146, 0.9515, -1.0379), 10.0]]
-        self._bbot_hard: list = [[(-5.4146, 0.9515, 1.0379), 8.0],
-                                 [(8.4146, 0.9515, 1.0379), 5.0],
-                                 [(-5.4146, 0.9515, 1.0379), 8.0],
-                                 [(-5.4146, 0.9515, 1.0379), 8.0]]
-        self._agent_easy: list = [[(-11.4146, 0.9515, -1.0379), 3.0],
-                                  [(8.4146, 0.9515, 1.0379), 10.0]]
-        self._agent_hard: list = [[(5.4146, 0.9515, 5.0379), 8.0],
-                                  [(-8.4146, 0.9515, 1.0379), 5.0],
-                                  [(-11.4146, 0.9515, 1.0379), 3.0],
-                                  [(-11.4146, 0.9515, 1.0379), 3.0]]
-        self._wizard_easy: list = [[(11.4146, 0.9515, 1.0379), 3.0],
-                                   [(-8.4146, 0.9515, 1.0379), 10.0]]
-        self._wizard_hard: list = [[(-5.4146, 0.9515, 5.0379), 8.0],
-                                   [(8.4146, 0.9515, 5.0379), 5.0],
-                                   [(-5.4146, 0.9515, 1.0379), 8.0],
-                                   [(11.4146, 0.9515, 1.0379), 3.0]]
+        self._spaz_easy: list = [
+            [(-5.4146, 0.9515, -3.0379), 23.0],
+            [(-5.4146, 0.9515, 1.0379), 23.0],
+        ]
+        self._spaz_hard: list = [
+            [(11.4146, 0.9515, -5.0379), 3.0],
+            [(-8.4146, 0.9515, -5.0379), 5.0],
+            [(5.4146, 0.9515, -3.0379), 8.0],
+            [(5.4146, 0.9515, 1.0379), 8.0],
+        ]
+        self._zoe_easy: list = [
+            [(5.4146, 0.9515, -1.0379), 23.0],
+            [(-5.4146, 0.9515, 5.0379), 23.0],
+        ]
+        self._zoe_hard: list = [
+            [(-11.4146, 0.9515, -5.0379), 3.0],
+            [(8.4146, 0.9515, -3.0379), 5.0],
+            [(-5.4146, 0.9515, -3.0379), 8.0],
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+        ]
+        self._snake_easy: list = [
+            [(-5.4146, 0.9515, -1.0379), 23.0],
+            [(5.4146, 0.9515, -5.0379), 23.0],
+        ]
+        self._snake_hard: list = [
+            [(11.4146, 0.9515, -3.0379), 3.0],
+            [(-8.4146, 0.9515, -3.0379), 5.0],
+            [(5.4146, 0.9515, -1.0379), 8.0],
+            [(5.4146, 0.9515, 1.0379), 8.0],
+        ]
+        self._kronk_easy: list = [
+            [(8.4146, 0.9515, 1.0379), 10.0],
+            [(5.4146, 0.9515, 3.0379), 23.0],
+        ]
+        self._kronk_hard: list = [
+            [(-11.4146, 0.9515, -3.0379), 3.0],
+            [(8.4146, 0.9515, -1.0379), 5.0],
+            [(-5.4146, 0.9515, -1.0379), 8.0],
+            [(5.4146, 0.9515, 1.0379), 8.0],
+        ]
+        self._mel_easy: list = [
+            [(5.4146, 0.9515, 1.0379), 23.0],
+            [(-11.4146, 0.9515, 1.0379), 3.0],
+        ]
+        self._mel_hard: list = [
+            [(11.4146, 0.9515, -1.0379), 3.0],
+            [(-8.4146, 0.9515, -1.0379), 5.0],
+            [(5.4146, 0.9515, 1.0379), 8.0],
+            [(5.4146, 0.9515, 5.0379), 8.0],
+        ]
+        self._jack_easy: list = [
+            [(-8.4146, 0.9515, 1.0379), 10.0],
+            [(5.4146, 0.9515, 1.0379), 23.0],
+        ]
+        self._jack_hard: list = [
+            [(-11.4146, 0.9515, -1.0379), 3.0],
+            [(8.4146, 0.9515, 1.0379), 5.0],
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+            [(-5.4146, 0.9515, 5.0379), 8.0],
+            [(5.4146, 0.9515, -5.0379), 8.0],
+        ]
+        self._frosty_easy: list = [
+            [(8.4146, 0.9515, 1.0379), 10.0],
+            [(8.4146, 0.9515, -5.0379), 10.0],
+        ]
+        self._frosty_hard: list = [
+            [(-11.4146, 0.9515, 1.0379), 3.0],
+            [(-5.4146, 0.9515, 3.0379), 8.0],
+            [(-5.4146, 0.9515, -5.0379), 8.0],
+            [(5.4146, 0.9515, 3.0379), 8.0],
+        ]
+        self._bunny_easy: list = [
+            [(-8.4146, 0.9515, 3.0379), 10.0],
+            [(5.4146, 0.9515, 5.0379), 23.0],
+        ]
+        self._bunny_hard: list = [
+            [(8.4146, 0.9515, -5.0379), 5.0],
+            [(-5.4146, 0.9515, -5.0379), 8.0],
+            [(-5.4146, 0.9515, 3.0379), 8.0],
+            [(8.4146, 0.9515, 3.0379), 5.0],
+        ]
+        self._bones_easy: list = [
+            [(11.4146, 0.9515, -5.0379), 3.0],
+            [(-8.4146, 0.9515, -5.0379), 10.0],
+        ]
+        self._bones_hard: list = [
+            [(5.4146, 0.9515, -3.0379), 8.0],
+            [(-5.4146, 0.9515, 3.0379), 8.0],
+            [(5.4146, 0.9515, 1.0379), 8.0],
+            [(8.4146, 0.9515, 3.0379), 5.0],
+        ]
+        self._bernard_easy: list = [
+            [(-11.4146, 0.9515, -5.0379), 3.0],
+            [(8.4146, 0.9515, -3.0379), 10.0],
+        ]
+        self._bernard_hard: list = [
+            [(-5.4146, 0.9515, -3.0379), 8.0],
+            [(5.4146, 0.9515, 1.0379), 8.0],
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+            [(-8.4146, 0.9515, 3.0379), 5.0],
+        ]
+        self._pascal_easy: list = [
+            [(11.4146, 0.9515, -3.0379), 3.0],
+            [(-8.4146, 0.9515, -3.0379), 10.0],
+        ]
+        self._pascal_hard: list = [
+            [(5.4146, 0.9515, -1.0379), 8.0],
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+            [(5.4146, 0.9515, 1.0379), 8.0],
+            [(8.4146, 0.9515, 1.0379), 5.0],
+        ]
+        self._taobao_easy: list = [
+            [(-11.4146, 0.9515, -3.0379), 3.0],
+            [(8.4146, 0.9515, -1.0379), 10.0],
+        ]
+        self._taobao_hard: list = [
+            [(-5.4146, 0.9515, -1.0379), 8.0],
+            [(5.4146, 0.9515, 1.0379), 8.0],
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+        ]
+        self._bbot_easy: list = [
+            [(11.4146, 0.9515, -1.0379), 3.0],
+            [(-8.4146, 0.9515, -1.0379), 10.0],
+        ]
+        self._bbot_hard: list = [
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+            [(8.4146, 0.9515, 1.0379), 5.0],
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+        ]
+        self._agent_easy: list = [
+            [(-11.4146, 0.9515, -1.0379), 3.0],
+            [(8.4146, 0.9515, 1.0379), 10.0],
+        ]
+        self._agent_hard: list = [
+            [(5.4146, 0.9515, 5.0379), 8.0],
+            [(-8.4146, 0.9515, 1.0379), 5.0],
+            [(-11.4146, 0.9515, 1.0379), 3.0],
+            [(-11.4146, 0.9515, 1.0379), 3.0],
+        ]
+        self._wizard_easy: list = [
+            [(11.4146, 0.9515, 1.0379), 3.0],
+            [(-8.4146, 0.9515, 1.0379), 10.0],
+        ]
+        self._wizard_hard: list = [
+            [(-5.4146, 0.9515, 5.0379), 8.0],
+            [(8.4146, 0.9515, 5.0379), 5.0],
+            [(-5.4146, 0.9515, 1.0379), 8.0],
+            [(11.4146, 0.9515, 1.0379), 3.0],
+        ]
         self._pixel_easy: list = [[(-5.4146, 0.9515, -5.0379), 23.0]]
-        self._pixel_hard: list = [[(5.4146, 0.9515, -5.0379), 8.0],
-                                  [(5.4146, 0.9515, 3.0379), 5.0],
-                                  [(-8.4146, 0.9515, 5.0379), 5.0]]
+        self._pixel_hard: list = [
+            [(5.4146, 0.9515, -5.0379), 8.0],
+            [(5.4146, 0.9515, 3.0379), 5.0],
+            [(-8.4146, 0.9515, 5.0379), 5.0],
+        ]
         self._santa_easy: list = [[(-8.4146, 0.9515, 5.0379), 23.0]]
-        self._santa_hard: list = [[(-8.4146, 0.9515, 1.0379), 5.0],
-                                  [(-8.4146, 0.9515, 5.0379), 5.0],
-                                  [(5.4146, 0.9515, 1.0379), 8.0]]
+        self._santa_hard: list = [
+            [(-8.4146, 0.9515, 1.0379), 5.0],
+            [(-8.4146, 0.9515, 5.0379), 5.0],
+            [(5.4146, 0.9515, 1.0379), 8.0],
+        ]
 
     def on_begin(self) -> None:
         super().on_begin()
@@ -290,120 +361,201 @@ class TUvsBombSquad(bs.TeamGameActivity[Player, Team]):
         bs.timer(4.0, self._timer.start)
 
         for i in range(len(self._spaz_easy)):
-            self._spawn_bots(4.0, SpazBot,
-                             self._spaz_easy[i][0], self._spaz_easy[i][1])
+            self._spawn_bots(
+                4.0, SpazBot, self._spaz_easy[i][0], self._spaz_easy[i][1]
+            )
         for i in range(len(self._zoe_easy)):
-            self._spawn_bots(4.0, ZoeBot,
-                             self._zoe_easy[i][0], self._zoe_easy[i][1])
+            self._spawn_bots(
+                4.0, ZoeBot, self._zoe_easy[i][0], self._zoe_easy[i][1]
+            )
         for i in range(len(self._snake_easy)):
-            self._spawn_bots(4.0, SnakeBot,
-                             self._snake_easy[i][0], self._snake_easy[i][1])
+            self._spawn_bots(
+                4.0, SnakeBot, self._snake_easy[i][0], self._snake_easy[i][1]
+            )
         for i in range(len(self._kronk_easy)):
-            self._spawn_bots(4.0, BrawlerBot,
-                             self._kronk_easy[i][0], self._kronk_easy[i][1])
+            self._spawn_bots(
+                4.0, BrawlerBot, self._kronk_easy[i][0], self._kronk_easy[i][1]
+            )
         for i in range(len(self._mel_easy)):
-            self._spawn_bots(4.0, MelBot,
-                             self._mel_easy[i][0], self._mel_easy[i][1])
+            self._spawn_bots(
+                4.0, MelBot, self._mel_easy[i][0], self._mel_easy[i][1]
+            )
         for i in range(len(self._jack_easy)):
-            self._spawn_bots(4.0, JackBot,
-                             self._jack_easy[i][0], self._jack_easy[i][1])
+            self._spawn_bots(
+                4.0, JackBot, self._jack_easy[i][0], self._jack_easy[i][1]
+            )
         for i in range(len(self._santa_easy)):
-            self._spawn_bots(4.0, SantaBot,
-                             self._santa_easy[i][0], self._santa_easy[i][1])
+            self._spawn_bots(
+                4.0, SantaBot, self._santa_easy[i][0], self._santa_easy[i][1]
+            )
         for i in range(len(self._frosty_easy)):
-            self._spawn_bots(4.0, FrostyBot,
-                             self._frosty_easy[i][0], self._frosty_easy[i][1])
+            self._spawn_bots(
+                4.0, FrostyBot, self._frosty_easy[i][0], self._frosty_easy[i][1]
+            )
         for i in range(len(self._bunny_easy)):
-            self._spawn_bots(4.0, BunnyBot,
-                             self._bunny_easy[i][0], self._bunny_easy[i][1])
+            self._spawn_bots(
+                4.0, BunnyBot, self._bunny_easy[i][0], self._bunny_easy[i][1]
+            )
         for i in range(len(self._bones_easy)):
-            self._spawn_bots(4.0, BonesBot,
-                             self._bones_easy[i][0], self._bones_easy[i][1])
+            self._spawn_bots(
+                4.0, BonesBot, self._bones_easy[i][0], self._bones_easy[i][1]
+            )
         for i in range(len(self._bernard_easy)):
-            self._spawn_bots(4.0, BernardBot,
-                             self._bernard_easy[i][0], self._bernard_easy[i][1])
+            self._spawn_bots(
+                4.0,
+                BernardBot,
+                self._bernard_easy[i][0],
+                self._bernard_easy[i][1],
+            )
         for i in range(len(self._pascal_easy)):
-            self._spawn_bots(4.0, PascalBot,
-                             self._pascal_easy[i][0], self._pascal_easy[i][1])
+            self._spawn_bots(
+                4.0, PascalBot, self._pascal_easy[i][0], self._pascal_easy[i][1]
+            )
         for i in range(len(self._taobao_easy)):
-            self._spawn_bots(4.0, TaobaoBot,
-                             self._taobao_easy[i][0], self._taobao_easy[i][1])
+            self._spawn_bots(
+                4.0, TaobaoBot, self._taobao_easy[i][0], self._taobao_easy[i][1]
+            )
         for i in range(len(self._bbot_easy)):
-            self._spawn_bots(4.0, BBot,
-                             self._bbot_easy[i][0], self._bbot_easy[i][1])
+            self._spawn_bots(
+                4.0, BBot, self._bbot_easy[i][0], self._bbot_easy[i][1]
+            )
         for i in range(len(self._agent_easy)):
-            self._spawn_bots(4.0, AgentBot,
-                             self._agent_easy[i][0], self._agent_easy[i][1])
+            self._spawn_bots(
+                4.0, AgentBot, self._agent_easy[i][0], self._agent_easy[i][1]
+            )
         for i in range(len(self._wizard_easy)):
-            self._spawn_bots(4.0, GrumbledorfBot,
-                             self._wizard_easy[i][0], self._wizard_easy[i][1])
+            self._spawn_bots(
+                4.0,
+                GrumbledorfBot,
+                self._wizard_easy[i][0],
+                self._wizard_easy[i][1],
+            )
         for i in range(len(self._pixel_easy)):
-            self._spawn_bots(4.0, PixelBot,
-                             self._pixel_easy[i][0], self._pixel_easy[i][1])
+            self._spawn_bots(
+                4.0, PixelBot, self._pixel_easy[i][0], self._pixel_easy[i][1]
+            )
 
         if self._hard_mode:
             for i in range(len(self._spaz_hard)):
-                self._spawn_bots(4.0, SpazBot,
-                                 self._spaz_hard[i][0], self._spaz_hard[i][1])
+                self._spawn_bots(
+                    4.0, SpazBot, self._spaz_hard[i][0], self._spaz_hard[i][1]
+                )
             for i in range(len(self._zoe_hard)):
-                self._spawn_bots(4.0, ZoeBot,
-                                 self._zoe_hard[i][0], self._zoe_hard[i][1])
+                self._spawn_bots(
+                    4.0, ZoeBot, self._zoe_hard[i][0], self._zoe_hard[i][1]
+                )
             for i in range(len(self._snake_hard)):
-                self._spawn_bots(4.0, SnakeBot,
-                                 self._snake_hard[i][0], self._snake_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    SnakeBot,
+                    self._snake_hard[i][0],
+                    self._snake_hard[i][1],
+                )
             for i in range(len(self._kronk_hard)):
-                self._spawn_bots(4.0, BrawlerBot,
-                                 self._kronk_hard[i][0], self._kronk_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    BrawlerBot,
+                    self._kronk_hard[i][0],
+                    self._kronk_hard[i][1],
+                )
             for i in range(len(self._mel_hard)):
-                self._spawn_bots(4.0, MelBot,
-                                 self._mel_hard[i][0], self._mel_hard[i][1])
+                self._spawn_bots(
+                    4.0, MelBot, self._mel_hard[i][0], self._mel_hard[i][1]
+                )
             for i in range(len(self._jack_hard)):
-                self._spawn_bots(4.0, JackBot,
-                                 self._jack_hard[i][0], self._jack_hard[i][1])
+                self._spawn_bots(
+                    4.0, JackBot, self._jack_hard[i][0], self._jack_hard[i][1]
+                )
             for i in range(len(self._santa_hard)):
-                self._spawn_bots(4.0, SantaBot,
-                                 self._santa_hard[i][0], self._santa_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    SantaBot,
+                    self._santa_hard[i][0],
+                    self._santa_hard[i][1],
+                )
             for i in range(len(self._frosty_hard)):
-                self._spawn_bots(4.0, FrostyBot,
-                                 self._frosty_hard[i][0], self._frosty_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    FrostyBot,
+                    self._frosty_hard[i][0],
+                    self._frosty_hard[i][1],
+                )
             for i in range(len(self._bunny_hard)):
-                self._spawn_bots(4.0, BunnyBot,
-                                 self._bunny_hard[i][0], self._bunny_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    BunnyBot,
+                    self._bunny_hard[i][0],
+                    self._bunny_hard[i][1],
+                )
             for i in range(len(self._bones_hard)):
-                self._spawn_bots(4.0, BonesBot,
-                                 self._bones_hard[i][0], self._bones_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    BonesBot,
+                    self._bones_hard[i][0],
+                    self._bones_hard[i][1],
+                )
             for i in range(len(self._bernard_hard)):
-                self._spawn_bots(4.0, BernardBot,
-                                 self._bernard_hard[i][0], self._bernard_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    BernardBot,
+                    self._bernard_hard[i][0],
+                    self._bernard_hard[i][1],
+                )
             for i in range(len(self._pascal_hard)):
-                self._spawn_bots(4.0, PascalBot,
-                                 self._pascal_hard[i][0], self._pascal_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    PascalBot,
+                    self._pascal_hard[i][0],
+                    self._pascal_hard[i][1],
+                )
             for i in range(len(self._taobao_hard)):
-                self._spawn_bots(4.0, TaobaoBot,
-                                 self._taobao_hard[i][0], self._taobao_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    TaobaoBot,
+                    self._taobao_hard[i][0],
+                    self._taobao_hard[i][1],
+                )
             for i in range(len(self._bbot_hard)):
-                self._spawn_bots(4.0, BBot,
-                                 self._bbot_hard[i][0], self._bbot_hard[i][1])
+                self._spawn_bots(
+                    4.0, BBot, self._bbot_hard[i][0], self._bbot_hard[i][1]
+                )
             for i in range(len(self._agent_hard)):
-                self._spawn_bots(4.0, AgentBot,
-                                 self._agent_hard[i][0], self._agent_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    AgentBot,
+                    self._agent_hard[i][0],
+                    self._agent_hard[i][1],
+                )
             for i in range(len(self._wizard_hard)):
-                self._spawn_bots(4.0, GrumbledorfBot,
-                                 self._wizard_hard[i][0], self._wizard_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    GrumbledorfBot,
+                    self._wizard_hard[i][0],
+                    self._wizard_hard[i][1],
+                )
             for i in range(len(self._pixel_hard)):
-                self._spawn_bots(4.0, PixelBot,
-                                 self._pixel_hard[i][0], self._pixel_hard[i][1])
+                self._spawn_bots(
+                    4.0,
+                    PixelBot,
+                    self._pixel_hard[i][0],
+                    self._pixel_hard[i][1],
+                )
 
-    def _spawn_bots(self, time: float, bot: Any,
-                    pos: float, spawn_time: float) -> None:
-        bs.timer(time, lambda: self._bots.spawn_bot(
-            bot, pos=pos, spawn_time=spawn_time))
+    def _spawn_bots(
+        self, time: float, bot: Any, pos: float, spawn_time: float
+    ) -> None:
+        bs.timer(
+            time,
+            lambda: self._bots.spawn_bot(bot, pos=pos, spawn_time=spawn_time),
+        )
 
     def on_player_join(self, player: Player) -> None:
         if self.has_begun():
             bs.broadcastmessage(
-                babase.Lstr(resource='playerDelayedJoinText',
-                            subs=[('${PLAYER}', player.getname(full=True))]),
+                babase.Lstr(
+                    resource='playerDelayedJoinText',
+                    subs=[('${PLAYER}', player.getname(full=True))],
+                ),
                 color=(0, 1, 0),
             )
             return
@@ -414,8 +566,11 @@ class TUvsBombSquad(bs.TeamGameActivity[Player, Team]):
 
         # Let's spawn close to the center.
         spawn_center = (0.0728, 0.0227, -1.9888)
-        pos = (spawn_center[0] + random.uniform(-0.5, 0.5), spawn_center[1],
-               spawn_center[2] + random.uniform(-0.5, 0.5))
+        pos = (
+            spawn_center[0] + random.uniform(-0.5, 0.5),
+            spawn_center[1],
+            spawn_center[2] + random.uniform(-0.5, 0.5),
+        )
         return self.spawn_player_spaz(player, position=pos)
 
     def _check_if_won(self) -> None:
@@ -482,24 +637,35 @@ class TUvsBombSquad(bs.TeamGameActivity[Player, Team]):
 class plugin(babase.Plugin):
     def __init__(self):
         ## Campaign support ##
-        babase.app.classic.add_coop_practice_level(bs.Level(
-            name=name_easy,
-            gametype=TUvsBombSquad,
-            settings={},
-            preview_texture_name='footballStadiumPreview'))
-        babase.app.classic.add_coop_practice_level(bs.Level(
-            name_easy_epic,
-            gametype=TUvsBombSquad,
-            settings={'Epic Mode': True},
-            preview_texture_name='footballStadiumPreview'))
-        babase.app.classic.add_coop_practice_level(bs.Level(
-            name=name_hard,
-            gametype=TUvsBombSquad,
-            settings={'Hard Mode': True},
-            preview_texture_name='footballStadiumPreview'))
-        babase.app.classic.add_coop_practice_level(bs.Level(
-            name=name_hard_epic,
-            gametype=TUvsBombSquad,
-            settings={'Hard Mode': True,
-                      'Epic Mode': True},
-            preview_texture_name='footballStadiumPreview'))
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                name=name_easy,
+                gametype=TUvsBombSquad,
+                settings={},
+                preview_texture_name='footballStadiumPreview',
+            )
+        )
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                name_easy_epic,
+                gametype=TUvsBombSquad,
+                settings={'Epic Mode': True},
+                preview_texture_name='footballStadiumPreview',
+            )
+        )
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                name=name_hard,
+                gametype=TUvsBombSquad,
+                settings={'Hard Mode': True},
+                preview_texture_name='footballStadiumPreview',
+            )
+        )
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                name=name_hard_epic,
+                gametype=TUvsBombSquad,
+                settings={'Hard Mode': True, 'Epic Mode': True},
+                preview_texture_name='footballStadiumPreview',
+            )
+        )

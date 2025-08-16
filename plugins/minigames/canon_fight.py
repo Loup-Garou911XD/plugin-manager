@@ -27,7 +27,6 @@ if TYPE_CHECKING:
 
 # ba_meta export bascenev1.GameActivity
 class CanonFightGame(DeathMatchGame):
-
     """A game type based on acquiring kills."""
 
     name = 'Canon Fight'
@@ -38,7 +37,8 @@ class CanonFightGame(DeathMatchGame):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]) -> list[babase.Setting]:
+        cls, sessiontype: type[bs.Session]
+    ) -> list[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
@@ -79,14 +79,16 @@ class CanonFightGame(DeathMatchGame):
         # suiciding until you get a good drop)
         if issubclass(sessiontype, bs.FreeForAllSession):
             settings.append(
-                bs.BoolSetting('Allow Negative Scores', default=False))
+                bs.BoolSetting('Allow Negative Scores', default=False)
+            )
 
         return settings
 
     @classmethod
     def supports_session_type(cls, sessiontype: type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.DualTeamSession)
-                or issubclass(sessiontype, bs.FreeForAllSession))
+        return issubclass(sessiontype, bs.DualTeamSession) or issubclass(
+            sessiontype, bs.FreeForAllSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: type[bs.Session]) -> list[str]:
@@ -98,36 +100,42 @@ class CanonFightGame(DeathMatchGame):
         self._score_to_win: Optional[int] = None
         self._dingsound = bs.getsound('dingSmall')
         self._epic_mode = bool(settings['Epic Mode'])
-        self._kills_to_win_per_player = int(
-            settings['Kills to Win Per Player'])
+        self._kills_to_win_per_player = int(settings['Kills to Win Per Player'])
         self._time_limit = float(settings['Time Limit'])
         self._allow_negative_scores = bool(
-            settings.get('Allow Negative Scores', False))
+            settings.get('Allow Negative Scores', False)
+        )
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC if self._epic_mode else
-                              bs.MusicType.TO_THE_DEATH)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.TO_THE_DEATH
+        )
 
         self.wtindex = 0
         self.wttimer = bs.timer(5, babase.Call(self.wt_), repeat=True)
-        self.wthighlights = ["Created by Mr.Smoothy",
-                             "hey smoothy youtube", "smoothy#multiverse"]
+        self.wthighlights = [
+            "Created by Mr.Smoothy",
+            "hey smoothy youtube",
+            "smoothy#multiverse",
+        ]
 
     def wt_(self):
-        node = bs.newnode('text',
-                          attrs={
-                              'text': self.wthighlights[self.wtindex],
-                              'flatness': 1.0,
-                              'h_align': 'center',
-                              'v_attach': 'bottom',
-                              'scale': 0.7,
-                              'position': (0, 20),
-                              'color': (0.5, 0.5, 0.5)
-                          })
+        node = bs.newnode(
+            'text',
+            attrs={
+                'text': self.wthighlights[self.wtindex],
+                'flatness': 1.0,
+                'h_align': 'center',
+                'v_attach': 'bottom',
+                'scale': 0.7,
+                'position': (0, 20),
+                'color': (0.5, 0.5, 0.5),
+            },
+        )
 
         self.delt = bs.timer(4, node.delete)
-        self.wtindex = int((self.wtindex+1) % len(self.wthighlights))
+        self.wtindex = int((self.wtindex + 1) % len(self.wthighlights))
 
     def get_instance_description(self) -> Union[str, Sequence]:
         return 'Crush ${ARG1} of your enemies.', self._score_to_win
@@ -145,8 +153,9 @@ class CanonFightGame(DeathMatchGame):
         self.setup_standard_powerup_drops()
 
         # Base kills needed to win on the size of the largest team.
-        self._score_to_win = (self._kills_to_win_per_player *
-                              max(1, max(len(t.players) for t in self.teams)))
+        self._score_to_win = self._kills_to_win_per_player * max(
+            1, max(len(t.players) for t in self.teams)
+        )
         self._update_scoreboard()
         self.create_canon_A()
         self.create_canon_B()
@@ -190,10 +199,11 @@ class CanonFightGame(DeathMatchGame):
 
                 # In FFA show scores since its hard to find on the scoreboard.
                 if isinstance(killer.actor, PlayerSpaz) and killer.actor:
-                    killer.actor.set_score_text(str(killer.team.score) + '/' +
-                                                str(self._score_to_win),
-                                                color=killer.team.color,
-                                                flash=True)
+                    killer.actor.set_score_text(
+                        str(killer.team.score) + '/' + str(self._score_to_win),
+                        color=killer.team.color,
+                        flash=True,
+                    )
 
             self._update_scoreboard()
 
@@ -210,8 +220,9 @@ class CanonFightGame(DeathMatchGame):
 
     def _update_scoreboard(self) -> None:
         for team in self.teams:
-            self._scoreboard.set_team_value(team, team.score,
-                                            self._score_to_win)
+            self._scoreboard.set_team_value(
+                team, team.score, self._score_to_win
+            )
 
     def end_game(self) -> None:
         results = bs.GameResults()
@@ -265,12 +276,22 @@ class CanonFightGame(DeathMatchGame):
             y = random.randrange(2, 9, 2)
             z = random.randrange(-4, 6)
             self.fake_explosion(
-                (-5.708631629943848, 7.437141418457031, -4.525400638580322))
+                (-5.708631629943848, 7.437141418457031, -4.525400638580322)
+            )
 
-            Bomb(position=(-6, 7.5, -4), bomb_type=type, owner=owner,
-                 source_player=source_player, velocity=(19, y, z)).autoretain()
-            bs.timer(0.6, babase.Call(self.launch_bomb_byA,
-                     owner, type, source_player, count-1))
+            Bomb(
+                position=(-6, 7.5, -4),
+                bomb_type=type,
+                owner=owner,
+                source_player=source_player,
+                velocity=(19, y, z),
+            ).autoretain()
+            bs.timer(
+                0.6,
+                babase.Call(
+                    self.launch_bomb_byA, owner, type, source_player, count - 1
+                ),
+            )
         else:
             return
 
@@ -279,21 +300,31 @@ class CanonFightGame(DeathMatchGame):
             y = random.randrange(2, 9, 2)
             z = random.randrange(-4, 6)
             self.fake_explosion(
-                (5.708631629943848, 7.437141418457031, -4.525400638580322))
+                (5.708631629943848, 7.437141418457031, -4.525400638580322)
+            )
 
-            Bomb(position=(6, 7.5, -4), bomb_type=type, owner=owner,
-                 source_player=source_player, velocity=(-19, y, z)).autoretain()
-            bs.timer(0.6, babase.Call(self.launch_bomb_byB,
-                     owner, type, source_player, count-1))
+            Bomb(
+                position=(6, 7.5, -4),
+                bomb_type=type,
+                owner=owner,
+                source_player=source_player,
+                velocity=(-19, y, z),
+            ).autoretain()
+            bs.timer(
+                0.6,
+                babase.Call(
+                    self.launch_bomb_byB, owner, type, source_player, count - 1
+                ),
+            )
         else:
             return
 
     def fake_explosion(self, position: Sequence[float]):
-        explosion = bs.newnode('explosion',
-                               attrs={'position': position,
-                                      'radius': 1, 'big': False})
+        explosion = bs.newnode(
+            'explosion', attrs={'position': position, 'radius': 1, 'big': False}
+        )
         bs.timer(0.4, explosion.delete)
-        sounds = ['explosion0'+str(n) for n in range(1, 6)]
+        sounds = ['explosion0' + str(n) for n in range(1, 6)]
         sound = random.choice(sounds)
         bs.getsound(sound).play()
 
@@ -303,63 +334,97 @@ class CanonFightGame(DeathMatchGame):
         factory = BombFactory.get()
 
         canon_load_mat.add_actions(
-
             actions=(
                 ('modify_part_collision', 'collide', False),
-                ('modify_part_collision', 'physical', False)
-
-            ))
+                ('modify_part_collision', 'physical', False),
+            )
+        )
         canon_load_mat.add_actions(
             conditions=('they_have_material', factory.bomb_material),
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', True),
-                ('call', 'at_connect', babase.Call(self._handle_canon_load_A))
+                ('call', 'at_connect', babase.Call(self._handle_canon_load_A)),
             ),
         )
-        self.ud_1_r = bs.newnode('region', attrs={'position': (-8.908631629943848, 7.337141418457031, -
-                                 4.525400638580322), 'scale': (2, 1, 1), 'type': 'box', 'materials': [canon_load_mat]})
+        self.ud_1_r = bs.newnode(
+            'region',
+            attrs={
+                'position': (
+                    -8.908631629943848,
+                    7.337141418457031,
+                    -4.525400638580322,
+                ),
+                'scale': (2, 1, 1),
+                'type': 'box',
+                'materials': [canon_load_mat],
+            },
+        )
 
-        self.node = bs.newnode('shield',
-                               delegate=self,
-                               attrs={
-                                   'position': (-8.308631629943848, 7.337141418457031, -4.525400638580322),
-                                   'color': (0.3, 0.2, 2.8),
-                                   'radius': 1.3
-                               })
-        self.canon = bs.newnode('text',
-                                attrs={
-                                    'text': '___________',
-                                    'in_world': True,
-                                    'shadow': 1.0,
-                                    'flatness': 1.0,
-                                    'color': (0.3, 0.3, 0.8),
-                                    'scale': 0.019,
-                                    'h_align': 'left',
-                                    'position': (-8.388631629943848, 7.837141418457031, -4.525400638580322)
-                                })
-        self.canon_ = bs.newnode('text',
-                                 attrs={
-                                     'text': '_________',
-                                     'in_world': True,
-                                     'shadow': 1.0,
-                                     'flatness': 1.0,
-                                     'color': (0.3, 0.3, 0.8),
-                                     'scale': 0.019,
-                                     'h_align': 'left',
-                                     'position': (-7.888631629943848, 7.237141418457031, -4.525400638580322)
-                                 })
-        self.curve = bs.newnode('text',
-                                attrs={
-                                    'text': '/\n',
-                                    'in_world': True,
-                                    'shadow': 1.0,
-                                    'flatness': 1.0,
-                                    'color': (0.3, 0.3, 0.8),
-                                    'scale': 0.019,
-                                    'h_align': 'left',
-                                    'position': (-8.788631629943848, 7.237141418457031, -4.525400638580322)
-                                })
+        self.node = bs.newnode(
+            'shield',
+            delegate=self,
+            attrs={
+                'position': (
+                    -8.308631629943848,
+                    7.337141418457031,
+                    -4.525400638580322,
+                ),
+                'color': (0.3, 0.2, 2.8),
+                'radius': 1.3,
+            },
+        )
+        self.canon = bs.newnode(
+            'text',
+            attrs={
+                'text': '___________',
+                'in_world': True,
+                'shadow': 1.0,
+                'flatness': 1.0,
+                'color': (0.3, 0.3, 0.8),
+                'scale': 0.019,
+                'h_align': 'left',
+                'position': (
+                    -8.388631629943848,
+                    7.837141418457031,
+                    -4.525400638580322,
+                ),
+            },
+        )
+        self.canon_ = bs.newnode(
+            'text',
+            attrs={
+                'text': '_________',
+                'in_world': True,
+                'shadow': 1.0,
+                'flatness': 1.0,
+                'color': (0.3, 0.3, 0.8),
+                'scale': 0.019,
+                'h_align': 'left',
+                'position': (
+                    -7.888631629943848,
+                    7.237141418457031,
+                    -4.525400638580322,
+                ),
+            },
+        )
+        self.curve = bs.newnode(
+            'text',
+            attrs={
+                'text': '/\n',
+                'in_world': True,
+                'shadow': 1.0,
+                'flatness': 1.0,
+                'color': (0.3, 0.3, 0.8),
+                'scale': 0.019,
+                'h_align': 'left',
+                'position': (
+                    -8.788631629943848,
+                    7.237141418457031,
+                    -4.525400638580322,
+                ),
+            },
+        )
 
     def create_canon_B(self):
         shared = SharedObjects.get()
@@ -367,63 +432,97 @@ class CanonFightGame(DeathMatchGame):
         factory = BombFactory.get()
 
         canon_load_mat.add_actions(
-
             actions=(
                 ('modify_part_collision', 'collide', False),
-                ('modify_part_collision', 'physical', False)
-
-            ))
+                ('modify_part_collision', 'physical', False),
+            )
+        )
         canon_load_mat.add_actions(
             conditions=('they_have_material', factory.bomb_material),
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', True),
-                ('call', 'at_connect', babase.Call(self._handle_canon_load_B))
+                ('call', 'at_connect', babase.Call(self._handle_canon_load_B)),
             ),
         )
-        self.ud_1_r2 = bs.newnode('region', attrs={'position': (
-            8.908631629943848+0.81, 7.327141418457031, -4.525400638580322), 'scale': (2, 1, 1), 'type': 'box', 'materials': [canon_load_mat]})
+        self.ud_1_r2 = bs.newnode(
+            'region',
+            attrs={
+                'position': (
+                    8.908631629943848 + 0.81,
+                    7.327141418457031,
+                    -4.525400638580322,
+                ),
+                'scale': (2, 1, 1),
+                'type': 'box',
+                'materials': [canon_load_mat],
+            },
+        )
 
-        self.node2 = bs.newnode('shield',
-                                delegate=self,
-                                attrs={
-                                    'position': (8.308631629943848+0.81, 7.327141418457031, -4.525400638580322),
-                                    'color': (2.3, 0.2, 0.3),
-                                    'radius': 1.3
-                                })
-        self.canon2 = bs.newnode('text',
-                                 attrs={
-                                     'text': '___________',
-                                     'in_world': True,
-                                     'shadow': 1.0,
-                                     'flatness': 1.0,
-                                     'color': (0.8, 0.3, 0.3),
-                                     'scale': 0.019,
-                                     'h_align': 'right',
-                                     'position': (8.388631629943848+0.81, 7.837141418457031, -4.525400638580322)
-                                 })
-        self.canon_2 = bs.newnode('text',
-                                  attrs={
-                                      'text': '_________',
-                                      'in_world': True,
-                                      'shadow': 1.0,
-                                      'flatness': 1.0,
-                                      'color': (0.8, 0.3, 0.3),
-                                      'scale': 0.019,
-                                      'h_align': 'right',
-                                      'position': (7.888631629943848+0.81, 7.237141418457031, -4.525400638580322)
-                                  })
-        self.curve2 = bs.newnode('text',
-                                 attrs={
-                                     'text': '\\',
-                                     'in_world': True,
-                                     'shadow': 1.0,
-                                     'flatness': 1.0,
-                                     'color': (0.8, 0.3, 0.3),
-                                     'scale': 0.019,
-                                     'h_align': 'right',
-                                     'position': (8.788631629943848+0.81, 7.237141418457031, -4.525400638580322)
-                                 })
+        self.node2 = bs.newnode(
+            'shield',
+            delegate=self,
+            attrs={
+                'position': (
+                    8.308631629943848 + 0.81,
+                    7.327141418457031,
+                    -4.525400638580322,
+                ),
+                'color': (2.3, 0.2, 0.3),
+                'radius': 1.3,
+            },
+        )
+        self.canon2 = bs.newnode(
+            'text',
+            attrs={
+                'text': '___________',
+                'in_world': True,
+                'shadow': 1.0,
+                'flatness': 1.0,
+                'color': (0.8, 0.3, 0.3),
+                'scale': 0.019,
+                'h_align': 'right',
+                'position': (
+                    8.388631629943848 + 0.81,
+                    7.837141418457031,
+                    -4.525400638580322,
+                ),
+            },
+        )
+        self.canon_2 = bs.newnode(
+            'text',
+            attrs={
+                'text': '_________',
+                'in_world': True,
+                'shadow': 1.0,
+                'flatness': 1.0,
+                'color': (0.8, 0.3, 0.3),
+                'scale': 0.019,
+                'h_align': 'right',
+                'position': (
+                    7.888631629943848 + 0.81,
+                    7.237141418457031,
+                    -4.525400638580322,
+                ),
+            },
+        )
+        self.curve2 = bs.newnode(
+            'text',
+            attrs={
+                'text': '\\',
+                'in_world': True,
+                'shadow': 1.0,
+                'flatness': 1.0,
+                'color': (0.8, 0.3, 0.3),
+                'scale': 0.019,
+                'h_align': 'right',
+                'position': (
+                    8.788631629943848 + 0.81,
+                    7.237141418457031,
+                    -4.525400638580322,
+                ),
+            },
+        )
 
     def create_wall(self):
         shared = SharedObjects.get()
@@ -433,13 +532,23 @@ class CanonFightGame(DeathMatchGame):
             conditions=('they_have_material', shared.player_material),
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', True)
-            ))
+                ('modify_part_collision', 'physical', True),
+            ),
+        )
         mat.add_actions(
-            conditions=(
-                ('they_have_material', factory.bomb_material)),
-            actions=(
-                ('modify_part_collision', 'collide', False)
-            ))
-        self.wall = bs.newnode('region', attrs={'position': (
-            0.36877517104148865, 4.312626838684082, -8.68477725982666), 'scale': (3, 7, 27), 'type': 'box', 'materials': [mat]})
+            conditions=(('they_have_material', factory.bomb_material)),
+            actions=(('modify_part_collision', 'collide', False)),
+        )
+        self.wall = bs.newnode(
+            'region',
+            attrs={
+                'position': (
+                    0.36877517104148865,
+                    4.312626838684082,
+                    -8.68477725982666,
+                ),
+                'scale': (3, 7, 27),
+                'type': 'box',
+                'materials': [mat],
+            },
+        )

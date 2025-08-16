@@ -1,20 +1,12 @@
 from bauiv1lib import party
-from babase import (
-    SpecialChar as sc,
-    charstr as cs,
-    Plugin,
-    Call
-)
+from babase import SpecialChar as sc, charstr as cs, Plugin, Call
 from bauiv1 import (
     containerwidget as cw,
     buttonwidget as bw,
     textwidget as tw,
-    getsound as gs
+    getsound as gs,
 )
-from bascenev1 import (
-    get_chat_messages as gcm,
-    screenmessage as push
-)
+from bascenev1 import get_chat_messages as gcm, screenmessage as push
 
 
 class VeryPW(party.PartyWindow):
@@ -30,12 +22,15 @@ class VeryPW(party.PartyWindow):
                 label=cs(getattr(sc, f"{['UP', 'DOWN'][i]}_ARROW")),
                 button_type='square',
                 enable_sound=False,
-                position=(-15, 70-(i*40)),
-                on_activate_call=[s._p, s._d][i]
+                position=(-15, 70 - (i * 40)),
+                on_activate_call=[s._p, s._d][i],
             )
 
-    def _c(s, t=""): tw(edit=s._text_field, text=t)
-    def _d(s): s._p(1)
+    def _c(s, t=""):
+        tw(edit=s._text_field, text=t)
+
+    def _d(s):
+        s._p(1)
 
     def _p(s, i=0):
         print(s._chat_texts)
@@ -46,7 +41,7 @@ class VeryPW(party.PartyWindow):
             s._n = 0 if i else len(s._w1)
         s._n = (s._n + (1 if i else -1)) % len(s._w1)
         try:
-            s._c((s._w1+[s._o])[s._n].split(": ", 1)[1])
+            s._c((s._w1 + [s._o])[s._n].split(": ", 1)[1])
         except IndexError:
             if not s._w1:
                 push("Empty chat")
@@ -66,21 +61,22 @@ class VeryPW(party.PartyWindow):
                 v_align='center',
                 size=(900, 13),
                 scale=0.55,
-                color=(1, 1, 1) if z != (s._n if s._n > -
-                                         1 else s._n + len(s._w1) + 1) else (0, 0.7, 0),
+                color=(
+                    (1, 1, 1)
+                    if z != (s._n if s._n > -1 else s._n + len(s._w1) + 1)
+                    else (0, 0.7, 0)
+                ),
                 position=(-0.6, 0),
                 selectable=True,
                 autoselect=True,
                 click_activate=True,
                 maxwidth=s._scroll_width * 0.94,
                 shadow=0.3,
-                flatness=1.0
+                flatness=1.0,
             )
-            tw(
-                txt,
-                on_activate_call=Call(s._copy_msg, s._w1[z])
-            )
+            tw(txt, on_activate_call=Call(s._copy_msg, s._w1[z]))
             cw(edit=s._columnwidget, visible_child=txt)
+
 
 # ba_meta require api 9
 

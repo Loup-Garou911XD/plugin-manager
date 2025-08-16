@@ -39,26 +39,38 @@ class RocketFactory:
         self.ball_material = bs.Material()
 
         self.ball_material.add_actions(
-            conditions=((('we_are_younger_than', 5), 'or',
-                         ('they_are_younger_than', 5)), 'and',
-                        ('they_have_material',
-                         SharedObjects.get().object_material)),
-            actions=('modify_node_collision', 'collide', False))
+            conditions=(
+                (
+                    ('we_are_younger_than', 5),
+                    'or',
+                    ('they_are_younger_than', 5),
+                ),
+                'and',
+                ('they_have_material', SharedObjects.get().object_material),
+            ),
+            actions=('modify_node_collision', 'collide', False),
+        )
 
         self.ball_material.add_actions(
-            conditions=('they_have_material',
-                        SharedObjects.get().pickup_material),
-            actions=('modify_part_collision', 'use_node_collide', False))
-
-        self.ball_material.add_actions(actions=('modify_part_collision',
-                                                'friction', 0))
+            conditions=(
+                'they_have_material',
+                SharedObjects.get().pickup_material,
+            ),
+            actions=('modify_part_collision', 'use_node_collide', False),
+        )
 
         self.ball_material.add_actions(
-            conditions=(('they_have_material',
-                         SharedObjects.get().footing_material), 'or',
-                        ('they_have_material',
-                         SharedObjects.get().object_material)),
-            actions=('message', 'our_node', 'at_connect', ImpactMessage()))
+            actions=('modify_part_collision', 'friction', 0)
+        )
+
+        self.ball_material.add_actions(
+            conditions=(
+                ('they_have_material', SharedObjects.get().footing_material),
+                'or',
+                ('they_have_material', SharedObjects.get().object_material),
+            ),
+            actions=('message', 'our_node', 'at_connect', ImpactMessage()),
+        )
 
     @classmethod
     def get(cls):
@@ -91,17 +103,22 @@ class RocketLauncher:
             self.last_shot = time
             center = spaz.node.position_center
             forward = spaz.node.position_forward
-            direction = [center[0] - forward[0], forward[1] - center[1],
-                         center[2] - forward[2]]
+            direction = [
+                center[0] - forward[0],
+                forward[1] - center[1],
+                center[2] - forward[2],
+            ]
             direction[1] = 0.0
 
             mag = 10.0 / babase.Vec3(*direction).length()
             vel = [v * mag for v in direction]
-            Rocket(position=spaz.node.position,
-                   velocity=vel,
-                   owner=spaz.getplayer(bs.Player),
-                   source_player=spaz.getplayer(bs.Player),
-                   color=spaz.node.color).autoretain()
+            Rocket(
+                position=spaz.node.position,
+                velocity=vel,
+                owner=spaz.getplayer(bs.Player),
+                source_player=spaz.getplayer(bs.Player),
+                color=spaz.node.color,
+            ).autoretain()
 
 
 class ImpactMessage:
@@ -111,39 +128,47 @@ class ImpactMessage:
 class Rocket(bs.Actor):
     """Epic rocket from rocket launcher"""
 
-    def __init__(self,
-                 position=(0, 5, 0),
-                 velocity=(1, 0, 0),
-                 source_player=None,
-                 owner=None,
-                 color=(1.0, 0.2, 0.2)) -> None:
+    def __init__(
+        self,
+        position=(0, 5, 0),
+        velocity=(1, 0, 0),
+        source_player=None,
+        owner=None,
+        color=(1.0, 0.2, 0.2),
+    ) -> None:
         super().__init__()
         self.source_player = source_player
         self.owner = owner
         self._color = color
         factory = RocketFactory.get()
 
-        self.node = bs.newnode('prop',
-                               delegate=self,
-                               attrs={
-                                   'position': position,
-                                   'velocity': velocity,
-                                   'mesh': bs.getmesh('impactBomb'),
-                                   'body': 'sphere',
-                                   'color_texture': bs.gettexture(
-                                       'bunnyColor'),
-                                   'mesh_scale': 0.2,
-                                   'is_area_of_interest': True,
-                                   'body_scale': 0.8,
-                                   'materials': [
-                                       SharedObjects.get().object_material,
-                                       factory.ball_material]
-                               })  # yapf: disable
-        self.node.extra_acceleration = (self.node.velocity[0] * 200, 0,
-                                        self.node.velocity[2] * 200)
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'position': position,
+                'velocity': velocity,
+                'mesh': bs.getmesh('impactBomb'),
+                'body': 'sphere',
+                'color_texture': bs.gettexture('bunnyColor'),
+                'mesh_scale': 0.2,
+                'is_area_of_interest': True,
+                'body_scale': 0.8,
+                'materials': [
+                    SharedObjects.get().object_material,
+                    factory.ball_material,
+                ],
+            },
+        )  # yapf: disable
+        self.node.extra_acceleration = (
+            self.node.velocity[0] * 200,
+            0,
+            self.node.velocity[2] * 200,
+        )
 
         self._life_timer = bs.Timer(
-            5, bs.WeakCall(self.handlemessage, bs.DieMessage()))
+            5, bs.WeakCall(self.handlemessage, bs.DieMessage())
+        )
 
         self._emit_timer = bs.Timer(0.001, bs.WeakCall(self.emit), repeat=True)
         self.base_pos_y = self.node.position[1]
@@ -152,21 +177,28 @@ class Rocket(bs.Actor):
 
     def emit(self) -> None:
         """Emit a trace after rocket"""
-        bs.emitfx(position=self.node.position,
-                  scale=0.4,
-                  spread=0.01,
-                  chunk_type='spark')
+        bs.emitfx(
+            position=self.node.position,
+            scale=0.4,
+            spread=0.01,
+            chunk_type='spark',
+        )
         if not self.node:
             return
-        self.node.position = (self.node.position[0], self.base_pos_y,
-                              self.node.position[2])  # ignore y
-        bs.newnode('explosion',
-                   owner=self.node,
-                   attrs={
-                       'position': self.node.position,
-                       'radius': 0.2,
-                       'color': self._color
-                   })
+        self.node.position = (
+            self.node.position[0],
+            self.base_pos_y,
+            self.node.position[2],
+        )  # ignore y
+        bs.newnode(
+            'explosion',
+            owner=self.node,
+            attrs={
+                'position': self.node.position,
+                'radius': 0.2,
+                'color': self._color,
+            },
+        )
 
     def handlemessage(self, msg: Any) -> Any:
         """Message handling for rocket"""
@@ -176,15 +208,18 @@ class Rocket(bs.Actor):
 
         elif isinstance(msg, bs.DieMessage):
             if self.node:
-                Blast(position=self.node.position,
-                      blast_radius=2,
-                      source_player=self.source_player)
+                Blast(
+                    position=self.node.position,
+                    blast_radius=2,
+                    source_player=self.source_player,
+                )
 
                 self.node.delete()
                 self._emit_timer = None
 
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.handlemessage(bs.DieMessage())
+
 
 # -------------------Rocket--------------------------
 
@@ -211,16 +246,19 @@ class Railgun:
             center = spaz.node.position_center
             forward = spaz.node.position_forward
             direction = [
-                center[0] - forward[0], forward[1] - center[1],
-                center[2] - forward[2]
+                center[0] - forward[0],
+                forward[1] - center[1],
+                center[2] - forward[2],
             ]
             direction[1] = 0.0
 
-            RailBullet(position=spaz.node.position,
-                       direction=direction,
-                       owner=spaz.getplayer(bs.Player),
-                       source_player=spaz.getplayer(bs.Player),
-                       color=spaz.node.color).autoretain()
+            RailBullet(
+                position=spaz.node.position,
+                direction=direction,
+                owner=spaz.getplayer(bs.Player),
+                source_player=spaz.getplayer(bs.Player),
+                color=spaz.node.color,
+            ).autoretain()
 
 
 class TouchedToSpazMessage:
@@ -233,38 +271,38 @@ class TouchedToSpazMessage:
 class RailBullet(bs.Actor):
     """Railgun bullet"""
 
-    def __init__(self,
-                 position=(0, 5, 0),
-                 direction=(0, 2, 0),
-                 source_player=None,
-                 owner=None,
-                 color=(1, 1, 1)) -> None:
+    def __init__(
+        self,
+        position=(0, 5, 0),
+        direction=(0, 2, 0),
+        source_player=None,
+        owner=None,
+        color=(1, 1, 1),
+    ) -> None:
         super().__init__()
         self._color = color
 
-        self.node = bs.newnode('light',
-                               delegate=self,
-                               attrs={
-                                   'position': position,
-                                   'color': self._color
-                               })
+        self.node = bs.newnode(
+            'light',
+            delegate=self,
+            attrs={'position': position, 'color': self._color},
+        )
         bs.animate(self.node, 'radius', {0: 0, 0.1: 0.5, 0.5: 0})
 
         self.source_player = source_player
         self.owner = owner
         self._life_timer = bs.Timer(
-            0.5, bs.WeakCall(self.handlemessage, bs.DieMessage()))
+            0.5, bs.WeakCall(self.handlemessage, bs.DieMessage())
+        )
 
         pos = position
         vel = tuple(i / 5 for i in babase.Vec3(direction).normalized())
         for _ in range(500):  # Optimization :(
-            bs.newnode('explosion',
-                       owner=self.node,
-                       attrs={
-                           'position': pos,
-                           'radius': 0.2,
-                           'color': self._color
-                       })
+            bs.newnode(
+                'explosion',
+                owner=self.node,
+                attrs={'position': pos, 'radius': 0.2, 'color': self._color},
+            )
             pos = (pos[0] + vel[0], pos[1] + vel[1], pos[2] + vel[2])
 
         for node in bs.getnodes():
@@ -277,21 +315,29 @@ class RailBullet(bs.Actor):
                 # distance between node and line
                 dist = (a * (m1 - m3)).length() / a.length()
                 if dist < 0.3:
-                    if node and node != self.owner and node.getdelegate(
-                            PlayerSpaz, True).getplayer(
-                                bs.Player, True).team != self.owner.team:
+                    if (
+                        node
+                        and node != self.owner
+                        and node.getdelegate(PlayerSpaz, True)
+                        .getplayer(bs.Player, True)
+                        .team
+                        != self.owner.team
+                    ):
                         node.handlemessage(bs.FreezeMessage())
                         pos = self.node.position
                         hit_dir = (0, 10, 0)
 
                         node.handlemessage(
-                            bs.HitMessage(pos=pos,
-                                          magnitude=50,
-                                          velocity_magnitude=50,
-                                          radius=0,
-                                          srcnode=self.node,
-                                          source_player=self.source_player,
-                                          force_direction=hit_dir))
+                            bs.HitMessage(
+                                pos=pos,
+                                magnitude=50,
+                                velocity_magnitude=50,
+                                radius=0,
+                                srcnode=self.node,
+                                source_player=self.source_player,
+                                force_direction=hit_dir,
+                            )
+                        )
 
     def handlemessage(self, msg: Any) -> Any:
         super().handlemessage(msg)
@@ -301,6 +347,7 @@ class RailBullet(bs.Actor):
 
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.handlemessage(bs.DieMessage())
+
 
 # ------------------Railgun-------------------------
 
@@ -318,12 +365,14 @@ class Team(bs.Team[Player]):
 
 class WeaponType(enum.Enum):
     """Type of weapon"""
+
     ROCKET = 0
     RAILGUN = 1
 
 
 class ObstaclesForm(enum.Enum):
     """Obstacle form"""
+
     CUBE = 0
     SPHERE = 1
     RANDOM = 2
@@ -332,6 +381,7 @@ class ObstaclesForm(enum.Enum):
 # ba_meta export bascenev1.GameActivity
 class QuakeGame(bs.TeamGameActivity[Player, Team]):
     """Quake Team Game Activity"""
+
     name = 'Quake'
     description = 'Kill a set number of enemies to win.'
     available_settings = [
@@ -343,15 +393,26 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
         ),
         bs.IntChoiceSetting(
             'Time Limit',
-            choices=[('None', 0), ('1 Minute', 60), ('2 Minutes', 120),
-                     ('5 Minutes', 300), ('10 Minutes', 600),
-                     ('20 Minutes', 1200)],
+            choices=[
+                ('None', 0),
+                ('1 Minute', 60),
+                ('2 Minutes', 120),
+                ('5 Minutes', 300),
+                ('10 Minutes', 600),
+                ('20 Minutes', 1200),
+            ],
             default=0,
         ),
         bs.FloatChoiceSetting(
             'Respawn Times',
-            choices=[('At once', 0.0), ('Shorter', 0.25), ('Short', 0.5),
-                     ('Normal', 1.0), ('Long', 2.0), ('Longer', 4.0)],
+            choices=[
+                ('At once', 0.0),
+                ('Shorter', 0.25),
+                ('Short', 0.5),
+                ('Normal', 1.0),
+                ('Long', 2.0),
+                ('Longer', 4.0),
+            ],
             default=1.0,
         ),
         bs.BoolSetting(
@@ -376,15 +437,19 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
         ),
         bs.IntChoiceSetting(
             'Obstacles Form',
-            choices=[('Cube', ObstaclesForm.CUBE.value),
-                     ('Sphere', ObstaclesForm.SPHERE.value),
-                     ('Random', ObstaclesForm.RANDOM.value)],
+            choices=[
+                ('Cube', ObstaclesForm.CUBE.value),
+                ('Sphere', ObstaclesForm.SPHERE.value),
+                ('Random', ObstaclesForm.RANDOM.value),
+            ],
             default=0,
         ),
         bs.IntChoiceSetting(
             'Weapon Type',
-            choices=[('Rocket', WeaponType.ROCKET.value),
-                     ('Railgun', WeaponType.RAILGUN.value)],
+            choices=[
+                ('Rocket', WeaponType.ROCKET.value),
+                ('Railgun', WeaponType.RAILGUN.value),
+            ],
             default=WeaponType.ROCKET.value,
         ),
         bs.BoolSetting(
@@ -410,7 +475,8 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
     @classmethod
     def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
         return issubclass(sessiontype, bs.MultiTeamSession) or issubclass(
-            sessiontype, bs.FreeForAllSession)
+            sessiontype, bs.FreeForAllSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: Type[bs.Session]) -> List[str]:
@@ -429,8 +495,9 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
         self._pickup_enabled = self.settings_raw['Enable Pickup']
         self._jump_enabled = self.settings_raw['Enable Jump']
         self._weapon_type = WeaponType(self.settings_raw['Weapon Type'])
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.GRAND_ROMP)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.GRAND_ROMP
+        )
         self.slow_motion = self._epic_mode
 
         self.announce_player_deaths = True
@@ -451,52 +518,60 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
         bs.TeamGameActivity.on_begin(self)
         bs.getactivity().globalsnode.tint = (0.5, 0.7, 1)
         self.drop_shield()
-        self._shield_dropper = bs.Timer(8,
-                                        bs.WeakCall(self.drop_shield),
-                                        repeat=True)
+        self._shield_dropper = bs.Timer(
+            8, bs.WeakCall(self.drop_shield), repeat=True
+        )
         self.setup_standard_time_limit(self._time_limit)
         if self._obstacles_enabled:
             count = self._obstacles_count
             gamemap = self.map.getname()
             for i in range(count):  # TODO: tidy up around here
                 if gamemap == 'Football Stadium':
-                    radius = (random.uniform(-10, 1),
-                              6,
-                              random.uniform(-4.5, 4.5)) \
-                        if i > count / 2 else (
-                        random.uniform(10, 1), 6, random.uniform(-4.5, 4.5))
+                    radius = (
+                        (random.uniform(-10, 1), 6, random.uniform(-4.5, 4.5))
+                        if i > count / 2
+                        else (
+                            random.uniform(10, 1),
+                            6,
+                            random.uniform(-4.5, 4.5),
+                        )
+                    )
                 else:
-                    radius = (random.uniform(-10, 1),
-                              6,
-                              random.uniform(-8, 8)) \
-                        if i > count / 2 else (
-                        random.uniform(10, 1), 6, random.uniform(-8, 8))
+                    radius = (
+                        (random.uniform(-10, 1), 6, random.uniform(-8, 8))
+                        if i > count / 2
+                        else (random.uniform(10, 1), 6, random.uniform(-8, 8))
+                    )
 
                 Obstacle(
                     position=radius,
                     mirror=self.settings_raw['Obstacles Mirror Shots'],
-                    form=self.settings_raw['Obstacles Form']).autoretain()
+                    form=self.settings_raw['Obstacles Form'],
+                ).autoretain()
 
         self._update_scoreboard()
 
     def drop_shield(self) -> None:
         """Drop a shield powerup in random place"""
         # FIXME: should use map defs
-        shield = PowerupBox(poweruptype='shield',
-                            position=(random.uniform(-10, 10), 6,
-                                      random.uniform(-5, 5))).autoretain()
+        shield = PowerupBox(
+            poweruptype='shield',
+            position=(random.uniform(-10, 10), 6, random.uniform(-5, 5)),
+        ).autoretain()
 
         self._ding_sound.play()
 
-        p_light = bs.newnode('light',
-                             owner=shield.node,
-                             attrs={
-                                 'position': (0, 0, 0),
-                                 'color': (0.3, 0.0, 0.4),
-                                 'radius': 0.3,
-                                 'intensity': 2,
-                                 'volume_intensity_scale': 10.0
-                             })
+        p_light = bs.newnode(
+            'light',
+            owner=shield.node,
+            attrs={
+                'position': (0, 0, 0),
+                'color': (0.3, 0.0, 0.4),
+                'radius': 0.3,
+                'intensity': 2,
+                'volume_intensity_scale': 10.0,
+            },
+        )
 
         shield.node.connectattr('position', p_light, 'position')
 
@@ -508,21 +583,25 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
             RocketLauncher().give(spaz)
         elif self._weapon_type == WeaponType.RAILGUN:
             Railgun().give(spaz)
-        spaz.connect_controls_to_player(enable_jump=self._jump_enabled,
-                                        enable_pickup=self._pickup_enabled,
-                                        enable_bomb=self._bomb_enabled,
-                                        enable_fly=False)
+        spaz.connect_controls_to_player(
+            enable_jump=self._jump_enabled,
+            enable_pickup=self._pickup_enabled,
+            enable_bomb=self._bomb_enabled,
+            enable_fly=False,
+        )
 
         spaz.node.hockey = self._speed_enabled
-        spaz.spaz_light = bs.newnode('light',
-                                     owner=spaz.node,
-                                     attrs={
-                                         'position': (0, 0, 0),
-                                         'color': spaz.node.color,
-                                         'radius': 0.12,
-                                         'intensity': 1,
-                                         'volume_intensity_scale': 10.0
-                                     })
+        spaz.spaz_light = bs.newnode(
+            'light',
+            owner=spaz.node,
+            attrs={
+                'position': (0, 0, 0),
+                'color': spaz.node.color,
+                'radius': 0.12,
+                'intensity': 1,
+                'volume_intensity_scale': 10.0,
+            },
+        )
 
         spaz.node.connectattr('position', spaz.spaz_light, 'position')
 
@@ -556,10 +635,11 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
                 # the scoreboard
                 assert killer.actor is not None
                 # noinspection PyUnresolvedReferences
-                killer.actor.set_score_text(str(killer.team.score) + '/' +
-                                            str(self._score_to_win),
-                                            color=killer.team.color,
-                                            flash=True)
+                killer.actor.set_score_text(
+                    str(killer.team.score) + '/' + str(self._score_to_win),
+                    color=killer.team.color,
+                    flash=True,
+                )
 
             self._update_scoreboard()
 
@@ -574,8 +654,9 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
 
     def _update_scoreboard(self) -> None:
         for team in self.teams:
-            self._scoreboard.set_team_value(team, team.score,
-                                            self._score_to_win)
+            self._scoreboard.set_team_value(
+                team, team.score, self._score_to_win
+            )
 
     def end_game(self) -> None:
         results = bs.GameResults()
@@ -588,10 +669,7 @@ class QuakeGame(bs.TeamGameActivity[Player, Team]):
 class Obstacle(bs.Actor):
     """Scene object"""
 
-    def __init__(self,
-                 position,
-                 form=ObstaclesForm.CUBE,
-                 mirror=False) -> None:
+    def __init__(self, position, form=ObstaclesForm.CUBE, mirror=False) -> None:
         bs.Actor.__init__(self)
 
         if form == ObstaclesForm.CUBE:
@@ -608,27 +686,24 @@ class Obstacle(bs.Actor):
             'prop',
             delegate=self,
             attrs={
-                'position':
-                    position,
-                'mesh':
-                    bs.getmesh(mesh),
-                'body':
-                    body,
-                'body_scale':
-                    1.3,
-                'mesh_scale':
-                    1.3,
-                'reflection':
-                    'powerup',
+                'position': position,
+                'mesh': bs.getmesh(mesh),
+                'body': body,
+                'body_scale': 1.3,
+                'mesh_scale': 1.3,
+                'reflection': 'powerup',
                 'reflection_scale': [0.7],
-                'color_texture':
-                    bs.gettexture('bunnyColor'),
-                'materials': [SharedObjects.get().footing_material]
-                if mirror else [
+                'color_texture': bs.gettexture('bunnyColor'),
+                'materials': (
+                    [SharedObjects.get().footing_material]
+                    if mirror
+                    else [
                         SharedObjects.get().object_material,
-                        SharedObjects.get().footing_material
+                        SharedObjects.get().footing_material,
                     ]
-            })
+                ),
+            },
+        )
 
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, bs.DieMessage):
@@ -640,9 +715,19 @@ class Obstacle(bs.Actor):
                 self.handlemessage(bs.DieMessage())
 
         elif isinstance(msg, bs.HitMessage):
-            self.node.handlemessage('impulse', msg.pos[0], msg.pos[1],
-                                    msg.pos[2], msg.velocity[0],
-                                    msg.velocity[1], msg.velocity[2],
-                                    msg.magnitude, msg.velocity_magnitude,
-                                    msg.radius, 0, msg.velocity[0],
-                                    msg.velocity[1], msg.velocity[2])
+            self.node.handlemessage(
+                'impulse',
+                msg.pos[0],
+                msg.pos[1],
+                msg.pos[2],
+                msg.velocity[0],
+                msg.velocity[1],
+                msg.velocity[2],
+                msg.magnitude,
+                msg.velocity_magnitude,
+                msg.radius,
+                0,
+                msg.velocity[0],
+                msg.velocity[1],
+                msg.velocity[2],
+            )

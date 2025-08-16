@@ -21,16 +21,17 @@ if TYPE_CHECKING:
 class Meteor(bs.Actor):
     """A giant meteor instead of bombs."""
 
-    def __init__(self,
-                 pos: Sequence[float] = (0.0, 1.0, 0.0),
-                 velocity: Sequence[float] = (0.0, 0.0, 0.0)):
+    def __init__(
+        self,
+        pos: Sequence[float] = (0.0, 1.0, 0.0),
+        velocity: Sequence[float] = (0.0, 0.0, 0.0),
+    ):
         super().__init__()
 
         shared = SharedObjects.get()
         factory = BombFactory.get()
 
-        materials = (shared.object_material,
-                     factory.impact_blast_material)
+        materials = (shared.object_material, factory.impact_blast_material)
 
         self.pos = (pos[0], pos[1], pos[2])
         self.velocity = (velocity[0], velocity[1], velocity[2])
@@ -49,14 +50,17 @@ class Meteor(bs.Actor):
                 'shadow_size': 0.5,
                 'reflection': 'soft',
                 'reflection_scale': [0.45],
-                'materials': materials
-            })
+                'materials': materials,
+            },
+        )
 
     def explode(self) -> None:
-        Blast(position=self.node.position,
-              velocity=self.node.velocity,
-              blast_type='tnt',
-              blast_radius=2.0)
+        Blast(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            blast_type='tnt',
+            blast_radius=2.0,
+        )
 
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, bs.DieMessage):
@@ -87,8 +91,7 @@ class NewMeteorShowerGame(bs.TeamGameActivity[Player, Team]):
 
     name = 'Extinction'
     description = 'Survive the Extinction.'
-    available_settings = [
-        bs.BoolSetting('Epic Mode', default=False)]
+    available_settings = [bs.BoolSetting('Epic Mode', default=False)]
 
     announce_player_deaths = True
 
@@ -98,8 +101,9 @@ class NewMeteorShowerGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.FreeForAllSession)
-                or issubclass(sessiontype, bs.DualTeamSession))
+        return issubclass(sessiontype, bs.FreeForAllSession) or issubclass(
+            sessiontype, bs.DualTeamSession
+        )
 
     def __init__(self, settings: dict):
         super().__init__(settings)
@@ -109,8 +113,9 @@ class NewMeteorShowerGame(bs.TeamGameActivity[Player, Team]):
         self._meteor_time = 2.0
         self._timer: Optional[OnScreenTimer] = None
 
-        self.default_music = (bs.MusicType.EPIC
-                              if self._epic_mode else bs.MusicType.SURVIVAL)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.SURVIVAL
+        )
 
         if self._epic_mode:
             self.slow_motion = True
@@ -135,8 +140,10 @@ class NewMeteorShowerGame(bs.TeamGameActivity[Player, Team]):
     def on_player_join(self, player: Player) -> None:
         if self.has_begun():
             bs.broadcastmessage(
-                babase.Lstr(resource='playerDelayedJoinText',
-                            subs=[('${PLAYER}', player.getname(full=True))]),
+                babase.Lstr(
+                    resource='playerDelayedJoinText',
+                    subs=[('${PLAYER}', player.getname(full=True))],
+                ),
                 color=(0, 1, 0),
             )
             assert self._timer is not None
@@ -147,10 +154,12 @@ class NewMeteorShowerGame(bs.TeamGameActivity[Player, Team]):
     def spawn_player(self, player: Player) -> None:
         spaz = self.spawn_player_spaz(player)
 
-        spaz.connect_controls_to_player(enable_punch=False,
-                                        enable_pickup=False,
-                                        enable_bomb=False,
-                                        enable_jump=False)
+        spaz.connect_controls_to_player(
+            enable_punch=False,
+            enable_pickup=False,
+            enable_bomb=False,
+            enable_jump=False,
+        )
         spaz.play_big_death_sound = True
 
         return spaz
@@ -170,10 +179,8 @@ class NewMeteorShowerGame(bs.TeamGameActivity[Player, Team]):
             return super().handlemessage(msg)
 
     def _spawn_meteors(self) -> None:
-        pos = (random.randint(-6, 7), 12,
-               random.uniform(-2, 1))
-        velocity = (random.randint(-11, 11), 0,
-                    random.uniform(-5, 5))
+        pos = (random.randint(-6, 7), 12, random.uniform(-2, 1))
+        velocity = (random.randint(-11, 11), 0, random.uniform(-5, 5))
         Meteor(pos=pos, velocity=velocity).autoretain()
 
     def _spawn_meteors_cluster(self) -> None:
@@ -187,8 +194,10 @@ class NewMeteorShowerGame(bs.TeamGameActivity[Player, Team]):
         self._meteor_time = max(0.01, self._meteor_time * 0.9)
 
     def _set_meteor_timer(self) -> None:
-        bs.timer((1.0 + 0.2 * random.random()) * self._meteor_time,
-                 self._spawn_meteors_cluster)
+        bs.timer(
+            (1.0 + 0.2 * random.random()) * self._meteor_time,
+            self._spawn_meteors_cluster,
+        )
 
     def _check_end_game(self) -> None:
         living_team_count = 0
@@ -232,8 +241,7 @@ class NewMeteorShowerGame(bs.TeamGameActivity[Player, Team]):
             longest_life = 0.0
             for player in team.players:
                 assert player.death_time is not None
-                longest_life = max(longest_life,
-                                   player.death_time - start_time)
+                longest_life = max(longest_life, player.death_time - start_time)
 
             results.set_team_score(team, int(1000.0 * longest_life))
 
@@ -244,12 +252,19 @@ class NewMeteorShowerGame(bs.TeamGameActivity[Player, Team]):
 class plugin(babase.Plugin):
     def __init__(self):
         ## Campaign support ##
-        babase.app.classic.add_coop_practice_level(bs.Level(
-            name='Extinction',
-            gametype=NewMeteorShowerGame,
-            settings={'Epic Mode': False},
-            preview_texture_name='footballStadiumPreview'))
-        babase.app.classic.add_coop_practice_level(bs.Level('Epic Extinction',
-                                                            gametype=NewMeteorShowerGame,
-                                                            settings={'Epic Mode': True},
-                                                            preview_texture_name='footballStadiumPreview'))
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                name='Extinction',
+                gametype=NewMeteorShowerGame,
+                settings={'Epic Mode': False},
+                preview_texture_name='footballStadiumPreview',
+            )
+        )
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                'Epic Extinction',
+                gametype=NewMeteorShowerGame,
+                settings={'Epic Mode': True},
+                preview_texture_name='footballStadiumPreview',
+            )
+        )

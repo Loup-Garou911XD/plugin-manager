@@ -20,9 +20,7 @@ if TYPE_CHECKING:
 
 
 cfg = babase.app.config
-cmp = {'coop_max_players': 4,
-       'teams_max_players': 8,
-       'ffa_max_players': 8}
+cmp = {'coop_max_players': 4, 'teams_max_players': 8, 'ffa_max_players': 8}
 
 lang = bs.app.lang.language
 if lang == 'Spanish':
@@ -41,12 +39,14 @@ else:
 
 class ConfigNumberEdit:
 
-    def __init__(self,
-                 parent: bui.Widget,
-                 position: Tuple[float, float],
-                 value: int,
-                 config: str,
-                 text: str):
+    def __init__(
+        self,
+        parent: bui.Widget,
+        position: Tuple[float, float],
+        value: int,
+        config: str,
+        text: str,
+    ):
         self._increment = 1
         self._minval = 1
         self._maxval = 100
@@ -63,33 +63,37 @@ class ConfigNumberEdit:
             color=(0.8, 0.8, 0.8, 1.0),
             h_align='left',
             v_align='center',
-            scale=textscale)
+            scale=textscale,
+        )
         self.valuetext = bui.textwidget(
             parent=parent,
-            position=(position[0]+150, position[1]),
+            position=(position[0] + 150, position[1]),
             size=(60, 28),
             editable=False,
             color=(0.3, 1.0, 0.3, 1.0),
             h_align='right',
             v_align='center',
             text=str(value),
-            padding=2)
+            padding=2,
+        )
         self.minusbutton = bui.buttonwidget(
             parent=parent,
-            position=(position[0]+240, position[1]),
+            position=(position[0] + 240, position[1]),
             size=(28, 28),
             label='-',
             autoselect=True,
             on_activate_call=babase.Call(self._down),
-            repeat=True)
+            repeat=True,
+        )
         self.plusbutton = bui.buttonwidget(
             parent=parent,
-            position=(position[0]+290, position[1]),
+            position=(position[0] + 290, position[1]),
             size=(28, 28),
             label='+',
             autoselect=True,
             on_activate_call=babase.Call(self._up),
-            repeat=True)
+            repeat=True,
+        )
 
     def _up(self) -> None:
         self._value = min(self._maxval, self._value + self._increment)
@@ -116,11 +120,13 @@ class SettingsMaxPlayers(PopupWindow):
         bg_color = (0.5, 0.4, 0.6)
 
         # creates our _root_widget
-        PopupWindow.__init__(self,
-                             position=(0.0, 0.0),
-                             size=(self._width, self._height),
-                             scale=1.2,
-                             bg_color=bg_color)
+        PopupWindow.__init__(
+            self,
+            position=(0.0, 0.0),
+            size=(self._width, self._height),
+            scale=1.2,
+            bg_color=bg_color,
+        )
 
         self._cancel_button = bui.buttonwidget(
             parent=self.root_widget,
@@ -132,9 +138,11 @@ class SettingsMaxPlayers(PopupWindow):
             on_activate_call=self._on_cancel_press,
             autoselect=True,
             icon=bui.gettexture('crossOut'),
-            iconscale=1.2)
-        bui.containerwidget(edit=self.root_widget,
-                            cancel_button=self._cancel_button)
+            iconscale=1.2,
+        )
+        bui.containerwidget(
+            edit=self.root_widget, cancel_button=self._cancel_button
+        )
 
         bui.textwidget(
             parent=self.root_widget,
@@ -145,31 +153,38 @@ class SettingsMaxPlayers(PopupWindow):
             scale=0.8,
             text=title_text,
             maxwidth=200,
-            color=bui.app.ui_v1.title_color)
+            color=bui.app.ui_v1.title_color,
+        )
 
         posx = 33
         posy = self._height
 
         # co-op
-        ConfigNumberEdit(parent=self.root_widget,
-                         position=(posx, posy*0.6),
-                         value=cfg['Config Max Players']['coop_max_players'],
-                         config='coop_max_players',
-                         text=coop_text)
+        ConfigNumberEdit(
+            parent=self.root_widget,
+            position=(posx, posy * 0.6),
+            value=cfg['Config Max Players']['coop_max_players'],
+            config='coop_max_players',
+            text=coop_text,
+        )
 
         # teams
-        ConfigNumberEdit(parent=self.root_widget,
-                         position=(posx, posy*0.38),
-                         value=cfg['Config Max Players']['teams_max_players'],
-                         config='teams_max_players',
-                         text=teams_text)
+        ConfigNumberEdit(
+            parent=self.root_widget,
+            position=(posx, posy * 0.38),
+            value=cfg['Config Max Players']['teams_max_players'],
+            config='teams_max_players',
+            text=teams_text,
+        )
 
         # ffa
-        ConfigNumberEdit(parent=self.root_widget,
-                         position=(posx, posy*0.16),
-                         value=cfg['Config Max Players']['ffa_max_players'],
-                         config='ffa_max_players',
-                         text=ffa_text)
+        ConfigNumberEdit(
+            parent=self.root_widget,
+            position=(posx, posy * 0.16),
+            value=cfg['Config Max Players']['ffa_max_players'],
+            config='ffa_max_players',
+            text=ffa_text,
+        )
 
     def _on_cancel_press(self) -> None:
         self._transition_out()
@@ -205,21 +220,25 @@ def __init__(self) -> None:
     else:
         max_players = app.config.get(
             'Coop Game Max Players',
-            cfg['Config Max Players']['coop_max_players'])
+            cfg['Config Max Players']['coop_max_players'],
+        )
 
     # print('FIXME: COOP SESSION WOULD CALC DEPS.')
     depsets: Sequence[babase.DependencySet] = []
 
-    Session.__init__(self,
-                     depsets,
-                     team_names=TEAM_NAMES,
-                     team_colors=TEAM_COLORS,
-                     min_players=min_players,
-                     max_players=max_players)
+    Session.__init__(
+        self,
+        depsets,
+        team_names=TEAM_NAMES,
+        team_colors=TEAM_COLORS,
+        min_players=min_players,
+        max_players=max_players,
+    )
 
     # Tournament-ID if we correspond to a co-op tournament (otherwise None)
-    self.tournament_id: Optional[str] = (
-        classic.coop_session_args.get('tournament_id'))
+    self.tournament_id: Optional[str] = classic.coop_session_args.get(
+        'tournament_id'
+    )
 
     self.campaign = getcampaign(classic.coop_session_args['campaign'])
     self.campaign_level_name: str = classic.coop_session_args['level']
@@ -241,25 +260,29 @@ def get_max_players(self) -> int:
     if self.use_teams:
         return _babase.app.config.get(
             'Team Game Max Players',
-            cfg['Config Max Players']['teams_max_players'])
+            cfg['Config Max Players']['teams_max_players'],
+        )
     return _babase.app.config.get(
-        'Free-for-All Max Players',
-        cfg['Config Max Players']['ffa_max_players'])
+        'Free-for-All Max Players', cfg['Config Max Players']['ffa_max_players']
+    )
 
 
 GatherWindow.__old_init__ = GatherWindow.__init__
 
 
-def __gather_init__(self,
-                    transition: Optional[str] = 'in_right',
-                    origin_widget: bui.Widget = None):
+def __gather_init__(
+    self,
+    transition: Optional[str] = 'in_right',
+    origin_widget: bui.Widget = None,
+):
     self.__old_init__(transition, origin_widget)
 
     def _do_max_players():
         SettingsMaxPlayers()
+
     self._max_players_button = bui.buttonwidget(
         parent=self._root_widget,
-        position=(self._width*0.72, self._height*0.91),
+        position=(self._width * 0.72, self._height * 0.91),
         size=(220, 60),
         scale=1.0,
         color=(0.6, 0.0, 0.9),
@@ -268,7 +291,8 @@ def __gather_init__(self,
         autoselect=True,
         label=title_short_text,
         button_type='regular',
-        on_activate_call=_do_max_players)
+        on_activate_call=_do_max_players,
+    )
 
 
 def _save_state(self) -> None:
@@ -278,7 +302,8 @@ def _save_state(self) -> None:
 
         sel = self._root_widget.get_selected_child()
         selected_tab_ids = [
-            tab_id for tab_id, tab in self._tab_row.tabs.items()
+            tab_id
+            for tab_id, tab in self._tab_row.tabs.items()
             if sel == tab.button
         ]
         if sel == self._back_button:
@@ -301,6 +326,7 @@ def _save_state(self) -> None:
 
 def _restore_state(self) -> None:
     from efro.util import enum_by_value
+
     try:
         for tab in self._tabs.values():
             tab.restore_state()
@@ -326,8 +352,7 @@ def _restore_state(self) -> None:
             sel = self._tab_container
         elif isinstance(sel_name, str) and sel_name.startswith('Tab:'):
             try:
-                sel_tab_id = enum_by_value(self.TabID,
-                                           sel_name.split(':')[-1])
+                sel_tab_id = enum_by_value(self.TabID, sel_name.split(':')[-1])
             except ValueError:
                 sel_tab_id = self.TabID.ABOUT
             sel = self._tab_row.tabs[sel_tab_id].button
@@ -336,6 +361,7 @@ def _restore_state(self) -> None:
         bui.containerwidget(edit=self._root_widget, selected_child=sel)
     except Exception:
         babase.print_exception('Error restoring gather-win state.')
+
 
 # ba_meta export babase.Plugin
 
@@ -352,7 +378,9 @@ class MaxPlayersPlugin(babase.Plugin):
         old_config = babase.app.config['Config Max Players']
         for setting in cmp:
             if setting not in old_config:
-                babase.app.config['Config Max Players'].update({setting: cmp[setting]})
+                babase.app.config['Config Max Players'].update(
+                    {setting: cmp[setting]}
+                )
         remove_list = []
         for setting in old_config:
             if setting not in cmp:

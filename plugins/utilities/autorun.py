@@ -3,16 +3,16 @@
 # ba_meta require api 9
 
 """
-    AutoRun by TheMikirog
-    Version 1
-    
-    Run without holding any buttons. Made for beginners or players on mobile.
-    Keeps your character maneuverable.
-    Start running as usual to override.
-    
-    Heavily commented for easy modding learning!
-    
-    No Rights Reserved
+AutoRun by TheMikirog
+Version 1
+
+Run without holding any buttons. Made for beginners or players on mobile.
+Keeps your character maneuverable.
+Start running as usual to override.
+
+Heavily commented for easy modding learning!
+
+No Rights Reserved
 """
 
 from __future__ import annotations
@@ -141,7 +141,9 @@ class AutoRun(babase.Plugin):
                 # Notice how it's the capital T Timer instead of the small letter.
                 # That's important, because big T returns a timer object we can manipulate.
                 # We need it assigned to a variable, because we have to delete it once it stops being relevant.
-                args[0].autorun_timer = bs.Timer(0.1, spaz_autorun_update, repeat=True)
+                args[0].autorun_timer = bs.Timer(
+                    0.1, spaz_autorun_update, repeat=True
+                )
 
         return wrapper
 
@@ -225,7 +227,9 @@ class AutoRun(babase.Plugin):
         return wrapper
 
     # We replace the character running function with our modified version.
-    bascenev1lib.actor.spaz.Spaz.on_run = new_onrun(bascenev1lib.actor.spaz.Spaz.on_run)
+    bascenev1lib.actor.spaz.Spaz.on_run = new_onrun(
+        bascenev1lib.actor.spaz.Spaz.on_run
+    )
 
     # There's two function that are called when our player pushes the analog stick - two for each axis.
     # Here's for the vertical axis.

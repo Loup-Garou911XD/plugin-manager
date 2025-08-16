@@ -24,12 +24,15 @@ for i in range(26 - (len(list_of_icons) % 26)):
 # ba_meta export bauiv1.Keyboard
 class IconKeyboard(bauiv1.Keyboard):
     """Keyboard go brrrrrrr"""
+
     name = 'Icons by \ue048Freaku'
-    chars = [(list_of_icons[0:10]),
-             (list_of_icons[10:19]),
-             (list_of_icons[19:26])]
+    chars = [
+        (list_of_icons[0:10]),
+        (list_of_icons[10:19]),
+        (list_of_icons[19:26]),
+    ]
     nums = ['‎' for i in range(26)]
     pages = {
-        f'icon{i//26+1}': tuple(list_of_icons[i:i+26])
+        f'icon{i//26+1}': tuple(list_of_icons[i : i + 26])
         for i in range(26, len(list_of_icons), 26)
     }

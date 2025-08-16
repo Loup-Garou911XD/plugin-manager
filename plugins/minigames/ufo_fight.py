@@ -86,11 +86,12 @@ class UFO(bs.Actor):
         self.platform_material = bs.Material()
         self.platform_material.add_actions(
             conditions=('they_have_material', shared.footing_material),
-            actions=(
-                'modify_part_collision', 'collide', True))
+            actions=('modify_part_collision', 'collide', True),
+        )
         self.ice_material = bs.Material()
         self.ice_material.add_actions(
-            actions=('modify_part_collision', 'friction', 0.0))
+            actions=('modify_part_collision', 'friction', 0.0)
+        )
 
         self._player_pts: list[tuple[bs.Vec3, bs.Vec3]] | None = None
         self._ufo_update_timer: bs.Timer | None = None
@@ -125,92 +126,117 @@ class UFO(bs.Actor):
 
         self.ufo_material = bs.Material()
         self.ufo_material.add_actions(
-            conditions=('they_have_material',
-                        shared.player_material),
-            actions=(('modify_node_collision', 'collide', True),
-                     ('modify_part_collision', 'physical', True)))
+            conditions=('they_have_material', shared.player_material),
+            actions=(
+                ('modify_node_collision', 'collide', True),
+                ('modify_part_collision', 'physical', True),
+            ),
+        )
 
         self.ufo_material.add_actions(
-            conditions=(('they_have_material',
-                         shared.object_material), 'or',
-                        ('they_have_material',
-                         shared.footing_material), 'or',
-                        ('they_have_material',
-                         self.ufo_material)),
-            actions=('modify_part_collision', 'physical', False))
+            conditions=(
+                ('they_have_material', shared.object_material),
+                'or',
+                ('they_have_material', shared.footing_material),
+                'or',
+                ('they_have_material', self.ufo_material),
+            ),
+            actions=('modify_part_collision', 'physical', False),
+        )
 
         activity = bs.get_foreground_host_activity()
         point = activity.map.get_flag_position(None)
         boss_spawn_pos = (point[0], point[1] + 1, point[2])
 
-        self.node = bs.newnode('prop', delegate=self, attrs={
-            'position': boss_spawn_pos,
-            'velocity': (2, 0, 0),
-            'color_texture': bs.gettexture('achievementFootballShutout'),
-            'mesh': bs.getmesh('landMine'),
-            # 'light_mesh': bs.getmesh('powerupSimple'),
-            'mesh_scale': 3.3,
-            'body': 'landMine',
-            'body_scale': 3.3,
-            'gravity_scale': 0.2,
-            'density': 1,
-            'reflection': 'soft',
-            'reflection_scale': [0.25],
-            'shadow_size': 0.1,
-            'max_speed': 1.5,
-            'is_area_of_interest':
-                True,
-            'materials': [shared.footing_material, shared.object_material]})
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'position': boss_spawn_pos,
+                'velocity': (2, 0, 0),
+                'color_texture': bs.gettexture('achievementFootballShutout'),
+                'mesh': bs.getmesh('landMine'),
+                # 'light_mesh': bs.getmesh('powerupSimple'),
+                'mesh_scale': 3.3,
+                'body': 'landMine',
+                'body_scale': 3.3,
+                'gravity_scale': 0.2,
+                'density': 1,
+                'reflection': 'soft',
+                'reflection_scale': [0.25],
+                'shadow_size': 0.1,
+                'max_speed': 1.5,
+                'is_area_of_interest': True,
+                'materials': [shared.footing_material, shared.object_material],
+            },
+        )
 
-        self.holder = bs.newnode('region', attrs={
-            'position': (
-                boss_spawn_pos[0], boss_spawn_pos[1] - 0.25,
-                boss_spawn_pos[2]),
-            'scale': [6, 0.1, 2.5 - 0.1],
-            'type': 'box',
-            'materials': (self.platform_material, self.ice_material,
-                          shared.object_material)})
+        self.holder = bs.newnode(
+            'region',
+            attrs={
+                'position': (
+                    boss_spawn_pos[0],
+                    boss_spawn_pos[1] - 0.25,
+                    boss_spawn_pos[2],
+                ),
+                'scale': [6, 0.1, 2.5 - 0.1],
+                'type': 'box',
+                'materials': (
+                    self.platform_material,
+                    self.ice_material,
+                    shared.object_material,
+                ),
+            },
+        )
 
-        self.suck_anim = bs.newnode('locator',
-                                    owner=self.node,
-                                    attrs={'shape': 'circleOutline',
-                                           'position': (
-                                               boss_spawn_pos[0],
-                                               boss_spawn_pos[1] - 0.25,
-                                               boss_spawn_pos[2]),
-                                           'color': (4, 4, 4),
-                                           'opacity': 1.0,
-                                           'draw_beauty': True,
-                                           'additive': True})
+        self.suck_anim = bs.newnode(
+            'locator',
+            owner=self.node,
+            attrs={
+                'shape': 'circleOutline',
+                'position': (
+                    boss_spawn_pos[0],
+                    boss_spawn_pos[1] - 0.25,
+                    boss_spawn_pos[2],
+                ),
+                'color': (4, 4, 4),
+                'opacity': 1.0,
+                'draw_beauty': True,
+                'additive': True,
+            },
+        )
 
         def suck_anim():
-            bs.animate_array(self.suck_anim, 'position', 3,
-                             {0: (
-                                 self.node.position[0],
-                                 self.node.position[1] - 5,
-                                 self.node.position[2]),
-                                 0.5: (
-                                     self.node.position[
-                                         0] + self.to_target.x / 2,
-                                     self.node.position[
-                                         1] + self.to_target.y / 2,
-                                     self.node.position[
-                                         2] + self.to_target.z / 2)})
+            bs.animate_array(
+                self.suck_anim,
+                'position',
+                3,
+                {
+                    0: (
+                        self.node.position[0],
+                        self.node.position[1] - 5,
+                        self.node.position[2],
+                    ),
+                    0.5: (
+                        self.node.position[0] + self.to_target.x / 2,
+                        self.node.position[1] + self.to_target.y / 2,
+                        self.node.position[2] + self.to_target.z / 2,
+                    ),
+                },
+            )
 
         self.suck_timer = bs.Timer(0.5, suck_anim, repeat=True)
 
         self.blocks = []
 
         self._sucker_mat.add_actions(
-            conditions=(
-                ('they_have_material', shared.player_material)
-            ),
+            conditions=(('they_have_material', shared.player_material)),
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', False),
-                ('call', 'at_connect', self._levitate)
-
-            ))
+                ('call', 'at_connect', self._levitate),
+            ),
+        )
 
         # self.sucker = bs.newnode('region', attrs={
         #     'position': (
@@ -219,32 +245,42 @@ class UFO(bs.Actor):
         #     'type': 'box',
         #     'materials': self._sucker_mat, })
 
-        self.suck = bs.newnode('region',
-                               attrs={'position': (
-                                   boss_spawn_pos[0], boss_spawn_pos[1] - 2,
-                                   boss_spawn_pos[2]),
-                                   'scale': [1, 10, 1],
-                                   'type': 'box',
-                                   'materials': [self._sucker_mat]})
+        self.suck = bs.newnode(
+            'region',
+            attrs={
+                'position': (
+                    boss_spawn_pos[0],
+                    boss_spawn_pos[1] - 2,
+                    boss_spawn_pos[2],
+                ),
+                'scale': [1, 10, 1],
+                'type': 'box',
+                'materials': [self._sucker_mat],
+            },
+        )
 
         self.node.connectattr('position', self.holder, 'position')
         self.node.connectattr('position', self.suck, 'position')
 
-        bs.animate(self.node, 'mesh_scale', {
-            0: 0,
-            0.2: self.node.mesh_scale * 1.1,
-            0.26: self.node.mesh_scale})
+        bs.animate(
+            self.node,
+            'mesh_scale',
+            {0: 0, 0.2: self.node.mesh_scale * 1.1, 0.26: self.node.mesh_scale},
+        )
 
-        self.shield_deco = bs.newnode('shield', owner=self.node,
-                                      attrs={'color': (4, 4, 4),
-                                             'radius': 1.2})
+        self.shield_deco = bs.newnode(
+            'shield', owner=self.node, attrs={'color': (4, 4, 4), 'radius': 1.2}
+        )
         self.node.connectattr('position', self.shield_deco, 'position')
         self._scoreboard()
         self._update()
-        self.drop_bomb_timer = bs.Timer(1.5, bs.Call(self._drop_bomb),
-                                        repeat=True)
+        self.drop_bomb_timer = bs.Timer(
+            1.5, bs.Call(self._drop_bomb), repeat=True
+        )
 
-        self.drop_bots_timer = bs.Timer(15.0, bs.Call(self._drop_bots), repeat=True)
+        self.drop_bots_timer = bs.Timer(
+            15.0, bs.Call(self._drop_bots), repeat=True
+        )
 
     def _drop_bots(self) -> None:
         p = self.node.position
@@ -252,9 +288,13 @@ class UFO(bs.Actor):
             bs.timer(
                 1.0 + i,
                 lambda: self._bots.spawn_bot(
-                    RoboBot, pos=(self.node.position[0],
-                                  self.node.position[1] - 1,
-                                  self.node.position[2]), spawn_time=0.0
+                    RoboBot,
+                    pos=(
+                        self.node.position[0],
+                        self.node.position[1] - 1,
+                        self.node.position[2],
+                    ),
+                    spawn_time=0.0,
                 ),
             )
 
@@ -262,26 +302,36 @@ class UFO(bs.Actor):
         t = self.to_target
         p = self.node.position
         if abs(self.dist[0]) < 2 and abs(self.dist[2]) < 2:
-            Bomb(position=(p[0], p[1] - 0.5, p[2]),
-                 velocity=(t[0] * 5, 0, t[2] * 5),
-                 bomb_type='land_mine').autoretain().arm()
+            Bomb(
+                position=(p[0], p[1] - 0.5, p[2]),
+                velocity=(t[0] * 5, 0, t[2] * 5),
+                bomb_type='land_mine',
+            ).autoretain().arm()
         elif self.hitpoints > self.hitpoints_max * 3 / 4:
-            Bomb(position=(p[0], p[1] - 1.5, p[2]),
-                 velocity=(t[0] * 8, 2, t[2] * 8),
-                 bomb_type='normal').autoretain()
+            Bomb(
+                position=(p[0], p[1] - 1.5, p[2]),
+                velocity=(t[0] * 8, 2, t[2] * 8),
+                bomb_type='normal',
+            ).autoretain()
         elif self.hitpoints > self.hitpoints_max * 1 / 2:
-            Bomb(position=(p[0], p[1] - 1.5, p[2]),
-                 velocity=(t[0] * 8, 2, t[2] * 8),
-                 bomb_type='ice').autoretain()
+            Bomb(
+                position=(p[0], p[1] - 1.5, p[2]),
+                velocity=(t[0] * 8, 2, t[2] * 8),
+                bomb_type='ice',
+            ).autoretain()
 
         elif self.hitpoints > self.hitpoints_max * 1 / 4:
-            Bomb(position=(p[0], p[1] - 1.5, p[2]),
-                 velocity=(t[0] * 15, 2, t[2] * 15),
-                 bomb_type='sticky').autoretain()
+            Bomb(
+                position=(p[0], p[1] - 1.5, p[2]),
+                velocity=(t[0] * 15, 2, t[2] * 15),
+                bomb_type='sticky',
+            ).autoretain()
         else:
-            Bomb(position=(p[0], p[1] - 1.5, p[2]),
-                 velocity=(t[0] * 15, 2, t[2] * 15),
-                 bomb_type='impact').autoretain()
+            Bomb(
+                position=(p[0], p[1] - 1.5, p[2]),
+                velocity=(t[0] * 15, 2, t[2] * 15),
+                bomb_type='impact',
+            ).autoretain()
 
     def _levitate(self):
         node = bs.getcollision().opposingnode
@@ -292,10 +342,22 @@ class UFO(bs.Actor):
                 if player.is_alive():
                     node = player.node
                     try:
-                        node.handlemessage("impulse", node.position[0],
-                                           node.position[1] + .5,
-                                           node.position[2], 0, 5, 0, 3, 10, 0,
-                                           0, 0, 5, 0)
+                        node.handlemessage(
+                            "impulse",
+                            node.position[0],
+                            node.position[1] + 0.5,
+                            node.position[2],
+                            0,
+                            5,
+                            0,
+                            3,
+                            10,
+                            0,
+                            0,
+                            0,
+                            5,
+                            0,
+                        )
 
                     except:
                         pass
@@ -319,8 +381,7 @@ class UFO(bs.Actor):
         if self.hitpoints <= 0:
             self.handlemessage(bs.DieMessage())
 
-    def _get_target_player_pt(self) -> tuple[
-            bs.Vec3 | None, bs.Vec3 | None]:
+    def _get_target_player_pt(self) -> tuple[bs.Vec3 | None, bs.Vec3 | None]:
         """Returns the position and velocity of our target.
 
         Both values will be None in the case of no target.
@@ -358,8 +419,9 @@ class UFO(bs.Actor):
     def exists(self) -> bool:
         return bool(self.node)
 
-    def show_damage_count(self, damage: str, position: Sequence[float],
-                          direction: Sequence[float]) -> None:
+    def show_damage_count(
+        self, damage: str, position: Sequence[float], direction: Sequence[float]
+    ) -> None:
         """Pop up a damage count at a position in space.
 
         Category: Gameplay Functions
@@ -371,16 +433,18 @@ class UFO(bs.Actor):
         #  (connected clients may have differing configs so they won't
         #  get the intended results).
         do_big = app.ui.uiscale is bs.UIScale.SMALL or app.vr_mode
-        txtnode = bs.newnode('text',
-                             attrs={
-                                 'text': damage,
-                                 'in_world': True,
-                                 'h_align': 'center',
-                                 'flatness': 1.0,
-                                 'shadow': 1.0 if do_big else 0.7,
-                                 'color': (1, 0.25, 0.25, 1),
-                                 'scale': 0.035 if do_big else 0.03
-                             })
+        txtnode = bs.newnode(
+            'text',
+            attrs={
+                'text': damage,
+                'in_world': True,
+                'h_align': 'center',
+                'flatness': 1.0,
+                'shadow': 1.0 if do_big else 0.7,
+                'color': (1, 0.25, 0.25, 1),
+                'scale': 0.035 if do_big else 0.03,
+            },
+        )
         # Translate upward.
         tcombine = bs.newnode('combine', owner=txtnode, attrs={'size': 3})
         tcombine.connectattr('output', txtnode, 'position')
@@ -394,51 +458,63 @@ class UFO(bs.Actor):
             vval *= 0.5
         p_start = position[0]
         p_dir = direction[0]
-        bs.animate(tcombine, 'input0',
-                   {i[0] * lifespan: p_start + p_dir * i[1]
-                    for i in v_vals})
+        bs.animate(
+            tcombine,
+            'input0',
+            {i[0] * lifespan: p_start + p_dir * i[1] for i in v_vals},
+        )
         p_start = position[1]
         p_dir = direction[1]
-        bs.animate(tcombine, 'input1',
-                   {i[0] * lifespan: p_start + p_dir * i[1]
-                    for i in v_vals})
+        bs.animate(
+            tcombine,
+            'input1',
+            {i[0] * lifespan: p_start + p_dir * i[1] for i in v_vals},
+        )
         p_start = position[2]
         p_dir = direction[2]
-        bs.animate(tcombine, 'input2',
-                   {i[0] * lifespan: p_start + p_dir * i[1]
-                    for i in v_vals})
+        bs.animate(
+            tcombine,
+            'input2',
+            {i[0] * lifespan: p_start + p_dir * i[1] for i in v_vals},
+        )
         bs.animate(txtnode, 'opacity', {0.7 * lifespan: 1.0, lifespan: 0.0})
         bs.timer(lifespan, txtnode.delete)
 
     def _scoreboard(self) -> None:
         self._backing = bs.NodeActor(
-            bs.newnode('image',
-                       attrs={
-                           'position': (self.bar_posx + self._width / 2, -100),
-                           'scale': (self._width, self._height),
-                           'opacity': 0.7,
-                           'color': (0.3,
-                                     0.3,
-                                     0.3),
-                           'vr_depth': -3,
-                           'attach': 'topCenter',
-                           'texture': self._backing_tex
-                       }))
+            bs.newnode(
+                'image',
+                attrs={
+                    'position': (self.bar_posx + self._width / 2, -100),
+                    'scale': (self._width, self._height),
+                    'opacity': 0.7,
+                    'color': (0.3, 0.3, 0.3),
+                    'vr_depth': -3,
+                    'attach': 'topCenter',
+                    'texture': self._backing_tex,
+                },
+            )
+        )
         self._bar = bs.NodeActor(
-            bs.newnode('image',
-                       attrs={
-                           'opacity': 1.0,
-                           'color': (0.5, 0.5, 0.5),
-                           'attach': 'topCenter',
-                           'texture': self._bar_tex
-                       }))
-        self._bar_scale = bs.newnode('combine',
-                                     owner=self._bar.node,
-                                     attrs={
-                                         'size': 2,
-                                         'input0': self._bar_width,
-                                         'input1': self._bar_height
-                                     })
+            bs.newnode(
+                'image',
+                attrs={
+                    'opacity': 1.0,
+                    'color': (0.5, 0.5, 0.5),
+                    'attach': 'topCenter',
+                    'texture': self._bar_tex,
+                },
+            )
+        )
+        self._bar_scale = bs.newnode(
+            'combine',
+            owner=self._bar.node,
+            attrs={
+                'size': 2,
+                'input0': self._bar_width,
+                'input1': self._bar_height,
+            },
+        )
         self._bar_scale.connectattr('output', self._bar.node, 'scale')
         self._bar_position = bs.newnode(
             'combine',
@@ -446,71 +522,91 @@ class UFO(bs.Actor):
             attrs={
                 'size': 2,
                 'input0': self.bar_posx + self._bar_width / 2,
-                'input1': -100
-            })
+                'input1': -100,
+            },
+        )
         self._bar_position.connectattr('output', self._bar.node, 'position')
         self._cover = bs.NodeActor(
-            bs.newnode('image',
-                       attrs={
-                           'position': (self.bar_posx + 120, -100),
-                           'scale':
-                               (self._width * 1.15, self._height * 1.6),
-                           'opacity': 1.0,
-                           'color': (0.3,
-                                     0.3,
-                                     0.3),
-                           'vr_depth': 2,
-                           'attach': 'topCenter',
-                           'texture': self._cover_tex,
-                           'mesh_transparent': self._mesh
-                       }))
+            bs.newnode(
+                'image',
+                attrs={
+                    'position': (self.bar_posx + 120, -100),
+                    'scale': (self._width * 1.15, self._height * 1.6),
+                    'opacity': 1.0,
+                    'color': (0.3, 0.3, 0.3),
+                    'vr_depth': 2,
+                    'attach': 'topCenter',
+                    'texture': self._cover_tex,
+                    'mesh_transparent': self._mesh,
+                },
+            )
+        )
         self._score_text = bs.NodeActor(
-            bs.newnode('text',
-                       attrs={
-                           'position': (self.bar_posx + 120, -100),
-                           'h_attach': 'center',
-                           'v_attach': 'top',
-                           'h_align': 'center',
-                           'v_align': 'center',
-                           'maxwidth': 130,
-                           'scale': 0.9,
-                           'text': '',
-                           'shadow': 0.5,
-                           'flatness': 1.0,
-                           'color': (1, 1, 1, 0.8)
-                       }))
+            bs.newnode(
+                'text',
+                attrs={
+                    'position': (self.bar_posx + 120, -100),
+                    'h_attach': 'center',
+                    'v_attach': 'top',
+                    'h_align': 'center',
+                    'v_align': 'center',
+                    'maxwidth': 130,
+                    'scale': 0.9,
+                    'text': '',
+                    'shadow': 0.5,
+                    'flatness': 1.0,
+                    'color': (1, 1, 1, 0.8),
+                },
+            )
+        )
 
     def _update(self) -> None:
         self._score_text.node.text = str(self.hitpoints)
         self._bar_width = self.hitpoints * self._width_max / self.hitpoints_max
         cur_width = self._bar_scale.input0
-        bs.animate(self._bar_scale, 'input0', {
-            0.0: cur_width,
-            0.1: self._bar_width
-        })
+        bs.animate(
+            self._bar_scale, 'input0', {0.0: cur_width, 0.1: self._bar_width}
+        )
         cur_x = self._bar_position.input0
 
-        bs.animate(self._bar_position, 'input0', {
-            0.0: cur_x,
-            0.1: self.bar_posx + self._bar_width / 2
-        })
+        bs.animate(
+            self._bar_position,
+            'input0',
+            {0.0: cur_x, 0.1: self.bar_posx + self._bar_width / 2},
+        )
 
         if self.hitpoints > self.hitpoints_max * 3 / 4:
-            bs.animate_array(self.shield_deco, 'color', 3,
-                             {0: self.shield_deco.color, 0.2: (4, 4, 4)})
+            bs.animate_array(
+                self.shield_deco,
+                'color',
+                3,
+                {0: self.shield_deco.color, 0.2: (4, 4, 4)},
+            )
         elif self.hitpoints > self.hitpoints_max * 1 / 2:
-            bs.animate_array(self.shield_deco, 'color', 3,
-                             {0: self.shield_deco.color, 0.2: (3, 3, 5)})
+            bs.animate_array(
+                self.shield_deco,
+                'color',
+                3,
+                {0: self.shield_deco.color, 0.2: (3, 3, 5)},
+            )
             self.bot_count = 4
 
         elif self.hitpoints > self.hitpoints_max * 1 / 4:
-            bs.animate_array(self.shield_deco, 'color', 3,
-                             {0: self.shield_deco.color, 0.2: (1, 5, 1)})
+            bs.animate_array(
+                self.shield_deco,
+                'color',
+                3,
+                {0: self.shield_deco.color, 0.2: (1, 5, 1)},
+            )
             self.bot_count = 5
 
         else:
-            bs.animate_array(self.shield_deco, 'color', 3,
-                             {0: self.shield_deco.color, 0.2: (5, 0.2, 0.2)})
+            bs.animate_array(
+                self.shield_deco,
+                'color',
+                3,
+                {0: self.shield_deco.color, 0.2: (5, 0.2, 0.2)},
+            )
             self.bot_count = 6
 
     def update_ai(self) -> None:
@@ -537,9 +633,7 @@ class UFO(bs.Actor):
         try:
             dist_raw = (target_pt_raw - our_pos).length()
 
-            target_pt = (
-                target_pt_raw + target_vel * dist_raw * 0.3
-            )
+            target_pt = target_pt_raw + target_vel * dist_raw * 0.3
         except:
             return
         diff = target_pt - our_pos
@@ -554,17 +648,27 @@ class UFO(bs.Actor):
         # speed = self.getMaxSpeedByDir(d)
         # self.node.velocity = (self.to_target.x, self.to_target.y, self.to_target.z)
         if self.hitpoints == 0:
-            setattr(self.node, 'velocity',
-                    (0, self.to_target.y, 0))
-            setattr(self.node, 'extra_acceleration',
-                    (0, self.to_target.y * 80 + 70,
-                     0))
+            setattr(self.node, 'velocity', (0, self.to_target.y, 0))
+            setattr(
+                self.node,
+                'extra_acceleration',
+                (0, self.to_target.y * 80 + 70, 0),
+            )
         elif not self.frozen:
-            setattr(self.node, 'velocity',
-                    (self.to_target.x, self.to_target.y, self.to_target.z))
-            setattr(self.node, 'extra_acceleration',
-                    (self.to_target.x, self.to_target.y * 80 + 70,
-                     self.to_target.z))
+            setattr(
+                self.node,
+                'velocity',
+                (self.to_target.x, self.to_target.y, self.to_target.z),
+            )
+            setattr(
+                self.node,
+                'extra_acceleration',
+                (
+                    self.to_target.x,
+                    self.to_target.y * 80 + 70,
+                    self.to_target.z,
+                ),
+            )
 
     def on_expire(self) -> None:
         super().on_expire()
@@ -580,12 +684,14 @@ class UFO(bs.Actor):
         #     0: self.node.mesh_scale,
         #     0.08: self.node.mesh_scale * 0.9,
         #     0.15: self.node.mesh_scale})
-        bs.emitfx(position=self.node.position,
-                  velocity=self.node.velocity,
-                  count=int(6 + random.random() * 10),
-                  scale=0.5,
-                  spread=0.4,
-                  chunk_type='metal')
+        bs.emitfx(
+            position=self.node.position,
+            velocity=self.node.velocity,
+            count=int(6 + random.random() * 10),
+            scale=0.5,
+            spread=0.4,
+            chunk_type='metal',
+        )
 
     def handlemessage(self, msg: Any) -> Any:
         # pylint: disable=too-many-branches
@@ -610,6 +716,7 @@ class UFO(bs.Actor):
                 p = self.node.position
 
                 for i in range(6):
+
                     def ded_explode(count):
                         p_x = p[0] + random.uniform(-1, 1)
                         p_z = p[2] + random.uniform(-1, 1)
@@ -617,11 +724,12 @@ class UFO(bs.Actor):
                             Blast(
                                 position=(p[0], p[1], p[2]),
                                 blast_type='tnt',
-                                blast_radius=5.0).autoretain()
+                                blast_radius=5.0,
+                            ).autoretain()
                         else:
                             Blast(
-                                position=(p_x, p[1], p_z),
-                                blast_radius=2.0).autoretain()
+                                position=(p_x, p[1], p_z), blast_radius=2.0
+                            ).autoretain()
 
                     bs.timer(0 + i, bs.Call(ded_explode, i))
 
@@ -644,21 +752,19 @@ class UFO(bs.Actor):
                 self.frozen = True
                 self.drop_bomb_timer = False
                 self.drop_bots_timer = False
-                setattr(self.node, 'velocity',
-                        (0,  self.to_target.y, 0))
-                setattr(self.node, 'extra_acceleration',
-                        (0,  0, 0))
+                setattr(self.node, 'velocity', (0, self.to_target.y, 0))
+                setattr(self.node, 'extra_acceleration', (0, 0, 0))
                 self.node.reflection_scale = [2]
 
                 def unfrozen():
                     self.frozen = False
-                    self.drop_bomb_timer = bs.Timer(1.5,
-                                                    bs.Call(self._drop_bomb),
-                                                    repeat=True)
+                    self.drop_bomb_timer = bs.Timer(
+                        1.5, bs.Call(self._drop_bomb), repeat=True
+                    )
 
-                    self.drop_bots_timer = bs.Timer(15.0,
-                                                    bs.Call(self._drop_bots),
-                                                    repeat=True)
+                    self.drop_bots_timer = bs.Timer(
+                        15.0, bs.Call(self._drop_bots), repeat=True
+                    )
                     self.node.reflection_scale = [0.25]
 
                 bs.timer(3.0, unfrozen)
@@ -778,7 +884,8 @@ class UFOSet:
         """Add a bs.SpazBot instance to the set."""
         self._ufo_bot_lists[self._ufo_bot_add_list].append(bot)
         self._ufo_bot_add_list = (
-            self._ufo_bot_add_list + 1) % self._ufo_bot_list_count
+            self._ufo_bot_add_list + 1
+        ) % self._ufo_bot_list_count
 
     def have_living_bots(self) -> bool:
         """Return whether any bots in the set are alive or spawning."""
@@ -852,17 +959,19 @@ class UFOightGame(bs.TeamGameActivity[Player, Team]):
         self._timer: OnScreenTimer | None = None
         self._bots = UFOSet()
         self._preset = str(settings['preset'])
-        self._credit = bs.newnode('text',
-                                  attrs={
-                                      'v_attach': 'bottom',
-                                      'h_align': 'center',
-                                      'color': (0.4, 0.4, 0.4),
-                                      'flatness': 0.5,
-                                      'shadow': 0.5,
-                                      'position': (0, 20),
-                                      'scale': 0.7,
-                                      'text': 'By Cross Joy'
-                                  })
+        self._credit = bs.newnode(
+            'text',
+            attrs={
+                'v_attach': 'bottom',
+                'h_align': 'center',
+                'color': (0.4, 0.4, 0.4),
+                'flatness': 0.5,
+                'shadow': 0.5,
+                'position': (0, 20),
+                'scale': 0.7,
+                'text': 'By Cross Joy',
+            },
+        )
 
     def on_transition_in(self) -> None:
         super().on_transition_in()

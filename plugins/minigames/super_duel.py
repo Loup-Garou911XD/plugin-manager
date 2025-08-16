@@ -21,23 +21,28 @@ if TYPE_CHECKING:
 
 class SuperSpaz(PlayerSpaz):
 
-    def __init__(self,
-                 player: bs.Player,
-                 color: Sequence[float] = (1.0, 1.0, 1.0),
-                 highlight: Sequence[float] = (0.5, 0.5, 0.5),
-                 character: str = 'Spaz',
-                 super_punch: bool = False,
-                 powerups_expire: bool = True):
-        super().__init__(player=player,
-                         color=color,
-                         highlight=highlight,
-                         character=character,
-                         powerups_expire=powerups_expire)
+    def __init__(
+        self,
+        player: bs.Player,
+        color: Sequence[float] = (1.0, 1.0, 1.0),
+        highlight: Sequence[float] = (0.5, 0.5, 0.5),
+        character: str = 'Spaz',
+        super_punch: bool = False,
+        powerups_expire: bool = True,
+    ):
+        super().__init__(
+            player=player,
+            color=color,
+            highlight=highlight,
+            character=character,
+            powerups_expire=powerups_expire,
+        )
         self._super_punch = super_punch
 
     def handlemessage(self, msg: Any) -> Any:
         from bascenev1lib.actor.spaz import PunchHitMessage
         from bascenev1lib.actor.bomb import Blast
+
         if isinstance(msg, PunchHitMessage):
             super().handlemessage(msg)
             node = bs.getcollision().opposingnode
@@ -49,10 +54,12 @@ class SuperSpaz(PlayerSpaz):
                         bs.getsound('freeze').play()
                     bs.getsound('superPunch').play()
                     bs.getsound('punchStrong02').play()
-                    Blast(position=node.position,
-                          velocity=node.velocity,
-                          blast_radius=0.0,
-                          blast_type='normal').autoretain()
+                    Blast(
+                        position=node.position,
+                        velocity=node.velocity,
+                        blast_radius=0.0,
+                        blast_type='normal',
+                    ).autoretain()
         else:
             return super().handlemessage(msg)
         return None
@@ -117,7 +124,8 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+        cls, sessiontype: Type[bs.Session]
+    ) -> List[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
@@ -149,7 +157,7 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.FreeForAllSession))
+        return issubclass(sessiontype, bs.FreeForAllSession)
 
     @classmethod
     def get_supported_maps(cls, sessiontype: Type[bs.Session]) -> List[str]:
@@ -161,14 +169,14 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
         self._score_to_win: Optional[int] = None
         self._dingsound = bs.getsound('dingSmall')
         self._epic_mode = bool(settings['Epic Mode'])
-        self._kills_to_win_per_player = int(
-            settings['Kills to Win Per Player'])
+        self._kills_to_win_per_player = int(settings['Kills to Win Per Player'])
         self._enable_powerups = bool(settings[enable_powerups])
         self._night_mode = bool(settings[night_mode])
         self._fight_delay: float = 0
         self._time_limit = float(settings['Time Limit'])
         self._allow_negative_scores = bool(
-            settings.get('Allow Negative Scores', False))
+            settings.get('Allow Negative Scores', False)
+        )
         self._super_punch = bool(settings[super_punch])
         self._box_mode = bool(settings[box_mode])
         self._boxing_gloves = bool(settings[boxing_gloves])
@@ -184,8 +192,9 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC if self._epic_mode else
-                              bs.MusicType.TO_THE_DEATH)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.TO_THE_DEATH
+        )
 
     def get_instance_description(self) -> Union[str, Sequence]:
         return 'Crush ${ARG1} of your enemies.', self._score_to_win
@@ -228,23 +237,27 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
         if self._enable_powerups:
             self.setup_standard_powerup_drops()
         self._vs_text = bs.NodeActor(
-            bs.newnode('text',
-                       attrs={
-                           'position': (0, 105),
-                           'h_attach': 'center',
-                           'h_align': 'center',
-                           'maxwidth': 200,
-                           'shadow': 0.5,
-                           'vr_depth': 390,
-                           'scale': 0.6,
-                           'v_attach': 'bottom',
-                           'color': (0.8, 0.8, 0.3, 1.0),
-                           'text': babase.Lstr(resource='vsText')
-                       }))
+            bs.newnode(
+                'text',
+                attrs={
+                    'position': (0, 105),
+                    'h_attach': 'center',
+                    'h_align': 'center',
+                    'maxwidth': 200,
+                    'shadow': 0.5,
+                    'vr_depth': 390,
+                    'scale': 0.6,
+                    'v_attach': 'bottom',
+                    'color': (0.8, 0.8, 0.3, 1.0),
+                    'text': babase.Lstr(resource='vsText'),
+                },
+            )
+        )
 
         # Base kills needed to win on the size of the largest team.
-        self._score_to_win = (self._kills_to_win_per_player *
-                              max(1, max(len(t.players) for t in self.teams)))
+        self._score_to_win = self._kills_to_win_per_player * max(
+            1, max(len(t.players) for t in self.teams)
+        )
         self._update_scoreboard()
         bs.timer(1.0, self._update, repeat=True)
 
@@ -258,6 +271,7 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
         from babase import _math
         from bascenev1._coopsession import CoopSession
         from bascenev1lib.actor.spazfactory import SpazFactory
+
         factory = SpazFactory.get()
         name = player.getname()
         color = player.color
@@ -265,11 +279,13 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
 
         light_color = _math.normalized_color(color)
         display_color = babase.safecolor(color, target_intensity=0.75)
-        spaz = SuperSpaz(color=color,
-                         highlight=highlight,
-                         character=player.character,
-                         player=player,
-                         super_punch=True if self._super_punch else False)
+        spaz = SuperSpaz(
+            color=color,
+            highlight=highlight,
+            character=player.character,
+            player=player,
+            super_punch=True if self._super_punch else False,
+        )
 
         player.actor = spaz
         assert spaz.node
@@ -278,13 +294,14 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
         # material that allows us to collide with the player-walls.
         # FIXME: Need to generalize this.
         if isinstance(self.session, CoopSession) and self.map.getname() in [
-                'Courtyard', 'Tower D'
+            'Courtyard',
+            'Tower D',
         ]:
             mat = self.map.preloaddata['collide_with_wall_material']
             assert isinstance(spaz.node.materials, tuple)
             assert isinstance(spaz.node.roller_materials, tuple)
-            spaz.node.materials += (mat, )
-            spaz.node.roller_materials += (mat, )
+            spaz.node.materials += (mat,)
+            spaz.node.roller_materials += (mat,)
 
         spaz.node.name = name
         spaz.node.name_color = display_color
@@ -311,8 +328,12 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
                     else:
                         pos3.append(pos1[0])
 
-        spaz.handlemessage(bs.StandMessage(pos1[0] if player.playervs1 else pos2[0],
-                                           pos1[1] if player.playervs1 else pos2[1]))
+        spaz.handlemessage(
+            bs.StandMessage(
+                pos1[0] if player.playervs1 else pos2[0],
+                pos1[1] if player.playervs1 else pos2[1],
+            )
+        )
 
         if any(pos3):
             spaz.handlemessage(bs.StandMessage(pos3[0]))
@@ -321,30 +342,32 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
             spaz._punch_power_scale = factory.punch_power_scale_gloves = 10
             spaz.equip_boxing_gloves()
             lfx = bs.newnode(
-                'light',
-                attrs={
-                    'color': color,
-                    'radius': 0.3,
-                    'intensity': 0.3})
+                'light', attrs={'color': color, 'radius': 0.3, 'intensity': 0.3}
+            )
 
             def sp_fx():
                 if not spaz.node:
                     lfx.delete()
                     return
-                bs.emitfx(position=spaz.node.position,
-                          velocity=spaz.node.velocity,
-                          count=5,
-                          scale=0.5,
-                          spread=0.5,
-                          chunk_type='spark')
-                bs.emitfx(position=spaz.node.position,
-                          velocity=spaz.node.velocity,
-                          count=2,
-                          scale=0.8,
-                          spread=0.3,
-                          chunk_type='spark')
+                bs.emitfx(
+                    position=spaz.node.position,
+                    velocity=spaz.node.velocity,
+                    count=5,
+                    scale=0.5,
+                    spread=0.5,
+                    chunk_type='spark',
+                )
+                bs.emitfx(
+                    position=spaz.node.position,
+                    velocity=spaz.node.velocity,
+                    count=2,
+                    scale=0.8,
+                    spread=0.3,
+                    chunk_type='spark',
+                )
                 if lfx:
                     spaz.node.connectattr('position', lfx, 'position')
+
             bs.timer(0.1, sp_fx, repeat=True)
 
         if self._box_mode:
@@ -367,7 +390,7 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
                 if player.playervs1 or player.playervs2:
                     if not player.is_alive():
                         self.spawn_player(player)
-                       # player.actor.disconnect_controls_from_player()
+                        # player.actor.disconnect_controls_from_player()
 
                         if self._night_mode:
                             if not player.light:
@@ -379,15 +402,17 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
                                         'radius': 0.3,
                                         'intensity': 0.6,
                                         'height_attenuated': False,
-                                        'color': player.color
-                                    })
+                                        'color': player.color,
+                                    },
+                                )
                                 player.node.connectattr(
-                                    'position', light, 'position')
+                                    'position', light, 'position'
+                                )
                     else:
                         player.actor.disconnect_controls_from_player()
 
                     bs.timer(0.0, self._countdown)
-                  #  bs.timer(0.1, self._clear_all_objects)
+                #  bs.timer(0.1, self._clear_all_objects)
 
     def _countdown(self) -> None:
         self._first_countdown = False
@@ -427,26 +452,25 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
         bs.timer(self._fight_delay, self.count2)
 
     def _count_text(self, num: str) -> None:
-        self.node = bs.newnode('text',
-                               attrs={
-                                   'v_attach': 'center',
-                                   'h_attach': 'center',
-                                   'h_align': 'center',
-                                   'color': (1, 1, 0.5, 1),
-                                   'flatness': 0.5,
-                                   'shadow': 0.5,
-                                   'position': (0, 18),
-                                   'text': num
-                               })
+        self.node = bs.newnode(
+            'text',
+            attrs={
+                'v_attach': 'center',
+                'h_attach': 'center',
+                'h_align': 'center',
+                'color': (1, 1, 0.5, 1),
+                'flatness': 0.5,
+                'shadow': 0.5,
+                'position': (0, 18),
+                'text': num,
+            },
+        )
         if self._fight_delay == 0.7:
-            bs.animate(self.node, 'scale',
-                       {0: 0, 0.1: 3.9, 0.64: 4.3, 0.68: 0})
+            bs.animate(self.node, 'scale', {0: 0, 0.1: 3.9, 0.64: 4.3, 0.68: 0})
         elif self._fight_delay == 0.4:
-            bs.animate(self.node, 'scale',
-                       {0: 0, 0.1: 3.9, 0.34: 4.3, 0.38: 0})
+            bs.animate(self.node, 'scale', {0: 0, 0.1: 3.9, 0.34: 4.3, 0.38: 0})
         else:
-            bs.animate(self.node, 'scale',
-                       {0: 0, 0.1: 3.9, 0.92: 4.3, 0.96: 0})
+            bs.animate(self.node, 'scale', {0: 0, 0.1: 3.9, 0.92: 4.3, 0.96: 0})
         cmb = bs.newnode('combine', owner=self.node, attrs={'size': 4})
         cmb.connectattr('output', self.node, 'color')
         bs.animate(cmb, 'input0', {0: 1.0, 0.15: 1.0}, loop=True)
@@ -487,41 +511,50 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
                     xval = 60
                     x_offs = 78
                 player.icons.append(
-                    Icon(player,
-                         position=(xval, 40),
-                         scale=1.0,
-                         name_maxwidth=130,
-                         name_scale=0.8,
-                         flatness=0.0,
-                         shadow=0.5,
-                         show_death=True,
-                         show_lives=False))
+                    Icon(
+                        player,
+                        position=(xval, 40),
+                        scale=1.0,
+                        name_maxwidth=130,
+                        name_scale=0.8,
+                        flatness=0.0,
+                        shadow=0.5,
+                        show_death=True,
+                        show_lives=False,
+                    )
+                )
             else:
                 xval = 125
                 xval2 = -125
                 x_offs = 78
                 for player in self.spawn_order:
                     player.icons.append(
-                        Icon(player,
-                             position=(xval, 25),
-                             scale=0.5,
-                             name_maxwidth=75,
-                             name_scale=1.0,
-                             flatness=1.0,
-                             shadow=1.0,
-                             show_death=False,
-                             show_lives=False))
+                        Icon(
+                            player,
+                            position=(xval, 25),
+                            scale=0.5,
+                            name_maxwidth=75,
+                            name_scale=1.0,
+                            flatness=1.0,
+                            shadow=1.0,
+                            show_death=False,
+                            show_lives=False,
+                        )
+                    )
                     xval += x_offs * 0.56
                     player.icons.append(
-                        Icon(player,
-                             position=(xval2, 25),
-                             scale=0.5,
-                             name_maxwidth=75,
-                             name_scale=1.0,
-                             flatness=1.0,
-                             shadow=1.0,
-                             show_death=False,
-                             show_lives=False))
+                        Icon(
+                            player,
+                            position=(xval2, 25),
+                            scale=0.5,
+                            name_maxwidth=75,
+                            name_scale=1.0,
+                            flatness=1.0,
+                            shadow=1.0,
+                            show_death=False,
+                            show_lives=False,
+                        )
+                    )
                     xval2 -= x_offs * 0.56
 
     def handlemessage(self, msg: Any) -> Any:
@@ -573,10 +606,11 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
 
                 # In FFA show scores since its hard to find on the scoreboard.
                 if isinstance(killer.actor, PlayerSpaz) and killer.actor:
-                    killer.actor.set_score_text(str(killer.team.score) + '/' +
-                                                str(self._score_to_win),
-                                                color=killer.team.color,
-                                                flash=True)
+                    killer.actor.set_score_text(
+                        str(killer.team.score) + '/' + str(self._score_to_win),
+                        color=killer.team.color,
+                        flash=True,
+                    )
 
             self._update_scoreboard()
 
@@ -592,8 +626,9 @@ class NewDuelGame(bs.TeamGameActivity[Player, Team]):
 
     def _update_scoreboard(self) -> None:
         for team in self.teams:
-            self._scoreboard.set_team_value(team, team.score,
-                                            self._score_to_win)
+            self._scoreboard.set_team_value(
+                team, team.score, self._score_to_win
+            )
 
     def end_game(self) -> None:
         results = bs.GameResults()

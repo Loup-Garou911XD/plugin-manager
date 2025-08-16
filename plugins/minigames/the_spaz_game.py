@@ -66,9 +66,7 @@ class TheSpazGame(EliminationGame):
             ),
             bs.FloatChoiceSetting(
                 'Respawn Times',
-                choices=[
-                    ('Shorter', 0.15)
-                ],
+                choices=[('Shorter', 0.15)],
                 default=1.0,
             ),
             bs.BoolSetting('Epic Mode', default=False),
@@ -91,14 +89,10 @@ class TheSpazGame(EliminationGame):
         return bs.app.classic.getmaps('melee')
 
     def get_instance_description(self) -> str | Sequence:
-        return (
-            'Enemy Spaz AmongUs. Kill them all'
-        )
+        return 'Enemy Spaz AmongUs. Kill them all'
 
     def get_instance_description_short(self) -> str | Sequence:
-        return (
-            'Enemy Spaz AmongUs. Kill them all'
-        )
+        return 'Enemy Spaz AmongUs. Kill them all'
 
     def __init__(self, settings: dict):
         super().__init__(settings)

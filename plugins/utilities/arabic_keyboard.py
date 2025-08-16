@@ -4,9 +4,9 @@ import bauiv1
 
 # Full Arabic characters (real Arabic keyboard layout simulation)
 arabic_chars = [
-    list('ضصثقفغعهخحج'),       # Row 1: QWERTY top
-    list('شسيبلاتنمكط'),       # Row 2: QWERTY middle
-    list('ئءؤرلاىةوزظ'),       # Row 3: QWERTY bottom (with 'لا' and more)
+    list('ضصثقفغعهخحج'),  # Row 1: QWERTY top
+    list('شسيبلاتنمكط'),  # Row 2: QWERTY middle
+    list('ئءؤرلاىةوزظ'),  # Row 3: QWERTY bottom (with 'لا' and more)
 ]
 
 # Fill each row to exactly 10 characters
@@ -24,9 +24,8 @@ while len(arabic_nums) < 26:
 
 class ArabicKeyboard(bauiv1.Keyboard):
     """Arabic Keyboard by \ue048Freaku"""
+
     name = 'Arabic Keyboard by yANES'
     chars = arabic_chars
     nums = arabic_nums
-    pages = {
-        'symbols': tuple('!@#$%^&*()-_=+[{]}\\|;:\'",<.>/?')[:26]
-    }
+    pages = {'symbols': tuple('!@#$%^&*()-_=+[{]}\\|;:\'",<.>/?')[:26]}

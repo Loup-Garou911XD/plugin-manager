@@ -25,8 +25,8 @@ if TYPE_CHECKING:
 # - - - - - - - Mini - Settings - - - - - - - - - - - - - - - - #
 
 zkBombs_limit = 3  # Number of bombs you can use | Default = 3
-zkPunch = False   # Enable/Disable punchs  | Default = False
-zkPickup = False   # Enable/Disable pickup  | Default = False
+zkPunch = False  # Enable/Disable punchs  | Default = False
+zkPickup = False  # Enable/Disable pickup  | Default = False
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 
@@ -40,6 +40,7 @@ class Team(bs.Team[Player]):
 
     def __init__(self) -> None:
         self.score = 0
+
 
 # ba_meta export bascenev1.GameActivity
 
@@ -55,7 +56,8 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-            cls, sessiontype: type[bs.Session]) -> list[babase.Setting]:
+        cls, sessiontype: type[bs.Session]
+    ) -> list[babase.Setting]:
         settings = [
             bs.IntSetting(
                 'Kills to Win Per Player',
@@ -96,18 +98,26 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
         # suiciding until you get a good drop)
         if issubclass(sessiontype, bs.FreeForAllSession):
             settings.append(
-                bs.BoolSetting('Allow Negative Scores', default=False))
+                bs.BoolSetting('Allow Negative Scores', default=False)
+            )
 
         return settings
 
     @classmethod
     def supports_session_type(cls, sessiontype: type[bs.Session]) -> bool:
-        return (issubclass(sessiontype, bs.DualTeamSession)
-                or issubclass(sessiontype, bs.FreeForAllSession))
+        return issubclass(sessiontype, bs.DualTeamSession) or issubclass(
+            sessiontype, bs.FreeForAllSession
+        )
 
     @classmethod
     def get_supported_maps(cls, sessiontype: type[bs.Session]) -> list[str]:
-        return ['Courtyard', 'Rampage', 'Monkey Face', 'Lake Frigid', 'Step Right Up']
+        return [
+            'Courtyard',
+            'Rampage',
+            'Monkey Face',
+            'Lake Frigid',
+            'Step Right Up',
+        ]
 
     def __init__(self, settings: dict):
         super().__init__(settings)
@@ -116,17 +126,18 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
         self._score_to_win: Optional[int] = None
         self._dingsound = bs.getsound('dingSmall')
         self._epic_mode = bool(settings['Epic Mode'])
-      #  self._text_credit = bool(settings['Credits'])
-        self._kills_to_win_per_player = int(
-            settings['Kills to Win Per Player'])
+        #  self._text_credit = bool(settings['Credits'])
+        self._kills_to_win_per_player = int(settings['Kills to Win Per Player'])
         self._time_limit = float(settings['Time Limit'])
         self._allow_negative_scores = bool(
-            settings.get('Allow Negative Scores', False))
+            settings.get('Allow Negative Scores', False)
+        )
 
         # Base class overrides.
         self.slow_motion = self._epic_mode
-        self.default_music = (bs.MusicType.EPIC if self._epic_mode else
-                              bs.MusicType.TO_THE_DEATH)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.TO_THE_DEATH
+        )
 
     def get_instance_description(self) -> Union[str, Sequence]:
         return 'Crush ${ARG1} of your enemies.', self._score_to_win
@@ -141,17 +152,18 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
     def on_begin(self) -> None:
         super().on_begin()
         self.setup_standard_time_limit(self._time_limit)
-     #   self.setup_standard_powerup_drops()
+        #   self.setup_standard_powerup_drops()
         # Ambiente
         gnode = bs.getactivity().globalsnode
         gnode.tint = (0.8, 1.2, 0.8)
         gnode.ambient_color = (0.7, 1.0, 0.6)
         gnode.vignette_outer = (0.4, 0.6, 0.4)  # C
-     #   gnode.vignette_inner = (0.9, 0.9, 0.9)
+        #   gnode.vignette_inner = (0.9, 0.9, 0.9)
 
         # Base kills needed to win on the size of the largest team.
-        self._score_to_win = (self._kills_to_win_per_player *
-                              max(1, max(len(t.players) for t in self.teams)))
+        self._score_to_win = self._kills_to_win_per_player * max(
+            1, max(len(t.players) for t in self.teams)
+        )
         self._update_scoreboard()
 
         delay = 5.0 if len(self.players) > 2 else 2.5
@@ -165,31 +177,35 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
             delay *= 0.25
         bs.timer(delay, self._set_meteor_timer)
 
-      #  self._timer = OnScreenTimer()
-       # self._timer.start()
+        #  self._timer = OnScreenTimer()
+        # self._timer.start()
 
         # Check for immediate end (if we've only got 1 player, etc).
         bs.timer(5.0, self._check_end_game)
 
-        t = bs.newnode('text',
-                       attrs={'text': "Minigame by Zacker Tz",
-                              'scale': 0.7,
-                              'position': (0.001, 625),
-                              'shadow': 0.5,
-                              'opacity': 0.7,
-                              'flatness': 1.2,
-                              'color': (0.6, 1, 0.6),
-                              'h_align': 'center',
-                              'v_attach': 'bottom'})
+        t = bs.newnode(
+            'text',
+            attrs={
+                'text': "Minigame by Zacker Tz",
+                'scale': 0.7,
+                'position': (0.001, 625),
+                'shadow': 0.5,
+                'opacity': 0.7,
+                'flatness': 1.2,
+                'color': (0.6, 1, 0.6),
+                'h_align': 'center',
+                'v_attach': 'bottom',
+            },
+        )
 
     def spawn_player(self, player: Player) -> bs.Actor:
         spaz = self.spawn_player_spaz(player)
 
         # Let's reconnect this player's controls to this
         # spaz but *without* the ability to attack or pick stuff up.
-        spaz.connect_controls_to_player(enable_punch=zkPunch,
-                                        enable_bomb=True,
-                                        enable_pickup=zkPickup)
+        spaz.connect_controls_to_player(
+            enable_punch=zkPunch, enable_bomb=True, enable_pickup=zkPickup
+        )
 
         spaz.bomb_count = zkBombs_limit
         spaz._max_bomb_count = zkBombs_limit
@@ -210,8 +226,18 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
         spaz.node.toes_mesh = bs.getmesh('melToes')
         spaz.node.style = 'mel'
         # Sounds cerdo gordo
-        mel_sounds = [bs.getsound('mel01'), bs.getsound('mel02'), bs.getsound('mel03'), bs.getsound('mel04'), bs.getsound('mel05'),
-                      bs.getsound('mel06'), bs.getsound('mel07'), bs.getsound('mel08'), bs.getsound('mel09'), bs.getsound('mel10')]
+        mel_sounds = [
+            bs.getsound('mel01'),
+            bs.getsound('mel02'),
+            bs.getsound('mel03'),
+            bs.getsound('mel04'),
+            bs.getsound('mel05'),
+            bs.getsound('mel06'),
+            bs.getsound('mel07'),
+            bs.getsound('mel08'),
+            bs.getsound('mel09'),
+            bs.getsound('mel10'),
+        ]
         spaz.node.jump_sounds = mel_sounds
         spaz.node.attack_sounds = mel_sounds
         spaz.node.impact_sounds = mel_sounds
@@ -220,8 +246,10 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
         spaz.node.fall_sounds = [bs.getsound('melFall01')]
 
     def _set_meteor_timer(self) -> None:
-        bs.timer((1.0 + 0.2 * random.random()) * self._meteor_time,
-                 self._drop_bomb_cluster)
+        bs.timer(
+            (1.0 + 0.2 * random.random()) * self._meteor_time,
+            self._drop_bomb_cluster,
+        )
 
     def _drop_bomb_cluster(self) -> None:
 
@@ -239,17 +267,23 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
         for _i in range(random.randrange(1, 3)):
             # Drop them somewhere within our bounds with velocity pointing
             # toward the opposite side.
-            pos = (-7.3 + 15.3 * random.random(), 11,
-                   -5.5 + 2.1 * random.random())
-            dropdir = (-1.0 if pos[0] > 0 else 1.0)
+            pos = (
+                -7.3 + 15.3 * random.random(),
+                11,
+                -5.5 + 2.1 * random.random(),
+            )
+            dropdir = -1.0 if pos[0] > 0 else 1.0
             vel = ((-5.0 + random.random() * 30.0) * dropdir, -4.0, 0)
             bs.timer(delay, babase.Call(self._drop_bomb, pos, vel))
             delay += 0.1
         self._set_meteor_timer()
 
-    def _drop_bomb(self, position: Sequence[float],
-                   velocity: Sequence[float]) -> None:
-        Bomb(position=position, velocity=velocity, bomb_type='sticky').autoretain()
+    def _drop_bomb(
+        self, position: Sequence[float], velocity: Sequence[float]
+    ) -> None:
+        Bomb(
+            position=position, velocity=velocity, bomb_type='sticky'
+        ).autoretain()
 
     def _decrement_meteor_time(self) -> None:
         self._meteor_time = max(0.01, self._meteor_time * 0.9)
@@ -292,10 +326,11 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
 
                 # In FFA show scores since its hard to find on the scoreboard.
                 if isinstance(killer.actor, PlayerSpaz) and killer.actor:
-                    killer.actor.set_score_text(str(killer.team.score) + '/' +
-                                                str(self._score_to_win),
-                                                color=killer.team.color,
-                                                flash=True)
+                    killer.actor.set_score_text(
+                        str(killer.team.score) + '/' + str(self._score_to_win),
+                        color=killer.team.color,
+                        flash=True,
+                    )
 
             self._update_scoreboard()
 
@@ -329,8 +364,9 @@ class FatPigs(bs.TeamGameActivity[Player, Team]):
 
     def _update_scoreboard(self) -> None:
         for team in self.teams:
-            self._scoreboard.set_team_value(team, team.score,
-                                            self._score_to_win)
+            self._scoreboard.set_team_value(
+                team, team.score, self._score_to_win
+            )
 
     def end_game(self) -> None:
         results = bs.GameResults()

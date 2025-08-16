@@ -18,7 +18,7 @@ class FastEpicSwitcher(bauiv1lib.party.PartyWindow):
             label='Fast Mode',
             button_type='square',
             position=(self._width - 62, self._height - 80),
-            on_activate_call=self._set_fast_mode
+            on_activate_call=self._set_fast_mode,
         )
 
         # Epic Mode Button
@@ -29,18 +29,23 @@ class FastEpicSwitcher(bauiv1lib.party.PartyWindow):
             label='Epic Mode',
             button_type='square',
             position=(self._width - 62, self._height - 150),
-            on_activate_call=self._set_epic_mode
+            on_activate_call=self._set_epic_mode,
         )
 
     def _set_fast_mode(self):
         """Set the game to Fast Mode."""
-        bs.get_foreground_host_activity().globalsnode.slow_motion = 0.5  # Fast Mode
+        bs.get_foreground_host_activity().globalsnode.slow_motion = (
+            0.5  # Fast Mode
+        )
         bui.screenmessage("Switched to Fast Mode", color=(0, 1, 0))
 
     def _set_epic_mode(self):
         """Set the game to Epic Mode."""
-        bs.get_foreground_host_activity().globalsnode.slow_motion = 1.0  # Epic Mode (Slow)
+        bs.get_foreground_host_activity().globalsnode.slow_motion = (
+            1.0  # Epic Mode (Slow)
+        )
         bui.screenmessage("Switched to Epic Mode!", color=(0, 1, 0))
+
 
 # ba_meta export babase.Plugin
 

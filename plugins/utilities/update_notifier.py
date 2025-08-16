@@ -80,16 +80,23 @@ def fetch_update():
 
     for link in download_links:
         link_lower = link.lower()
-        extension = link.replace('https://files.ballistica.net/bombsquad/builds/', '')
+        extension = link.replace(
+            'https://files.ballistica.net/bombsquad/builds/', ''
+        )
         if build:
-            if not ('server' in link_lower) and bs_platform.lower() in link_lower:
+            if (
+                not ('server' in link_lower)
+                and bs_platform.lower() in link_lower
+            ):
                 app = bui.app
                 subplatform = app.classic.subplatform
                 if subplatform == "google":
                     return
 
                 babase.screenmessage(
-                    "A new BombSquad version is available...\nRedirecting to download page", (0.21, 1.0, 0.20))
+                    "A new BombSquad version is available...\nRedirecting to download page",
+                    (0.21, 1.0, 0.20),
+                )
                 sound_sequence = [
                     ("drumRoll", 0),
                     ("fanfare", 0),
@@ -98,27 +105,36 @@ def fetch_update():
                     ("aww", 0),
                     ("ooh", 0),
                     ("yeah", 0),
-                    ("nice", 2)
+                    ("nice", 2),
                 ]
 
                 for sound, delay in sound_sequence:
                     if delay > 0:
                         time.sleep(delay)
-                    babase.pushcall(babase.Call(play_sound, sound), from_other_thread=True)
+                    babase.pushcall(
+                        babase.Call(play_sound, sound), from_other_thread=True
+                    )
                 time.sleep(1)
-                bui.open_url(f'https://ballistica.net/downloads#:~:text={extension}')
+                bui.open_url(
+                    f'https://ballistica.net/downloads#:~:text={extension}'
+                )
         elif not build:
             if ('server' in link_lower) and bs_platform.lower() in link_lower:
                 GREEN = "\033[32m"
                 LIGHT_BLUE = "\033[94m"
                 RESET = "\033[0m"
                 try:
-                    print(f"{GREEN}A new BombSquad version is available...Redirecting to download page{RESET}")
+                    print(
+                        f"{GREEN}A new BombSquad version is available...Redirecting to download page{RESET}"
+                    )
                     time.sleep(4)
-                    bui.open_url(f'https://ballistica.net/downloads#:~:text={extension}')
+                    bui.open_url(
+                        f'https://ballistica.net/downloads#:~:text={extension}'
+                    )
                 except:
                     print(
-                        f"{GREEN}Download the latest version using this official link-> {LIGHT_BLUE}{link}{RESET}")
+                        f"{GREEN}Download the latest version using this official link-> {LIGHT_BLUE}{link}{RESET}"
+                    )
 
 
 # ba_meta export babase.Plugin

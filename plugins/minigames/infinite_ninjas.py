@@ -12,7 +12,11 @@ from typing import TYPE_CHECKING
 import babase
 import bauiv1 as bui
 import bascenev1 as bs
-from bascenev1lib.actor.spazbot import SpazBotSet, ChargerBot, SpazBotDiedMessage
+from bascenev1lib.actor.spazbot import (
+    SpazBotSet,
+    ChargerBot,
+    SpazBotDiedMessage,
+)
 from bascenev1lib.actor.onscreentimer import OnScreenTimer
 
 if TYPE_CHECKING:
@@ -26,14 +30,22 @@ def ba_get_api_version():
 
 
 def ba_get_levels():
-    return [bs._level.Level(
-            'Infinite Ninjas', gametype=InfiniteNinjasGame,
+    return [
+        bs._level.Level(
+            'Infinite Ninjas',
+            gametype=InfiniteNinjasGame,
             settings={},
-            preview_texture_name='footballStadiumPreview'),
-            bs._level.Level(
-            'Epic Infinite Ninjas', gametype=InfiniteNinjasGame,
+            preview_texture_name='footballStadiumPreview',
+        ),
+        bs._level.Level(
+            'Epic Infinite Ninjas',
+            gametype=InfiniteNinjasGame,
             settings={'Epic Mode': True},
-            preview_texture_name='footballStadiumPreview')]
+            preview_texture_name='footballStadiumPreview',
+        ),
+    ]
+
+
 ## MoreMinigames.py support ##
 
 
@@ -44,6 +56,7 @@ class Player(bs.Player['Team']):
 class Team(bs.Team[Player]):
     """Our team type for this game."""
 
+
 # ba_meta export bascenev1.GameActivity
 
 
@@ -51,9 +64,9 @@ class InfiniteNinjasGame(bs.TeamGameActivity[Player, Team]):
     name = "Infinite Ninjas"
     description = "How long can you survive from Ninjas??"
     available_settings = [bs.BoolSetting('Epic Mode', default=False)]
-    scoreconfig = bs.ScoreConfig(label='Time',
-                                 scoretype=bs.ScoreType.MILLISECONDS,
-                                 lower_is_better=False)
+    scoreconfig = bs.ScoreConfig(
+        label='Time', scoretype=bs.ScoreType.MILLISECONDS, lower_is_better=False
+    )
     default_music = bs.MusicType.TO_THE_DEATH
 
     def __init__(self, settings: dict):

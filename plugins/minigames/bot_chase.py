@@ -22,6 +22,7 @@ class Player(bs.Player['Team']):
 
 class MrSpazBot(SpazBot):
     """Our bot type for this game"""
+
     character = 'Spaz'
     run = True
     charge_dist_min = 10.0
@@ -39,13 +40,11 @@ class Team(bs.Team[Player]):
 # ba_meta export bascenev1.GameActivity
 class BotChaseGame(bs.TeamGameActivity[Player, Team]):
     """Our goal is to survive from spawning bots"""
+
     name = 'Bot Chase'
     description = 'Try to survive from bots!'
     available_settings = [
-        bs.BoolSetting(
-            'Epic Mode',
-            default=False
-        ),
+        bs.BoolSetting('Epic Mode', default=False),
     ]
 
     announce_player_deaths = True
@@ -57,7 +56,11 @@ class BotChaseGame(bs.TeamGameActivity[Player, Team]):
     @classmethod
     def supports_session_type(cls, sessiontype: Type[bs.Session]) -> bool:
         # Coop session unused
-        return (issubclass(sessiontype, bs.FreeForAllSession) or issubclass(sessiontype, bs.DualTeamSession) or issubclass(sessiontype, bs.CoopSession))
+        return (
+            issubclass(sessiontype, bs.FreeForAllSession)
+            or issubclass(sessiontype, bs.DualTeamSession)
+            or issubclass(sessiontype, bs.CoopSession)
+        )
 
     def __init__(self, settings: dict):
         super().__init__(settings)
@@ -68,13 +71,17 @@ class BotChaseGame(bs.TeamGameActivity[Player, Team]):
 
         if self._epic_mode:
             self.slow_motion = True
-        self.default_music = (bs.MusicType.EPIC if self._epic_mode else bs.MusicType.FORWARD_MARCH)
+        self.default_music = (
+            bs.MusicType.EPIC if self._epic_mode else bs.MusicType.FORWARD_MARCH
+        )
 
     def on_player_join(self, player: Player) -> None:
         if self.has_begun():
             bs.broadcastmessage(
-                babase.Lstr(resource='playerDelayedJoinText',
-                            subs=[('${PLAYER}', player.getname(full=True))]),
+                babase.Lstr(
+                    resource='playerDelayedJoinText',
+                    subs=[('${PLAYER}', player.getname(full=True))],
+                ),
                 color=(0, 1, 0),
             )
             assert self._timer is not None
@@ -88,9 +95,9 @@ class BotChaseGame(bs.TeamGameActivity[Player, Team]):
 
     def spawn_player(self, player: Player) -> bs.Actor:
         spaz = self.spawn_player_spaz(player)
-        spaz.connect_controls_to_player(enable_punch=True,
-                                        enable_bomb=True,
-                                        enable_pickup=True)
+        spaz.connect_controls_to_player(
+            enable_punch=True, enable_bomb=True, enable_pickup=True
+        )
 
         spaz.bomb_count = 3
         spaz.bomb_type = 'normal'
@@ -109,8 +116,18 @@ class BotChaseGame(bs.TeamGameActivity[Player, Team]):
         spaz.node.toes_mesh = bs.getmesh('melToes')
         spaz.node.style = 'mel'
         # Sounds cerdo gordo
-        mel_sounds = [bs.getsound('mel01'), bs.getsound('mel02'), bs.getsound('mel03'), bs.getsound('mel04'), bs.getsound('mel05'),
-                      bs.getsound('mel06'), bs.getsound('mel07'), bs.getsound('mel08'), bs.getsound('mel09'), bs.getsound('mel10')]
+        mel_sounds = [
+            bs.getsound('mel01'),
+            bs.getsound('mel02'),
+            bs.getsound('mel03'),
+            bs.getsound('mel04'),
+            bs.getsound('mel05'),
+            bs.getsound('mel06'),
+            bs.getsound('mel07'),
+            bs.getsound('mel08'),
+            bs.getsound('mel09'),
+            bs.getsound('mel10'),
+        ]
         spaz.node.jump_sounds = mel_sounds
         spaz.node.attack_sounds = mel_sounds
         spaz.node.impact_sounds = mel_sounds
@@ -123,10 +140,24 @@ class BotChaseGame(bs.TeamGameActivity[Player, Team]):
 
     def on_begin(self) -> None:
         super().on_begin()
-        self._bots.spawn_bot(MrSpazBot, pos=(random.choice(
-            [1, -1, 2, -2]), 1.34, random.choice([1, -1, 2, -2])), spawn_time=2.0)
-        self._bots.spawn_bot(MrSpazBot, pos=(random.choice(
-            [1, -1, 2, -2]), 1.34, random.choice([1, -1, 2, -2])), spawn_time=2.0)
+        self._bots.spawn_bot(
+            MrSpazBot,
+            pos=(
+                random.choice([1, -1, 2, -2]),
+                1.34,
+                random.choice([1, -1, 2, -2]),
+            ),
+            spawn_time=2.0,
+        )
+        self._bots.spawn_bot(
+            MrSpazBot,
+            pos=(
+                random.choice([1, -1, 2, -2]),
+                1.34,
+                random.choice([1, -1, 2, -2]),
+            ),
+            spawn_time=2.0,
+        )
 
         self._timer = OnScreenTimer()
         self._timer.start()
@@ -156,8 +187,15 @@ class BotChaseGame(bs.TeamGameActivity[Player, Team]):
         return None
 
     def _spawn_this_bot(self) -> None:
-        self._bots.spawn_bot(MrSpazBot, pos=(random.choice(
-            [1, -1, 2, -2]), 1.34, random.choice([1, -1, 2, -2])), spawn_time=2.0)
+        self._bots.spawn_bot(
+            MrSpazBot,
+            pos=(
+                random.choice([1, -1, 2, -2]),
+                1.34,
+                random.choice([1, -1, 2, -2]),
+            ),
+            spawn_time=2.0,
+        )
 
     def _check_end_game(self) -> None:
         living_team_count = 0
@@ -200,8 +238,7 @@ class BotChaseGame(bs.TeamGameActivity[Player, Team]):
             longest_life = 0.0
             for player in team.players:
                 assert player.death_time is not None
-                longest_life = max(longest_life,
-                                   player.death_time - start_time)
+                longest_life = max(longest_life, player.death_time - start_time)
 
             results.set_team_score(team, int(1000.0 * longest_life))
 
@@ -212,7 +249,11 @@ class BotChaseGame(bs.TeamGameActivity[Player, Team]):
 class plugin(babase.Plugin):
     def __init__(self):
         ## Campaign support ##
-        babase.app.classic.add_coop_practice_level(bs.Level(
-            name='Bot Chase', gametype=BotChaseGame,
-            settings={},
-            preview_texture_name='footballStadiumPreview'))
+        babase.app.classic.add_coop_practice_level(
+            bs.Level(
+                name='Bot Chase',
+                gametype=BotChaseGame,
+                settings={},
+                preview_texture_name='footballStadiumPreview',
+            )
+        )

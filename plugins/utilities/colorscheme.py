@@ -126,7 +126,9 @@ class ColorScheme:
 class ColorSchemeWindow(bui.Window):
     def __init__(self, default_colors=((0.41, 0.39, 0.5), (0.5, 0.7, 0.25))):
         self._default_colors = default_colors
-        self._color, self._highlight = babase.app.config.get("ColorScheme", (None, None))
+        self._color, self._highlight = babase.app.config.get(
+            "ColorScheme", (None, None)
+        )
 
         self._last_color = self._color
         self._last_highlight = self._highlight
@@ -148,22 +150,22 @@ class ColorSchemeWindow(bui.Window):
         # legacy (1.6 < version <= 1.7.19) game's bastd/ui/profile/edit.py, and
         # so there could be some cruft here due to my oversight.
         uiscale = bui.app.ui_v1.uiscale
-        self._width = width = 480.0 if uiscale is babase.UIScale.SMALL else 380.0
-        self._x_inset = x_inset = 40.0 if uiscale is babase.UIScale.SMALL else 0.0
+        self._width = width = (
+            480.0 if uiscale is babase.UIScale.SMALL else 380.0
+        )
+        self._x_inset = x_inset = (
+            40.0 if uiscale is babase.UIScale.SMALL else 0.0
+        )
         self._height = height = (
             275.0
             if uiscale is babase.UIScale.SMALL
-            else 288.0
-            if uiscale is babase.UIScale.MEDIUM
-            else 300.0
+            else 288.0 if uiscale is babase.UIScale.MEDIUM else 300.0
         )
         spacing = 40
         self._base_scale = (
             2.05
             if uiscale is babase.UIScale.SMALL
-            else 1.5
-            if uiscale is babase.UIScale.MEDIUM
-            else 1.0
+            else 1.5 if uiscale is babase.UIScale.MEDIUM else 1.0
         )
         top_extra = 15
 
@@ -173,7 +175,9 @@ class ColorSchemeWindow(bui.Window):
                 on_outside_click_call=self.cancel_on_outside_click,
                 transition="in_right",
                 scale=self._base_scale,
-                stack_offset=(0, 15) if uiscale is babase.UIScale.SMALL else (0, 0),
+                stack_offset=(
+                    (0, 15) if uiscale is babase.UIScale.SMALL else (0, 0)
+                ),
             )
         )
 
@@ -230,7 +234,8 @@ class ColorSchemeWindow(bui.Window):
             button_type="square",
         )
         bui.buttonwidget(
-            edit=self._color_button, on_activate_call=babase.Call(self._pick_color, "color")
+            edit=self._color_button,
+            on_activate_call=babase.Call(self._pick_color, "color"),
         )
         bui.textwidget(
             parent=self._root_widget,

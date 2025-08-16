@@ -25,7 +25,9 @@ def override(cls: ClassType) -> Callable[[MethodType], MethodType]:
             setattr(cls, f'_original_{method_name}', getattr(cls, method_name))
         setattr(cls, method_name, new_method)
         return new_method
+
     return decorator
+
 
 # Enhanced Gather Tab
 
@@ -39,20 +41,28 @@ class EnhancedPublicGatherTab(PublicGatherTab):
             label='Party Filters',
             size=(120, 45),
             position=(110, height - 115),
-            on_activate_call=bs.WeakCall(self._open_window))
+            on_activate_call=bs.WeakCall(self._open_window),
+        )
 
     @override(PublicGatherTab)
     def _open_window(self) -> None:
         c_width, c_height = 600, 400
         uiscale = bui.app.ui_v1.uiscale
-        scale = 1.8 if uiscale is babase.UIScale.SMALL else 1.55 if uiscale is babase.UIScale.MEDIUM else 1.0
+        scale = (
+            1.8
+            if uiscale is babase.UIScale.SMALL
+            else 1.55 if uiscale is babase.UIScale.MEDIUM else 1.0
+        )
         self.window_root = bui.containerwidget(
             scale=scale,
-            stack_offset=(0, -10) if uiscale is babase.UIScale.SMALL else (0, 15),
+            stack_offset=(
+                (0, -10) if uiscale is babase.UIScale.SMALL else (0, 15)
+            ),
             size=(c_width, c_height),
             color=(0.5, 0.5, 0.5),
             transition='in_scale',
-            on_outside_click_call=bs.WeakCall(self._close_window))
+            on_outside_click_call=bs.WeakCall(self._close_window),
+        )
 
         v_ = 50
         bui.textwidget(
@@ -64,7 +74,8 @@ class EnhancedPublicGatherTab(PublicGatherTab):
             scale=1.5,
             color=(1, 1, 0.7),
             maxwidth=c_width * 0.8,
-            position=(c_width * 0.5, c_height - 60))
+            position=(c_width * 0.5, c_height - 60),
+        )
 
         bui.buttonwidget(
             parent=self.window_root,
@@ -74,7 +85,8 @@ class EnhancedPublicGatherTab(PublicGatherTab):
             color=(1, 0.3, 0.3),
             label=babase.charstr(babase.SpecialChar.BACK),
             button_type='backSmall',
-            on_activate_call=self._close_window)
+            on_activate_call=self._close_window,
+        )
 
         v = c_height - 175
         bui.checkboxwidget(
@@ -86,7 +98,8 @@ class EnhancedPublicGatherTab(PublicGatherTab):
             autoselect=True,
             textcolor=(0.8, 0.8, 0.8),
             value=not is_refreshing,
-            on_value_change_call=bs.WeakCall(self._toggle_refresh))
+            on_value_change_call=bs.WeakCall(self._toggle_refresh),
+        )
 
         v -= v_
         bui.checkboxwidget(
@@ -98,7 +111,8 @@ class EnhancedPublicGatherTab(PublicGatherTab):
             color=(0.6, 0.6, 0.6),
             textcolor=(0.8, 0.8, 0.8),
             value=hide_full,
-            on_value_change_call=bs.WeakCall(self._toggle_full))
+            on_value_change_call=bs.WeakCall(self._toggle_full),
+        )
 
         v -= v_
         self._empty_checkbox = bui.checkboxwidget(
@@ -110,7 +124,8 @@ class EnhancedPublicGatherTab(PublicGatherTab):
             color=(0.6, 0.6, 0.6),
             textcolor=(0.8, 0.8, 0.8),
             value=hide_empty,
-            on_value_change_call=bs.WeakCall(self._toggle_empty))
+            on_value_change_call=bs.WeakCall(self._toggle_empty),
+        )
 
         v -= v_
         self._only_empty_checkbox = bui.checkboxwidget(
@@ -122,7 +137,8 @@ class EnhancedPublicGatherTab(PublicGatherTab):
             color=(0.6, 0.6, 0.6),
             textcolor=(0.8, 0.8, 0.8),
             value=only_empty,
-            on_value_change_call=bs.WeakCall(self._toggle_only_empty))
+            on_value_change_call=bs.WeakCall(self._toggle_only_empty),
+        )
 
     @override(PublicGatherTab)
     def _close_window(self) -> None:
@@ -134,13 +150,18 @@ class EnhancedPublicGatherTab(PublicGatherTab):
         global is_refreshing
         is_refreshing = not is_refreshing
         bui.screenmessage(
-            f"Refreshing {'Enabled' if is_refreshing else 'Disabled'}", color=(1, 1, 0))
+            f"Refreshing {'Enabled' if is_refreshing else 'Disabled'}",
+            color=(1, 1, 0),
+        )
 
     @override(PublicGatherTab)
     def _toggle_full(self, _=None) -> None:
         global hide_full
         hide_full = not hide_full
-        bui.screenmessage(f"{'Hiding' if hide_full else 'Showing'} Full Parties", color=(1, 1, 0))
+        bui.screenmessage(
+            f"{'Hiding' if hide_full else 'Showing'} Full Parties",
+            color=(1, 1, 0),
+        )
         self._update_party_rows()
 
     @override(PublicGatherTab)
@@ -149,7 +170,10 @@ class EnhancedPublicGatherTab(PublicGatherTab):
         hide_empty = not hide_empty
         if hide_empty:
             only_empty = False
-        bui.screenmessage(f"{'Hiding' if hide_empty else 'Showing'} Empty Parties", color=(1, 1, 0))
+        bui.screenmessage(
+            f"{'Hiding' if hide_empty else 'Showing'} Empty Parties",
+            color=(1, 1, 0),
+        )
         if hide_empty:
             bui.checkboxwidget(edit=self._only_empty_checkbox, value=only_empty)
         self._update_party_rows()
@@ -161,7 +185,9 @@ class EnhancedPublicGatherTab(PublicGatherTab):
         if only_empty:
             hide_empty = False
         bui.screenmessage(
-            f"{'Showing Only Empty' if only_empty else 'Showing All'} Parties", color=(1, 1, 0))
+            f"{'Showing Only Empty' if only_empty else 'Showing All'} Parties",
+            color=(1, 1, 0),
+        )
         if only_empty:
             bui.checkboxwidget(edit=self._empty_checkbox, value=hide_empty)
         self._update_party_rows()
@@ -173,11 +199,16 @@ class EnhancedPublicGatherTab(PublicGatherTab):
             self._original__update_party_rows()
             if hide_full:
                 self._parties_sorted = [
-                    p for p in self._parties_sorted if p[1].size < p[1].size_max]
+                    p for p in self._parties_sorted if p[1].size < p[1].size_max
+                ]
             if hide_empty:
-                self._parties_sorted = [p for p in self._parties_sorted if p[1].size > 0]
+                self._parties_sorted = [
+                    p for p in self._parties_sorted if p[1].size > 0
+                ]
             if only_empty:
-                self._parties_sorted = [p for p in self._parties_sorted if p[1].size == 0]
+                self._parties_sorted = [
+                    p for p in self._parties_sorted if p[1].size == 0
+                ]
 
 
 # ba_meta require api 9

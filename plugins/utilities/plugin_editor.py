@@ -92,9 +92,13 @@ class EditModWindow(bui.Window):
         self._saving = False
         self._shown = False
         self._plug_path = ba.env()['python_directory_user']
-        self._same_plug = __file__ in (self._plug_path + '\\' + self._plugin + '.py',
-                                       self._plug_path + '/' + self._plugin + '.py')
-        self._plug_exists = os.path.exists(self._plug_path + os.sep + self._plugin + '.py')
+        self._same_plug = __file__ in (
+            self._plug_path + '\\' + self._plugin + '.py',
+            self._plug_path + '/' + self._plugin + '.py',
+        )
+        self._plug_exists = os.path.exists(
+            self._plug_path + os.sep + self._plugin + '.py'
+        )
 
         if self._theme == 'dark':
             self._tint = bs.get_foreground_host_activity().globalsnode.tint
@@ -115,7 +119,7 @@ class EditModWindow(bui.Window):
                 label=bui.Lstr(resource='backText'),
                 button_type='back',
                 on_select_call=bui.Call(self._update_line_num),
-                on_activate_call=bui.Call(self._back_button_clicked)
+                on_activate_call=bui.Call(self._back_button_clicked),
             )
             bui.containerwidget(
                 edit=self._root_widget, cancel_button=self._back_button
@@ -125,9 +129,14 @@ class EditModWindow(bui.Window):
             self._line_num = bui.textwidget(
                 parent=self._root_widget,
                 position=(
-                    self._width * (0.25 if bui.app.ui_v1.uiscale is bui.UIScale.SMALL
-                                   else 0.175),
-                    self._height - 60),
+                    self._width
+                    * (
+                        0.25
+                        if bui.app.ui_v1.uiscale is bui.UIScale.SMALL
+                        else 0.175
+                    ),
+                    self._height - 60,
+                ),
                 size=(120, 30),
                 text='1',
                 color=(0.75, 0.7, 0.8),
@@ -154,7 +163,9 @@ class EditModWindow(bui.Window):
                 parent=self._root_widget,
                 position=(self._width * 0.5, self._height * 0.6),
                 size=(0, 0),
-                text=bui.Lstr(value=f'You can\'t {self._view_type} the Editor, you PSYCHO!'),
+                text=bui.Lstr(
+                    value=f'You can\'t {self._view_type} the Editor, you PSYCHO!'
+                ),
                 color=(0.7, 0.8, 0.7),
                 h_align='center',
                 v_align='center',
@@ -164,7 +175,9 @@ class EditModWindow(bui.Window):
                     parent=self._root_widget,
                     position=(self._width * 0.5, self._height * 0.5),
                     size=(0, 0),
-                    text=bui.Lstr(value='You tryna change the file name? HAHAHA!'),
+                    text=bui.Lstr(
+                        value='You tryna change the file name? HAHAHA!'
+                    ),
                     color=(0.7, 0.8, 0.7),
                     h_align='center',
                     v_align='center',
@@ -180,7 +193,9 @@ class EditModWindow(bui.Window):
 
         if not self._same_plug:
             if self._plug_exists:
-                plug_code = open(self._plug_path + os.sep + self._plugin + '.py', 'r')
+                plug_code = open(
+                    self._plug_path + os.sep + self._plugin + '.py', 'r'
+                )
                 self._plug_lines = plug_code.readlines()
                 plug_code.close()
             else:
@@ -188,7 +203,9 @@ class EditModWindow(bui.Window):
                     parent=self._root_widget,
                     position=(self._width * 0.5, self._height * 0.6),
                     size=(0, 0),
-                    text=bui.Lstr(value='Either this is a Workspace Plugin or I can\'t find this.'),
+                    text=bui.Lstr(
+                        value='Either this is a Workspace Plugin or I can\'t find this.'
+                    ),
                     color=(0.7, 0.8, 0.7),
                     h_align='center',
                     v_align='center',
@@ -225,7 +242,7 @@ class EditModWindow(bui.Window):
                 bui.widget(
                     edit=self._save_button,
                     right_widget=self._save_button,
-                    up_widget=self._save_button
+                    up_widget=self._save_button,
                 )
 
             self._scrollwidget = bui.scrollwidget(
@@ -241,7 +258,9 @@ class EditModWindow(bui.Window):
 
             self._longest_len = 0
             for line in self._plug_lines:
-                line = line[0:len(line)-(1 if line[len(line)-1] == '\n' else 0)]
+                line = line[
+                    0 : len(line) - (1 if line[len(line) - 1] == '\n' else 0)
+                ]
                 self._lines.append(line)
                 if self._longest_len < len(line):
                     self._longest_len = len(line)
@@ -260,34 +279,38 @@ class EditModWindow(bui.Window):
                 edit=self._back_button,
                 right_widget=self._line_num,
                 down_widget=(
-                    self._subcontainer if self._selected_line_widget is None else
-                    self._selected_line_widget
-                )
+                    self._subcontainer
+                    if self._selected_line_widget is None
+                    else self._selected_line_widget
+                ),
             )
             bui.widget(
                 edit=self._line_num,
                 up_widget=self._line_num,
                 down_widget=(
-                    self._subcontainer if self._selected_line_widget is None else
-                    self._selected_line_widget
-                )
+                    self._subcontainer
+                    if self._selected_line_widget is None
+                    else self._selected_line_widget
+                ),
             )
             if self._view_type == 'edit':
                 bui.widget(
                     edit=self._add_line_button,
                     up_widget=self._add_line_button,
                     down_widget=(
-                        self._subcontainer if self._selected_line_widget is None else
-                        self._selected_line_widget
-                    )
+                        self._subcontainer
+                        if self._selected_line_widget is None
+                        else self._selected_line_widget
+                    ),
                 )
                 bui.widget(
                     edit=self._remove_line_button,
                     up_widget=self._remove_line_button,
                     down_widget=(
-                        self._subcontainer if self._selected_line_widget is None else
-                        self._selected_line_widget
-                    )
+                        self._subcontainer
+                        if self._selected_line_widget is None
+                        else self._selected_line_widget
+                    ),
                 )
 
             self._show_lines()
@@ -296,8 +319,9 @@ class EditModWindow(bui.Window):
     def _show_lines(self) -> None:
 
         sub_height = (len(self._lines) + 1) * 18
-        bui.containerwidget(edit=self._subcontainer,
-                            size=(self._scroll_width, sub_height))
+        bui.containerwidget(
+            edit=self._subcontainer, size=(self._scroll_width, sub_height)
+        )
 
         self._widgets = []
         y_num = 18 * (len(self._lines) - 1) + 10
@@ -307,7 +331,7 @@ class EditModWindow(bui.Window):
                 position=(23, y_num + 9),
                 size=(0, 0),
                 scale=0.5,
-                text=str(num+1),
+                text=str(num + 1),
                 h_align='right',
                 v_align='center',
             )
@@ -327,7 +351,9 @@ class EditModWindow(bui.Window):
             bui.widget(
                 edit=abc,
                 left_widget=self._back_button,
-                right_widget=self._add_line_button if self._view_type == 'edit' else abc,
+                right_widget=(
+                    self._add_line_button if self._view_type == 'edit' else abc
+                ),
             )
 
             def edit_them(obj):
@@ -340,15 +366,18 @@ class EditModWindow(bui.Window):
                     self._save_code()
                 self._selected_line_widget = obj
                 try:
-                    bui.textwidget(edit=self._line_num,
-                                   text=str(self._widgets.index(obj)+1)
-                                   )
+                    bui.textwidget(
+                        edit=self._line_num,
+                        text=str(self._widgets.index(obj) + 1),
+                    )
                 except:
                     pass
 
-            bui.textwidget(edit=abc,
-                           on_select_call=bui.Call(edit_them, abc),
-                           on_activate_call=bui.Call(edit_them, abc))
+            bui.textwidget(
+                edit=abc,
+                on_select_call=bui.Call(edit_them, abc),
+                on_activate_call=bui.Call(edit_them, abc),
+            )
             y_num -= 18
             self._widgets.append(abc)
 
@@ -368,9 +397,11 @@ class EditModWindow(bui.Window):
         self._show_lines()
         bui.containerwidget(
             edit=self._subcontainer,
-            selected_child=self._widgets[index-1 if index > 0 else 0]
+            selected_child=self._widgets[index - 1 if index > 0 else 0],
         )
-        self._selected_line_widget = self._widgets[index-1 if index > 0 else 0]
+        self._selected_line_widget = self._widgets[
+            index - 1 if index > 0 else 0
+        ]
 
     def _add_line(self) -> None:
         if self._selected_line_widget is None:
@@ -384,18 +415,19 @@ class EditModWindow(bui.Window):
             spaces += ch
         if self._lines[index][-1:] == ':':
             spaces += '    '
-        self._lines.insert(index+1, spaces)
+        self._lines.insert(index + 1, spaces)
         self._clear_scroll_widget()
         self._show_lines()
         bui.containerwidget(
-            edit=self._subcontainer,
-            selected_child=self._widgets[index+1]
+            edit=self._subcontainer, selected_child=self._widgets[index + 1]
         )
-        self._selected_line_widget = self._widgets[index+1]
+        self._selected_line_widget = self._widgets[index + 1]
 
     def _save_code(self) -> None:
         for num, widget in enumerate(self._widgets):
-            self._lines[num] = bui.textwidget(parent=self._subcontainer, query=widget)
+            self._lines[num] = bui.textwidget(
+                parent=self._subcontainer, query=widget
+            )
 
     def _save_button_clicked(self) -> None:
         if self._saving:
@@ -412,13 +444,13 @@ class EditModWindow(bui.Window):
     def _update_line_num(self) -> None:
         try:
             index = int(bui.textwidget(query=self._line_num))
-            if self._widgets[index-1] != self._selected_line_widget:
+            if self._widgets[index - 1] != self._selected_line_widget:
                 bui.containerwidget(
                     edit=self._subcontainer,
-                    selected_child=self._widgets[index-1],
-                    visible_child=self._widgets[index-1]
+                    selected_child=self._widgets[index - 1],
+                    visible_child=self._widgets[index - 1],
                 )
-                self._selected_line_widget = self._widgets[index-1]
+                self._selected_line_widget = self._widgets[index - 1]
         except (IndexError, ValueError, AttributeError):
             pass
 
@@ -568,9 +600,13 @@ class Plugin_Window(PluginWindow):
                 on_activate_call=bui.Call(
                     self._show_menu,
                     button,
-                    (plugin.show_settings_ui if plugin is not None and plugin.has_settings_ui() else None),
+                    (
+                        plugin.show_settings_ui
+                        if plugin is not None and plugin.has_settings_ui()
+                        else None
+                    ),
                     plugin,
-                    classpath
+                    classpath,
                 ),
             )
 
@@ -601,16 +637,20 @@ class Plugin_Window(PluginWindow):
             )
 
     def _show_menu(self, button, func, plugin, classpath) -> None:
-        choices = ['view', 'edit', 'settings'
-                   ] if plugin is not None and plugin.has_settings_ui() else ['view', 'edit']
-        choices_display = [
-            bui.Lstr(value='View Code'),
-            bui.Lstr(value='Edit Code'),
-            bui.Lstr(value='Settings'),
-        ] if plugin is not None and plugin.has_settings_ui() else [
-            bui.Lstr(value='View Code'),
-            bui.Lstr(value='Edit Code')
-        ]
+        choices = (
+            ['view', 'edit', 'settings']
+            if plugin is not None and plugin.has_settings_ui()
+            else ['view', 'edit']
+        )
+        choices_display = (
+            [
+                bui.Lstr(value='View Code'),
+                bui.Lstr(value='Edit Code'),
+                bui.Lstr(value='Settings'),
+            ]
+            if plugin is not None and plugin.has_settings_ui()
+            else [bui.Lstr(value='View Code'), bui.Lstr(value='Edit Code')]
+        )
         popup.PopupMenuWindow(
             position=button.get_screen_space_center(),
             choices=choices,
@@ -621,7 +661,11 @@ class Plugin_Window(PluginWindow):
             scale=(
                 2.3
                 if bui.app.ui_v1.uiscale is bui.UIScale.SMALL
-                else 1.65 if bui.app.ui_v1.uiscale is bui.UIScale.MEDIUM else 1.23
+                else (
+                    1.65
+                    if bui.app.ui_v1.uiscale is bui.UIScale.MEDIUM
+                    else 1.23
+                )
             ),
         )
         self._info = [button, func, classpath]
@@ -657,7 +701,7 @@ class Plugin_Window(PluginWindow):
                 EditModWindow(
                     transition='in_right',
                     plugin=plugin.split('.')[0],
-                    view_type=view_mode
+                    view_type=view_mode,
                 ).get_root_widget(),
                 from_window=self._root_widget,
             )
@@ -670,7 +714,11 @@ class PluginEditorSettingsWindow(popup.PopupWindow):
         self.scale_origin = origin_widget.get_screen_space_center()
         bui.getsound('swish').play()
         _uiscale = bui.app.ui_v1.uiscale
-        s = 1.65 if _uiscale is ba.UIScale.SMALL else 1.39 if _uiscale is ba.UIScale.MEDIUM else 1.67
+        s = (
+            1.65
+            if _uiscale is ba.UIScale.SMALL
+            else 1.39 if _uiscale is ba.UIScale.MEDIUM else 1.67
+        )
         width = 400 * s
         height = width * 0.5
         color = (1, 1, 1)
@@ -678,18 +726,29 @@ class PluginEditorSettingsWindow(popup.PopupWindow):
         self._transition_out = 'out_scale'
         transition = 'in_scale'
 
-        self._root_widget = bui.containerwidget(size=(width, height),
-                                                on_outside_click_call=self._back,
-                                                transition=transition,
-                                                scale=(1.5 if _uiscale is ba.UIScale.SMALL else 1.5
-                                                       if _uiscale is ba.UIScale.MEDIUM else 1.0),
-                                                scale_origin_stack_offset=self.scale_origin)
+        self._root_widget = bui.containerwidget(
+            size=(width, height),
+            on_outside_click_call=self._back,
+            transition=transition,
+            scale=(
+                1.5
+                if _uiscale is ba.UIScale.SMALL
+                else 1.5 if _uiscale is ba.UIScale.MEDIUM else 1.0
+            ),
+            scale_origin_stack_offset=self.scale_origin,
+        )
 
-        bui.textwidget(parent=self._root_widget,
-                       position=(width * 0.49, height * 0.87), size=(0, 0),
-                       h_align='center', v_align='center', text='Plugin Editor Settings',
-                       scale=text_scale * 1.25, color=bui.app.ui_v1.title_color,
-                       maxwidth=width * 0.9)
+        bui.textwidget(
+            parent=self._root_widget,
+            position=(width * 0.49, height * 0.87),
+            size=(0, 0),
+            h_align='center',
+            v_align='center',
+            text='Plugin Editor Settings',
+            scale=text_scale * 1.25,
+            color=bui.app.ui_v1.title_color,
+            maxwidth=width * 0.9,
+        )
 
         back_button = bui.buttonwidget(
             parent=self._root_widget,
@@ -698,19 +757,21 @@ class PluginEditorSettingsWindow(popup.PopupWindow):
             scale=0.8,
             label=ba.charstr(ba.SpecialChar.BACK),
             button_type='backSmall',
-            on_activate_call=self._back)
+            on_activate_call=self._back,
+        )
 
         bui.containerwidget(edit=self._root_widget, cancel_button=back_button)
 
-        bui.textwidget(parent=self._root_widget,
-                       position=(width * 0.32, height * 0.5),
-                       size=(0, 0),
-                       h_align='center',
-                       v_align='center',
-                       text='Theme :',
-                       scale=text_scale * 1.15,
-                       color=bui.app.ui_v1.title_color
-                       )
+        bui.textwidget(
+            parent=self._root_widget,
+            position=(width * 0.32, height * 0.5),
+            size=(0, 0),
+            h_align='center',
+            v_align='center',
+            text='Theme :',
+            scale=text_scale * 1.15,
+            color=bui.app.ui_v1.title_color,
+        )
 
         popup.PopupMenu(
             parent=self._root_widget,

@@ -63,7 +63,9 @@ class SimplePlaylist:
 
     def pull_next(self) -> None:
         if "map" not in self.settings["settings"]:
-            settings = dict(map=self.settings["map"], **self.settings["settings"])
+            settings = dict(
+                map=self.settings["map"], **self.settings["settings"]
+            )
         else:
             settings = self.settings["settings"]
         return dict(resolved_type=self.gametype, settings=settings)
@@ -96,7 +98,9 @@ class CustomSession(FreeForAllSession):
         # Get a game on deck ready to go.
         self._current_game_spec: Optional[Dict[str, Any]] = None
         self._next_game_spec: Dict[str, Any] = self._playlist.pull_next()
-        self._next_game: Type[bs.GameActivity] = self._next_game_spec["resolved_type"]
+        self._next_game: Type[bs.GameActivity] = self._next_game_spec[
+            "resolved_type"
+        ]
 
         # Go ahead and instantiate the next game we'll
         # use so it has lots of time to load.
@@ -122,9 +126,7 @@ class SelectGameWindow(PlaylistAddGameWindow):
         self._height = (
             346
             if uiscale is babase.UIScale.SMALL
-            else 380
-            if uiscale is babase.UIScale.MEDIUM
-            else 440
+            else 380 if uiscale is babase.UIScale.MEDIUM else 440
         )
         top_extra = 30 if uiscale is babase.UIScale.SMALL else 20
         self._scroll_width = 210
@@ -135,9 +137,7 @@ class SelectGameWindow(PlaylistAddGameWindow):
             scale=(
                 2.17
                 if uiscale is babase.UIScale.SMALL
-                else 1.5
-                if uiscale is babase.UIScale.MEDIUM
-                else 1.0
+                else 1.5 if uiscale is babase.UIScale.MEDIUM else 1.0
             ),
             stack_offset=(0, 1) if uiscale is babase.UIScale.SMALL else (0, 0),
         )
@@ -166,7 +166,8 @@ class SelectGameWindow(PlaylistAddGameWindow):
 
         if bui.app.ui_v1.use_toolbars:
             bui.widget(
-                edit=select_button, right_widget=bui.get_special_widget("party_button")
+                edit=select_button,
+                right_widget=bui.get_special_widget("party_button"),
             )
 
         bui.textwidget(
@@ -230,13 +231,17 @@ class SelectGameWindow(PlaylistAddGameWindow):
         )
         self._selected_game_type: Optional[Type[bs.GameActivity]] = None
 
-        bui.containerwidget(edit=self._root_widget, selected_child=self._scrollwidget)
+        bui.containerwidget(
+            edit=self._root_widget, selected_child=self._scrollwidget
+        )
 
         self._game_types: list[type[bs.GameActivity]] = []
 
         # Get actual games loading in the bg.
         babase.app.meta.load_exported_classes(
-            bs.GameActivity, self._on_game_types_loaded, completion_cb_in_bg_thread=True
+            bs.GameActivity,
+            self._on_game_types_loaded,
+            completion_cb_in_bg_thread=True,
         )
 
         # Refresh with our initial empty list. We'll refresh again once
@@ -257,7 +262,9 @@ class SelectGameWindow(PlaylistAddGameWindow):
         if self._column is not None:
             self._column.delete()
 
-        self._column = bui.columnwidget(parent=self._scrollwidget, border=2, margin=0)
+        self._column = bui.columnwidget(
+            parent=self._scrollwidget, border=2, margin=0
+        )
 
         for i, gametype in enumerate(self._game_types):
 
@@ -274,7 +281,9 @@ class SelectGameWindow(PlaylistAddGameWindow):
                 v_align="center",
                 color=(0.8, 0.8, 0.8, 1.0),
                 maxwidth=self._scroll_width * 0.8,
-                on_select_call=babase.Call(self._set_selected_game_type, gametype),
+                on_select_call=babase.Call(
+                    self._set_selected_game_type, gametype
+                ),
                 always_highlight=True,
                 selectable=True,
                 on_activate_call=_doit,
@@ -308,7 +317,9 @@ class SelectGameWindow(PlaylistAddGameWindow):
         if "map" in gameconfig:
             gameconfig["settings"]["map"] = gameconfig.pop("map")
         self._selected_game_type.create_settings_ui(
-            self._editcontroller.get_session_type(), gameconfig, self._edit_game_done
+            self._editcontroller.get_session_type(),
+            gameconfig,
+            self._edit_game_done,
         )
 
     def _edit_game_done(self, config: Optional[Dict[str, Any]]) -> None:
@@ -393,13 +404,19 @@ def _restore_state(self) -> None:
     if not hasattr(self, "_quick_game_button"):
         return  # ensure that our monkey patched init ran
     if self.__class__.__name__ not in bui.app.ui_v1.window_states:
-        bui.containerwidget(edit=self._root_widget, selected_child=self._coop_button)
+        bui.containerwidget(
+            edit=self._root_widget, selected_child=self._coop_button
+        )
         return
-    sel = states(self).get(bui.app.ui_v1.window_states[self.__class__.__name__], None)
+    sel = states(self).get(
+        bui.app.ui_v1.window_states[self.__class__.__name__], None
+    )
     if sel:
         bui.containerwidget(edit=self._root_widget, selected_child=sel)
     else:
-        bui.containerwidget(edit=self._root_widget, selected_child=self._coop_button)
+        bui.containerwidget(
+            edit=self._root_widget, selected_child=self._coop_button
+        )
         babase.print_exception(f"Error restoring state for {self}.")
 
 

@@ -9,6 +9,7 @@ import bauiv1 as bui
 import bascenev1 as bs
 import random
 from bauiv1lib.gather.publictab import PublicGatherTab, PartyEntry, PingThread
+
 if TYPE_CHECKING:
     from typing import Callable
 
@@ -28,6 +29,7 @@ def override(cls: ClassType) -> Callable[[MethodType], MethodType]:
 
     return decorator
 
+
 # Can this stuff break mro? (P.S. yes, so we're not using super() anymore).
 # Although it gives nice auto-completion.
 # And anyways, why not just GatherPublicTab = NewGatherPublicTab?
@@ -38,9 +40,12 @@ def override(cls: ClassType) -> Callable[[MethodType], MethodType]:
 class NewPublicGatherTab(PublicGatherTab, PingThread):
 
     @override(PublicGatherTab)
-    def _build_join_tab(self, region_width: float,
-                        region_height: float,
-                        oldfunc: Callable = None) -> None:
+    def _build_join_tab(
+        self,
+        region_width: float,
+        region_height: float,
+        oldfunc: Callable = None,
+    ) -> None:
         # noinspection PyUnresolvedReferences
         self._old__build_join_tab(region_width, region_height)
 
@@ -59,8 +64,11 @@ class NewPublicGatherTab(PublicGatherTab, PingThread):
             position=(710, v + 10),
             on_activate_call=bs.WeakCall(self._join_random_server),
         )
-        bui.widget(edit=self._random_join_button, up_widget=self._host_text,
-                   left_widget=self._filter_text)
+        bui.widget(
+            edit=self._random_join_button,
+            up_widget=self._host_text,
+            left_widget=self._filter_text,
+        )
 
         # We could place it somewhere under plugin settings which is kind of
         # official way to customise plugins. Although it's too deep:
@@ -76,32 +84,43 @@ class NewPublicGatherTab(PublicGatherTab, PingThread):
 
     @override(PublicGatherTab)
     def _show_random_join_settings(self) -> None:
-        RandomJoinSettingsPopup(
-            origin_widget=self._random_join_settings_button)
+        RandomJoinSettingsPopup(origin_widget=self._random_join_settings_button)
 
     @override(PublicGatherTab)
     def _get_parties_list(self) -> list[PartyEntry]:
-        if (self._parties_sorted and
-            (randomjoin.maximum_ping == 9999 or
-             # Ensure that we've pinged at least 10%.
-             len([p for k, p in self._parties_sorted
-                  if p.ping is not None]) > len(self._parties_sorted) / 10)):
+        if self._parties_sorted and (
+            randomjoin.maximum_ping == 9999
+            or
+            # Ensure that we've pinged at least 10%.
+            len([p for k, p in self._parties_sorted if p.ping is not None])
+            > len(self._parties_sorted) / 10
+        ):
             randomjoin.cached_parties = [p for k, p in self._parties_sorted]
         return randomjoin.cached_parties
 
     @override(PublicGatherTab)
     def _join_random_server(self) -> None:
         name_prefixes = set()
-        parties = [p for p in self._get_parties_list() if
-                   (randomjoin.party_name_contains in p.name
-                    and p.size >= randomjoin.minimum_players
-                    and p.size < p.size_max and (randomjoin.maximum_ping == 9999
-                                                 or (p.ping is not None
-                                                     and p.ping <= randomjoin.maximum_ping)))]
+        parties = [
+            p
+            for p in self._get_parties_list()
+            if (
+                randomjoin.party_name_contains in p.name
+                and p.size >= randomjoin.minimum_players
+                and p.size < p.size_max
+                and (
+                    randomjoin.maximum_ping == 9999
+                    or (
+                        p.ping is not None and p.ping <= randomjoin.maximum_ping
+                    )
+                )
+            )
+        ]
 
         if not parties:
-            bui.screenmessage('No suitable servers found; wait',
-                              color=(1, 0, 0))
+            bui.screenmessage(
+                'No suitable servers found; wait', color=(1, 0, 0)
+            )
             bui.getsound('error').play()
             return
 
@@ -111,7 +130,8 @@ class NewPublicGatherTab(PublicGatherTab, PingThread):
         random.choice(list(name_prefixes))
 
         party = random.choice(
-            [p for p in parties if p.name[:6] in name_prefixes])
+            [p for p in parties if p.name[:6] in name_prefixes]
+        )
 
         bs.connect_to_party(party.address, party.port)
 
@@ -121,23 +141,23 @@ class RandomJoinSettingsPopup(bui.Window):
         c_width = 600
         c_height = 400
         uiscale = bui.app.ui_v1.uiscale
-        super().__init__(root_widget=bui.containerwidget(
-            scale=(
-                1.8
-                if uiscale is babase.UIScale.SMALL
-                else 1.55
-                if uiscale is babase.UIScale.MEDIUM
-                else 1.0
-            ),
-            scale_origin_stack_offset=origin_widget.get_screen_space_center(),
-            stack_offset=(0, -10)
-            if uiscale is babase.UIScale.SMALL
-            else (0, 15)
-            if uiscale is babase.UIScale.MEDIUM
-            else (0, 0),
-            size=(c_width, c_height),
-            transition='in_scale',
-        ))
+        super().__init__(
+            root_widget=bui.containerwidget(
+                scale=(
+                    1.8
+                    if uiscale is babase.UIScale.SMALL
+                    else 1.55 if uiscale is babase.UIScale.MEDIUM else 1.0
+                ),
+                scale_origin_stack_offset=origin_widget.get_screen_space_center(),
+                stack_offset=(
+                    (0, -10)
+                    if uiscale is babase.UIScale.SMALL
+                    else (0, 15) if uiscale is babase.UIScale.MEDIUM else (0, 0)
+                ),
+                size=(c_width, c_height),
+                transition='in_scale',
+            )
+        )
 
         bui.textwidget(
             parent=self._root_widget,
@@ -246,21 +266,25 @@ class RandomJoinSettingsPopup(bui.Window):
         maximum_ping: int | None = None
         try:
             minimum_players = int(
-                bui.textwidget(query=self._minimum_players_edit))
+                bui.textwidget(query=self._minimum_players_edit)
+            )
         except ValueError:
-            bui.screenmessage('"Minimum players" should be integer',
-                              color=(1, 0, 0))
+            bui.screenmessage(
+                '"Minimum players" should be integer', color=(1, 0, 0)
+            )
             bui.getsound('error').play()
             errored = True
         try:
-            maximum_ping = int(
-                bui.textwidget(query=self._maximum_ping_edit))
+            maximum_ping = int(bui.textwidget(query=self._maximum_ping_edit))
         except ValueError:
-            bui.screenmessage('"Maximum ping" should be integer',
-                              color=(1, 0, 0))
+            bui.screenmessage(
+                '"Maximum ping" should be integer', color=(1, 0, 0)
+            )
             bui.getsound('error').play()
             errored = True
-        party_name_contains = bui.textwidget(query=self._party_name_contains_edit)
+        party_name_contains = bui.textwidget(
+            query=self._party_name_contains_edit
+        )
         if errored:
             return
 
@@ -268,17 +292,18 @@ class RandomJoinSettingsPopup(bui.Window):
         assert maximum_ping is not None
 
         if minimum_players < 0:
-            bui.screenmessage('"Minimum players" should be at least 0',
-                              color=(1, 0, 0))
+            bui.screenmessage(
+                '"Minimum players" should be at least 0', color=(1, 0, 0)
+            )
             bui.getsound('error').play()
             errored = True
 
         if maximum_ping <= 0:
-            bui.screenmessage('"Maximum ping" should be greater than 0',
-                              color=(1, 0, 0))
+            bui.screenmessage(
+                '"Maximum ping" should be greater than 0', color=(1, 0, 0)
+            )
             bui.getsound('error').play()
-            bui.screenmessage('(use 9999 as dont-care value)',
-                              color=(1, 0, 0))
+            bui.screenmessage('(use 9999 as dont-care value)', color=(1, 0, 0))
             errored = True
 
         if errored:
@@ -309,18 +334,24 @@ class RandomJoin:
         self.load_config()
 
     def load_config(self) -> None:
-        cfg = babase.app.config.get('Random Join', {
-            'maximum_ping': self.maximum_ping,
-            'minimum_players': self.minimum_players,
-            'party_name_contains': self.party_name_contains,
-        })
+        cfg = babase.app.config.get(
+            'Random Join',
+            {
+                'maximum_ping': self.maximum_ping,
+                'minimum_players': self.minimum_players,
+                'party_name_contains': self.party_name_contains,
+            },
+        )
         try:
             self.maximum_ping = cfg['maximum_ping']
             self.minimum_players = cfg['minimum_players']
             self.party_name_contains = cfg['party_name_contains']
         except KeyError:
-            bui.screenmessage('Error: RandomJoin config is broken, resetting..',
-                              color=(1, 0, 0), log=True)
+            bui.screenmessage(
+                'Error: RandomJoin config is broken, resetting..',
+                color=(1, 0, 0),
+                log=True,
+            )
             bui.getsound('error').play()
             self.commit_config()
 
