@@ -45,7 +45,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          CHANGED_FILES=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename' --silent | tr '\n' ' ')
+          CHANGED_FILES=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename'| tr '\n' ' ')
           CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r "$LAST_COMMIT_HASH")
           python test/auto_apply_plugin_metadata.py "$CHANGED_FILES"
 
