@@ -2,11 +2,11 @@ name: CI
 
 # WORD OF CAUTION:
 #   TO anyone modifying this
-#     Things will break if you modify this 
+#     Things will break if you modify this
 #     without understanding how it works
 
 # A simple flow of this file:
-#   Apply AutoPEP8 → Apply Plugin Metadata → CRITICAL COMMIT (format + plugin meta) 
+#   Apply AutoPEP8 → Apply Plugin Metadata → CRITICAL COMMIT (format + plugin meta)
 #   ←              ←              ←              ←              ←              ↵
 #   ↪ Apply Version Metadata → Commit (version meta) → Tests
 
@@ -42,9 +42,8 @@ jobs:
 
       - name: Apply Plugin Metadata
         if: github.event_name == 'pull_request_target'
-      # should this only be run on pull_request_target and not pushes??
         run: |
-          LAST_COMMIT_HASH=$(git log --pretty=format:'%H' -n 1)
+          CHANGED_FILES=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename' --silent | tr '\n' ' ')
           CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r "$LAST_COMMIT_HASH")
           python test/auto_apply_plugin_metadata.py "$CHANGED_FILES"
 
