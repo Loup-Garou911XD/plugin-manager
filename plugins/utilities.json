@@ -2326,6 +2326,54 @@
           "md5sum": "01c6cb1a3d3b525c87caed389c8d03ed"
         }
       }
+    },
+    "test_plugin": {
+      "description": "A test plugin for demonstration purposes blah blah.",
+      "external_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "authors": [
+        {
+          "name": "Loup",
+          "email": "loupg450@gmail.com",
+          "discord": "loupgarou_"
+        },
+        {
+          "name": "brostos",
+          "email": "",
+          "discord": "brostos"
+        }
+      ],
+      "versions": {
+        "1.0.0": {
+          "api_version": 9,
+          "commit_sha": "96c3e90",
+          "released_on": "04-01-2026",
+          "md5sum": "a0eae953afeb6527dbac743d7fc9ec37"
+        }
+      }
+    },
+    "test_plugin2": {
+      "description": "A test plugin for demonstration purposes blah blah.",
+      "external_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "authors": [
+        {
+          "name": "Loup",
+          "email": "loupg450@gmail.com",
+          "discord": "loupgarou_"
+        },
+        {
+          "name": "brostos",
+          "email": "",
+          "discord": "brostos"
+        }
+      ],
+      "versions": {
+        "1.0.0": {
+          "api_version": 9,
+          "commit_sha": "96c3e90",
+          "released_on": "04-01-2026",
+          "md5sum": "6ab23fdd9257f28efea668d210808a5b"
+        }
+      }
     }
   }
 }
