@@ -2326,44 +2326,6 @@
           "md5sum": "01c6cb1a3d3b525c87caed389c8d03ed"
         }
       }
-    },
-    "test_plugin": {
-      "description": "A test plugin for demonstration purposes blah blah.",
-      "external_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "authors": [
-        {
-          "name": "Loup",
-          "email": "loupg450@gmail.com",
-          "discord": "loupgarou_"
-        },
-        {
-          "name": "brostos",
-          "email": "",
-          "discord": "brostos"
-        }
-      ],
-      "versions": {
-        "1.0.0": null
-      }
-    },
-    "test_plugin2": {
-      "description": "A test plugin for demonstration purposes blah blah.",
-      "external_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "authors": [
-        {
-          "name": "Loup",
-          "email": "loupg450@gmail.com",
-          "discord": "loupgarou_"
-        },
-        {
-          "name": "brostos",
-          "email": "",
-          "discord": "brostos"
-        }
-      ],
-      "versions": {
-        "1.0.0": null
-      }
     }
   }
 }
