@@ -12,7 +12,10 @@ print("DOES THIS RUN AUTO APPLY PLUGIN METADATA?")
 
 def debug_print(*args, **kwargs):
     if DEBUG:
-        print(*args, **kwargs)
+        try:
+            print(*args, **kwargs)
+        except Exception as e:
+            print(f"something went wrong while printing debug info : {e}")
 
 
 def get_latest_version(plugin_name, category) -> str:
