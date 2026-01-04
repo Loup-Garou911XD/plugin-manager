@@ -4,6 +4,12 @@
 # کپی با ذکر منبع آزاد
 
 from __future__ import annotations
+from bascenev1lib.mainmenu import MainMenuSession
+from bascenev1._map import Map
+import random
+import bauiv1 as bui
+import bascenev1 as bs
+import babase
 from typing import TYPE_CHECKING, cast
 
 plugman = dict(
@@ -16,12 +22,6 @@ plugman = dict(
     version="1.0.0",
 )
 
-import babase
-import bascenev1 as bs
-import bauiv1 as bui
-import random
-from bascenev1._map import Map
-from bascenev1lib.mainmenu import MainMenuSession
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable, List, Dict, Tuple, Optional, Union
