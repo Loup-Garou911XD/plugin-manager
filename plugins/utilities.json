@@ -2356,7 +2356,12 @@
         }
       ],
       "versions": {
-        "1.0.0": null
+        "1.0.0": {
+          "api_version": 9,
+          "commit_sha": "36cb537",
+          "released_on": "10-01-2026",
+          "md5sum": "9574c5ec99618f268fb691acadee8659"
+        }
       }
     },
     "test_plugin2": {
@@ -2370,7 +2375,12 @@
         }
       ],
       "versions": {
-        "1.0.0": null
+        "1.0.0": {
+          "api_version": 9,
+          "commit_sha": "36cb537",
+          "released_on": "10-01-2026",
+          "md5sum": "4f90523e991ceeb101454e042a218316"
+        }
       }
     }
   }
