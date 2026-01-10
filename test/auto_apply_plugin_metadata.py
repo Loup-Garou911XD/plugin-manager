@@ -13,7 +13,7 @@ print("DOES THIS RUN AUTO APPLY PLUGIN METADATA?")
 def debug_print(*args, **kwargs):
     if DEBUG:
         try:
-            print(*args, **kwargs)
+            print(str(*args), str(**kwargs))
         except Exception as e:
             print(f"something went wrong while printing debug info : {e}")
 
