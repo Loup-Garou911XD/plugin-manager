@@ -1,0 +1,138 @@
+name: Rebase PR to remove CI plugin commits
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  rebase-ci-commits:
+    if: >
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/rebase-plugin-ci')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check commenter permissions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const user = context.payload.comment.user.login;
+            const perm = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: user
+            });
+
+            if (!['admin', 'maintain', 'write'].includes(perm.data.permission)) {
+              core.setFailed(`User ${user} is not allowed to rebase PR history`);
+            }
+
+      - name: Get PR info
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+
+            core.setOutput('ref', pr.data.head.ref);
+            core.setOutput('repo', pr.data.head.repo.full_name);
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pr.outputs.repo }}
+          ref: ${{ steps.pr.outputs.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify clean working tree
+        run: |
+          if ! git diff --quiet; then
+            echo "Working tree is dirty, aborting"
+            exit 1
+          fi
+
+      - name: Locate CI commits by author
+        id: find_commits
+        run: |
+          set -e
+
+          CI_AUTHOR="github-actions[bot]"
+
+          echo "Searching for CI commits by $CI_AUTHOR"
+
+          CI_COMMITS=$(git log --reverse \
+            --author="$CI_AUTHOR" \
+            --pretty=format:'%H %s' \
+            | grep '\[ci\] apply-' \
+            | cut -d' ' -f1 || true)
+
+          if [ -z "$CI_COMMITS" ]; then
+            echo "No CI commits found"
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          COUNT=$(echo "$CI_COMMITS" | wc -l | tr -d ' ')
+          echo "Found $COUNT CI commits"
+
+          if [ "$COUNT" -ne 2 ]; then
+            echo "Expected exactly 2 CI commits, found $COUNT"
+            exit 1
+          fi
+
+          FIRST=$(echo "$CI_COMMITS" | sed -n '1p')
+          SECOND=$(echo "$CI_COMMITS" | sed -n '2p')
+
+          # Ensure commits are consecutive
+          PARENT_OF_SECOND=$(git rev-parse "${SECOND}^")
+
+          if [ "$PARENT_OF_SECOND" != "$FIRST" ]; then
+            echo "CI commits are not consecutive, aborting"
+            exit 1
+          fi
+
+          echo "oldest=$FIRST" >> "$GITHUB_OUTPUT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Rebase to drop CI commits
+        if: steps.find_commits.outputs.count == '2'
+        run: |
+          set -e
+
+          OLDEST_CI_COMMIT="${{ steps.find_commits.outputs.oldest }}"
+          BASE_COMMIT=$(git rev-parse "${OLDEST_CI_COMMIT}^")
+
+          echo "Rebasing branch onto $BASE_COMMIT"
+          echo "Dropping CI commits starting at $OLDEST_CI_COMMIT"
+
+          git rebase --onto "$BASE_COMMIT" "$OLDEST_CI_COMMIT"
+
+      - name: Push rebased branch
+        if: steps.find_commits.outputs.count == '2'
+        run: |
+          git push --force-with-lease
+
+      - name: Comment confirmation
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const msg =
+              "♻️ **CI commits removed via rebase**\n\n" +
+              "- Dropped the two `github-actions[bot]` plugin CI commits\n" +
+              "- `plugins/utilities.json` restored to pre-CI state\n" +
+              "- CI will re-run automatically and re-apply metadata\n";
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: msg
+            });
