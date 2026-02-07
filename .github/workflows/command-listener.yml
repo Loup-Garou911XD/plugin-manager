@@ -14,7 +14,6 @@ jobs:
       github.event.issue.pull_request &&
       contains(github.event.comment.body, '/rebase-plugin-ci')
     runs-on: ubuntu-latest
-
     steps:
       - name: Check commenter permissions
         uses: actions/github-script@v7
@@ -45,7 +44,7 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'rebase-plugin-ci-worker.yml',
+              workflow_id: 'rebase-plugin-ci-commits.yml',
               ref: 'main',
               inputs: {
                 pr_number: String(prNumber)
