@@ -2407,6 +2407,34 @@
           "md5sum": "5082acb27f3dbe701d8bd42d8948b352"
         }
       }
+    },
+    "test_plugin": {
+      "description": "googoo gaagaa",
+      "external_url": "",
+      "authors": [
+        {
+          "name": "loupy",
+          "email": "",
+          "discord": ""
+        }
+      ],
+      "versions": {
+        "1.0.0": null
+      }
+    },
+    "test_plugin2": {
+      "description": "googoo gaagaa",
+      "external_url": "",
+      "authors": [
+        {
+          "name": "loupy",
+          "email": "",
+          "discord": ""
+        }
+      ],
+      "versions": {
+        "1.0.0": null
+      }
     }
   }
 }
