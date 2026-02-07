@@ -84,7 +84,7 @@ jobs:
           HEAD1=$(git rev-parse HEAD)
           HEAD2=$(git rev-parse HEAD^)
 
-          if [ "$SECOND" != "$HEAD1" ] || [ "$FIRST" != "$HEAD2" ]; then
+          if [ "$FIRST" != "$HEAD1" ] || [ "$SECOND" != "$HEAD2" ]; then
             echo "CI commits are not the latest two commits, aborting"
             exit 1
           fi
