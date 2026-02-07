@@ -22,7 +22,17 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const prNumber = Number(core.getInput('pr_number'));
+            const raw = context.payload.inputs?.pr_number;
+
+            if (!raw) {
+              throw new Error('Missing pr_number workflow input');
+            }
+
+            const prNumber = Number(raw);
+
+            if (!Number.isInteger(prNumber) || prNumber <= 0) {
+              throw new Error(`Invalid pr_number: "${raw}"`);
+            }
 
             const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
