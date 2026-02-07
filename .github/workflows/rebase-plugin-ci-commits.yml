@@ -1,8 +1,8 @@
 name: Rebase PR to remove CI plugin commits
 
 on:
-  pull_request_target:
-    types: [commented]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
@@ -11,7 +11,7 @@ permissions:
 jobs:
   rebase-ci-commits:
     if: >
-      github.event.pull_request &&
+      github.event.issue.pull_request &&
       contains(github.event.comment.body, '/rebase-plugin-ci')
     runs-on: ubuntu-latest
     steps:
