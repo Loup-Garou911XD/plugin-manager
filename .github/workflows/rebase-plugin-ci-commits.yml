@@ -1,0 +1,119 @@
+name: Rebase plugin CI commits (worker)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fetch PR info
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const raw = context.payload.inputs?.pr_number;
+
+            if (!raw) {
+              throw new Error('Missing pr_number workflow input');
+            }
+
+            const prNumber = Number(raw);
+
+            if (!Number.isInteger(prNumber) || prNumber <= 0) {
+              throw new Error(`Invalid pr_number: "${raw}"`);
+            }
+
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            core.setOutput('number', prNumber);
+            core.setOutput('ref', pr.data.head.ref);
+            core.setOutput('repo', pr.data.head.repo.full_name);
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pr.outputs.repo }}
+          ref: ${{ steps.pr.outputs.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify clean working tree
+        run: |
+          if ! git diff --quiet; then
+            echo "Working tree is dirty, aborting"
+            exit 1
+          fi
+
+      - name: Locate CI commits (strict)
+        id: find
+        run: |
+          set -e
+
+          echo "Looking for CI commits at HEAD…"
+
+          COMMITS=$(git log -n 3 --pretty=format:'%H|%ae|%s' \
+            | grep '\[ci\] apply-' \
+            | grep '@users.noreply.github.com' \
+            | cut -d'|' -f1 || true)
+
+          COUNT=$(echo "$COMMITS" | wc -l | tr -d ' ')
+
+          if [ "$COUNT" -ne 2 ]; then
+            echo "Expected exactly 2 CI commits at HEAD, found $COUNT"
+            exit 1
+          fi
+
+          FIRST=$(echo "$COMMITS" | sed -n '1p')
+          SECOND=$(echo "$COMMITS" | sed -n '2p')
+
+          HEAD1=$(git rev-parse HEAD)
+          HEAD2=$(git rev-parse HEAD^)
+
+          if [ "$FIRST" != "$HEAD1" ] || [ "$SECOND" != "$HEAD2" ]; then
+            echo "CI commits are not the latest two commits, aborting"
+            exit 1
+          fi
+
+          BASE=$(git rev-parse "${FIRST}^")
+
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          echo "drop=$FIRST" >> "$GITHUB_OUTPUT"
+
+      - name: Rebase to drop CI commits
+        run: |
+          git rebase --onto "${{ steps.find.outputs.base }}" "${{ steps.find.outputs.drop }}"
+
+      - name: Push rebased branch
+        run: |
+          git push --force-with-lease
+
+      - name: Comment confirmation
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number('${{ steps.pr.outputs.number }}'),
+              body:
+                "♻️ **CI commits removed via rebase**\n\n" +
+                "- Dropped the two `[ci] apply-*` commits\n" +
+                "- `plugins/utilities.json` restored to pre-CI state\n" +
+                "- CI will now re-run and re-apply metadata\n"
+            });
