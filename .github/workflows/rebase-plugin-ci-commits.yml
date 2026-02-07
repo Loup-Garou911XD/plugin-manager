@@ -50,7 +50,8 @@ jobs:
           repository: ${{ steps.pr.outputs.repo }}
           ref: ${{ steps.pr.outputs.ref }}
           fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: true
+          token: ${{ github.token }}
 
       - name: Verify clean working tree
         run: |
