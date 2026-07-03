@@ -26,7 +26,7 @@ def _is_widget_visible(widget: bui.Widget) -> bool:
             current = current.parent
     except Exception:
         pass
-    
+
     return True
 
 
@@ -40,29 +40,31 @@ def _should_skip_widget(widget: bui.Widget) -> bool:
                 return True
     except Exception:
         pass
-    
+
     # Skip widgets that don't have valid screen-space centers
     try:
         widget.get_screen_space_center()
     except Exception:
         return True
-    
+
     # Skip widgets that are hidden behind other windows
     if not _is_widget_visible(widget):
         return True
-    
+
     # Skip widgets that are not selectable
     try:
         if hasattr(widget, 'selectable'):
             if not widget.selectable:
-                print(f'Skipping widget {len(self._seen_widget_ids)}: {description} (Not selectable)')
+                print(
+                    f'Skipping widget {len(self._seen_widget_ids)}: {description} (Not selectable)')
                 return True
         else:
-            print(f'Widget {len(self._seen_widget_ids)}: {description} has no selectable attribute; assuming not selectable')
+            print(
+                f'Widget {len(self._seen_widget_ids)}: {description} has no selectable attribute; assuming not selectable')
             return True
     except Exception:
         pass
-    
+
     return False
 
 
@@ -210,10 +212,11 @@ class AutomatedUITreeClickTest(babase.Plugin):
         widget = self._stack.pop()
         widget_id = id(widget)
         self._seen_widget_ids.add(widget_id)
-        
+
         if _should_skip_widget(widget):
             description = _describe_widget(widget)
-            self._log(f'Skipping widget {len(self._seen_widget_ids)}: {description} (hidden or invalid)')
+            self._log(
+                f'Skipping widget {len(self._seen_widget_ids)}: {description} (hidden or invalid)')
             self._process_next_widget()
             return
 
