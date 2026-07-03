@@ -7,6 +7,15 @@ import bauiv1 as bui
 from bauiv1lib import popup, confirm
 from babase._meta import EXPORT_CLASS_NAME_SHORTCUTS
 from bauiv1lib.settings.allsettings import AllSettingsWindow
+from bacommon.restapi.v1 import Endpoint, ErrorResponse
+from bacommon.restapi.v1.accounts import AccountResponse
+from bacommon.restapi.v1.workspaces import (
+    WorkspacesResponse,
+    WorkspaceResponse,
+    WorkspaceFilesResponse,
+    WorkspaceEntryType,
+)
+from efro.error import CommunicationError
 
 import urllib.request
 import http.client
@@ -615,34 +624,29 @@ class StartupTasks:
             pass
 
 
+class APIKeyError(Exception):
+    """Raised when API key is invalid or expired."""
+
+    pass
+
+
 class BallisticaAPI:
     """API client for Ballistica workspace management."""
 
-    # If the token is needed after the initialization, we should call get_api_key again to refresh it.
-    from efro.error import CommunicationError
-    from bacommon.restapi.v1.workspaces import (
-        WorkspacesResponse,
-        WorkspaceResponse,
-        WorkspaceFilesResponse,
-        ActiveWorkspaceResponse,
-    )
-    from bacommon.restapi.v1.accounts import AccountResponse
-    from bacommon.restapi.v1 import Endpoint
-
-    def __init__(self, url='https://www.ballistica.net/'):
-        print(f"Initializing BallisticaAPI")
+    def __init__(self, loop, url=URL):
+        self.loop = loop
         self.url = url
-        self.api_key = None
+        self._api_key = None
 
-    async def initialize(self) -> BallisticaAPI:
-        """Initialize the API client by retrieving the API key."""
-        self.api_key = await self.get_api_key()
-        return self
+    async def get_api_key(self, max_retries=3, retry_delay=2.0, force_refresh=False) -> str:
+        """Get a transient API key with caching and automatic retry.
 
-    async def get_api_key(self, max_retries=3, initial_delay=2.0, retry_delay=2.0) -> str:
-        """Get a transient API key with automatic retry."""
-        await asyncio.sleep(initial_delay)
-        print("Requesting API key...")
+        Caches the key for reuse. If an API call fails with an auth error.
+        """
+        # Return cached key if available
+        if self._api_key is not None and not force_refresh:
+            return self._api_key
+
         for attempt in range(max_retries):
             try:
                 loop_instance = asyncio.get_event_loop()
@@ -656,9 +660,10 @@ class BallisticaAPI:
 
                 # Validate we got a real key, not an error
                 if isinstance(api_key, str) and api_key.startswith('bsac-'):
-                    print(f'API key retrieval successful: {api_key[:20]}...')
+                    # Cache the key for reuse
+                    self._api_key = api_key
                     return api_key
-                elif isinstance(api_key, self.CommunicationError):
+                elif isinstance(api_key, CommunicationError):
                     print(f'Communication error while getting API key: {api_key}')
                     raise api_key
                 else:
@@ -671,65 +676,310 @@ class BallisticaAPI:
                     print(f'Failed to get API key: {e}')
                     raise
 
-    def _make_request(self, api_key: str, Endpoint: str) -> str:
-        """Make an HTTP GET request to the API and return the response text."""
+    def _make_http_request(
+        self,
+        api_key: str,
+        endpoint: str,
+        method: str = 'GET',
+        body: bytes | None = None,
+    ) -> tuple[str, int]:
+        """Make an HTTP request to the API and return the response text and status code.
+
+        Args:
+            api_key: Bearer token for authentication
+            endpoint: API endpoint path
+            method: HTTP method (GET, POST, PUT, PATCH, DELETE)
+            body: Request body as bytes (for POST, PUT, PATCH)
+
+        Returns:
+            Tuple of (response_text, status_code)
+
+        Raises:
+            APIKeyError: When API key is invalid/expired
+            Exception: For general HTTP errors
+        """
         headers = {'Authorization': f'Bearer {api_key}'}
+        if body is not None:
+            headers['Content-Type'] = 'application/json'
+
         try:
-            response = urllib.request.urlopen(
-                urllib.request.Request(self.url + Endpoint, headers=headers)
+            request = urllib.request.Request(
+                self.url + endpoint, data=body, headers=headers, method=method
             )
-            if response.getcode() == 200:
-                return response.read().decode('utf-8')
-            else:
-                raise Exception(f'API request failed with status {response.getcode()}')
+            response = urllib.request.urlopen(request)
+            response_text = response.read().decode('utf-8')
+            status_code = response.getcode()
+
+            # Check if response contains an error (API returns 200 with error in JSON)
+            if response_text:
+                try:
+                    response_json = json.loads(response_text)
+                    if isinstance(response_json, dict) and 'error' in response_json:
+                        error_msg = response_json.get('message', response_json['error'])
+                        if 'invalid' in error_msg.lower() or 'unauthorized' in error_msg.lower():
+                            raise APIKeyError(f'Invalid API key: {error_msg}')
+                        raise Exception(f'API Error: {error_msg}')
+                except json.JSONDecodeError:
+                    # Not JSON, continue
+                    pass
+
+            return response_text, status_code
         except urllib.error.HTTPError as e:
-            raise Exception(f'HTTP Error: {e.code} - {e.reason}')
+            # 401/403 indicates API key is invalid/expired
+            if e.code in (401, 403):
+                raise APIKeyError(f'Invalid API key (HTTP {e.code}): {e.reason}')
+            # For non-200 responses, try to parse error response
+            try:
+                error_body = e.read().decode('utf-8')
+                error_json = json.loads(error_body)
+                error_msg = error_json.get('message', error_json.get('error', e.reason))
+            except Exception:
+                error_msg = e.reason
+            raise Exception(f'HTTP Error {e.code}: {error_msg}')
 
-    async def get_account(self, api_key: str, account_id: str) -> AccountResponse:
+    async def _make_request(
+        self, endpoint: str, method: str = 'GET', body: bytes | None = None
+    ) -> tuple[str, int]:
+        """Make an HTTP request with automatic key refresh on auth error.
+
+        Uses the cached API key and automatically refreshes it if it becomes invalid.
+
+        Args:
+            endpoint: The API endpoint to call
+            method: HTTP method (GET, POST, PUT, PATCH, DELETE)
+            body: Request body as bytes (for POST, PUT, PATCH)
+
+        Returns:
+            Tuple of (response_text, status_code)
+
+        Raises:
+            APIKeyError: If key refresh fails
+            Exception: For other API errors
+        """
+        api_key = await self.get_api_key()
+
+        try:
+            return await self.loop.run_in_executor(
+                None, self._make_http_request, api_key, endpoint, method, body
+            )
+        except APIKeyError:
+            # Key is invalid, refresh it
+            api_key = await self.get_api_key(force_refresh=True)
+            # Retry with fresh key
+            return await self.loop.run_in_executor(
+                None, self._make_http_request, api_key, endpoint, method, body
+            )
+
+    async def get_account(self, account_id: str) -> AccountResponse:
         """Get account info. Pass 'me' for the authenticated account."""
-
-        from bacommon.restapi.v1.accounts import AccountResponse
-        from efro.dataclassio import dataclass_from_json
-
-        self.Endpoint = self.Endpoint.ACCOUNT.format(account_id=account_id)
-        response_text = await loop.run_in_executor(None, self._make_request, api_key, self.Endpoint)
+        endpoint = Endpoint.ACCOUNT.format(account_id=account_id)
+        response_text, _ = await self._make_request(endpoint)
         return dataclass_from_json(AccountResponse, response_text)
 
-    async def get_workspaces(self, api_key: str) -> WorkspacesResponse:
+    async def get_account_by_tag(self, tag: str) -> AccountResponse:
+        """Look up an account by its tag (display name).
+
+        Args:
+            tag: The account's display name (tag)
+
+        Returns:
+            AccountResponse with the account details
+        """
+        endpoint = Endpoint.ACCOUNT_BY_TAG.format(tag=tag)
+        response_text, _ = await self._make_request(endpoint)
+        return dataclass_from_json(AccountResponse, response_text)
+
+    async def get_workspaces(self) -> WorkspacesResponse:
         """List all workspaces for the authenticated account."""
-        from efro.dataclassio import dataclass_from_json
+        response_text, _ = await self._make_request(Endpoint.WORKSPACES)
+        return dataclass_from_json(WorkspacesResponse, response_text)
 
-        response_text = await loop.run_in_executor(
-            None, self._make_request, api_key, self.Endpoint.WORKSPACES
-        )
-        return dataclass_from_json(self.WorkspacesResponse, response_text)
-
-    async def get_workspace(self, api_key: str, workspace_id: str) -> WorkspaceResponse:
+    async def get_workspace(self, workspace_id: str) -> WorkspaceResponse:
         """Fetch metadata for a single workspace."""
+        endpoint = Endpoint.WORKSPACE.format(workspace_id=workspace_id)
+        response_text, _ = await self._make_request(endpoint)
+        return dataclass_from_json(WorkspaceResponse, response_text)
 
-        from bacommon.restapi.v1.workspaces import WorkspaceResponse
-        from efro.dataclassio import dataclass_from_json
-
-        self.Endpoint = self.Endpoint.WORKSPACE.format(workspace_id=workspace_id)
-        response_text = await loop.run_in_executor(None, self._make_request, api_key, self.Endpoint)
-        return dataclass_from_json(self.WorkspaceResponse, response_text)
-
-    async def get_workspace_files(self, api_key: str, workspace_id: str) -> WorkspaceFilesResponse:
+    async def get_workspace_files(self, workspace_id: str) -> WorkspaceFilesResponse:
         """Get flat listing of all files and directories in the workspace."""
-        from efro.dataclassio import dataclass_from_json
+        endpoint = Endpoint.WORKSPACE_FILES.format(workspace_id=workspace_id)
+        response_text, _ = await self._make_request(endpoint)
+        return dataclass_from_json(WorkspaceFilesResponse, response_text)
 
-        self.Endpoint = self.Endpoint.WORKSPACE_FILES.format(workspace_id=workspace_id)
-        response_text = await loop.run_in_executor(None, self._make_request, api_key, self.Endpoint)
-        return dataclass_from_json(self.WorkspaceFilesResponse, response_text)
+    async def get_active_workspace(self) -> WorkspaceResponse | None:
+        """Fetch the active workspace for the authenticated account.
 
-    async def get_active_workspace(self, api_key: str) -> ActiveWorkspaceResponse:
-        """Fetch the active workspace for the authenticated account."""
-        from efro.dataclassio import dataclass_from_json
+        Returns:
+            WorkspaceResponse if a workspace is active, None otherwise.
+        """
+        response_text, _ = await self._make_request(Endpoint.WORKSPACES_ACTIVE)
+        if response_text.strip() == 'null':
+            return None
+        return dataclass_from_json(WorkspaceResponse, response_text)
 
-        response_text = await loop.run_in_executor(
-            None, self._make_request, api_key, self.Endpoint.WORKSPACES_ACTIVE
+    async def create_workspace(self, name: str) -> WorkspaceResponse:
+        """Create a new workspace.
+
+        Args:
+            name: User-assigned workspace name
+
+        Returns:
+            WorkspaceResponse with HTTP 201 status
+        """
+        body = json.dumps({'name': name}).encode('utf-8')
+        response_text, _ = await self._make_request(Endpoint.WORKSPACES, method='POST', body=body)
+        return dataclass_from_json(WorkspaceResponse, response_text)
+
+    async def rename_workspace(self, workspace_id: str, name: str) -> WorkspaceResponse:
+        """Rename an existing workspace.
+
+        Args:
+            workspace_id: ID of the workspace to rename
+            name: New workspace name
+
+        Returns:
+            Updated WorkspaceResponse
+        """
+        endpoint = Endpoint.WORKSPACE.format(workspace_id=workspace_id)
+        body = json.dumps({'name': name}).encode('utf-8')
+        response_text, _ = await self._make_request(endpoint, method='PATCH', body=body)
+        return dataclass_from_json(WorkspaceResponse, response_text)
+
+    async def delete_workspace(self, workspace_id: str) -> None:
+        """Delete a workspace (creates a 30-day backup internally).
+
+        Args:
+            workspace_id: ID of the workspace to delete
+
+        Returns:
+            HTTP 204 (No content)
+        """
+        endpoint = Endpoint.WORKSPACE.format(workspace_id=workspace_id)
+        response_text, status_code = await self._make_request(endpoint, method='DELETE')
+        if status_code != 204:
+            raise Exception(f'Expected 204 status code, got {status_code}')
+
+    async def set_active_workspace(self, workspace_id: str | None) -> WorkspaceResponse | None:
+        """Set the active workspace for the authenticated account.
+
+        Args:
+            workspace_id: ID of the workspace to activate, or None to disable syncing
+
+        Returns:
+            Updated WorkspaceResponse if workspace is set, None if syncing is disabled.
+        """
+        body = json.dumps({'workspace_id': workspace_id}).encode('utf-8')
+        response_text, _ = await self._make_request(
+            Endpoint.WORKSPACES_ACTIVE, method='POST', body=body
         )
-        return dataclass_from_json(self.ActiveWorkspaceResponse, response_text)
+        if response_text.strip() == 'null':
+            return None
+        return dataclass_from_json(WorkspaceResponse, response_text)
+
+    async def download_file(self, workspace_id: str, file_path: str) -> bytes:
+        """Download a file from a workspace.
+
+        Args:
+            workspace_id: ID of the workspace
+            file_path: Path to the file relative to workspace root
+
+        Returns:
+            Raw file bytes
+        """
+        endpoint = Endpoint.WORKSPACE_FILE.format(workspace_id=workspace_id, file_path=file_path)
+        api_key = await self.get_api_key()
+        try:
+            headers = {'Authorization': f'Bearer {api_key}'}
+            request = urllib.request.Request(self.url + endpoint, headers=headers)
+            response = urllib.request.urlopen(request)
+            return response.read()
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403):
+                raise APIKeyError(f'Invalid API key (HTTP {e.code}): {e.reason}')
+            raise Exception(f'HTTP Error {e.code}: {e.reason}')
+
+    async def upload_file(self, workspace_id: str, file_path: str, content: bytes) -> None:
+        """Upload or replace a file in a workspace.
+
+        Parent directories are created automatically.
+
+        Args:
+            workspace_id: ID of the workspace
+            file_path: Path to the file relative to workspace root
+            content: File contents as bytes
+
+        Returns:
+            HTTP 204 (No content)
+        """
+        endpoint = Endpoint.WORKSPACE_FILE.format(workspace_id=workspace_id, file_path=file_path)
+        response_text, status_code = await self._make_request(endpoint, method='PUT', body=content)
+        if status_code != 204:
+            raise Exception(f'Expected 204 status code, got {status_code}')
+
+    async def delete_file(self, workspace_id: str, file_path: str) -> None:
+        """Delete a file or directory from a workspace.
+
+        Args:
+            workspace_id: ID of the workspace
+            file_path: Path to the file/directory relative to workspace root
+
+        Returns:
+            HTTP 204 (No content)
+        """
+        endpoint = Endpoint.WORKSPACE_FILE.format(workspace_id=workspace_id, file_path=file_path)
+        response_text, status_code = await self._make_request(endpoint, method='DELETE')
+        if status_code != 204:
+            raise Exception(f'Expected 204 status code, got {status_code}')
+
+    async def mkdir(self, workspace_id: str, file_path: str) -> None:
+        """Create a directory in a workspace.
+
+        Args:
+            workspace_id: ID of the workspace
+            file_path: Path to the directory relative to workspace root
+
+        Returns:
+            HTTP 204 (No content)
+        """
+        endpoint = Endpoint.WORKSPACE_FILE.format(workspace_id=workspace_id, file_path=file_path)
+        body = json.dumps({'op': 'mkdir'}).encode('utf-8')
+        response_text, status_code = await self._make_request(endpoint, method='POST', body=body)
+        if status_code != 204:
+            raise Exception(f'Expected 204 status code, got {status_code}')
+
+    async def move_file(self, workspace_id: str, source_path: str, dest_path: str) -> None:
+        """Move or rename a file/directory in a workspace.
+
+        Args:
+            workspace_id: ID of the workspace
+            source_path: Current path relative to workspace root
+            dest_path: Destination path relative to workspace root
+
+        Returns:
+            HTTP 204 (No content)
+        """
+        endpoint = Endpoint.WORKSPACE_FILE.format(workspace_id=workspace_id, file_path=source_path)
+        body = json.dumps({'op': 'move', 'dest': dest_path}).encode('utf-8')
+        response_text, status_code = await self._make_request(endpoint, method='POST', body=body)
+        if status_code != 204:
+            raise Exception(f'Expected 204 status code, got {status_code}')
+
+    async def copy_file(self, workspace_id: str, source_path: str, dest_path: str) -> None:
+        """Copy a file/directory in a workspace.
+
+        Args:
+            workspace_id: ID of the workspace
+            source_path: Source path relative to workspace root
+            dest_path: Destination path relative to workspace root
+
+        Returns:
+            HTTP 204 (No content)
+        """
+        endpoint = Endpoint.WORKSPACE_FILE.format(workspace_id=workspace_id, file_path=source_path)
+        body = json.dumps({'op': 'copy', 'dest': dest_path}).encode('utf-8')
+        response_text, status_code = await self._make_request(endpoint, method='POST', body=body)
+        if status_code != 204:
+            raise Exception(f'Expected 204 status code, got {status_code}')
 
 
 class Category:
