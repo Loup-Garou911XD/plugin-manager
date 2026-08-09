@@ -32,12 +32,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # Credentials are deliberately persisted here (unlike ci-apply.yml): the
+      # `git fetch` below needs them on a private repo, and the workflow-level
+      # `permissions: contents: read` caps this token to read-only in every
+      # case - fork PRs get a read-only token from GitHub regardless.
       - name: Checkout PR head
         uses: actions/checkout@v7
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           fetch-depth: 0
-          persist-credentials: false
 
       - name: Fetch PR base commit (for diffing)
         env:
