@@ -1,0 +1,268 @@
+name: PR Apply
+
+# Trusted counterpart to ci-check.yml (PR Check). Runs with this repo's
+# write-scoped GITHUB_TOKEN via `workflow_run`, AFTER PR Check has finished
+# safely (no secrets, fork content fully executed there instead of here).
+#
+# TWO HARD RULES, both load-bearing. Breaking either one reintroduces the
+# pwn-request hole this split exists to close:
+#
+# 1. NEVER execute, import, or `unittest discover` anything from the fork's
+#    checkout. This job only applies a text patch (`git apply`), commits,
+#    pushes, and runs auto_apply_version_metadata.py from a SEPARATE checkout
+#    of this repo's own main branch - never the fork's copy of it.
+#
+# 2. NEVER interpolate a `${{ }}` expression into a `run:` block unless the
+#    value is fixed and trusted. `${{ }}` is substituted textually BEFORE the
+#    shell parses the script, so surrounding quotes do NOT contain it - a PR
+#    branch named `a";id;"` becomes live shell. Pass values via `env:` and
+#    reference them as "$VAR", which the shell treats as data.
+#
+# On trust: a fork PR fully controls ci-check.yml itself (GitHub runs the
+# workflow file from the PR's own merge ref for `pull_request` events - that
+# is why that job gets a read-only, secret-less token). So EVERYTHING in the
+# pr-fixups artifact is attacker-authored. PR identity is therefore resolved
+# from the workflow_run payload + the API, never from the artifact; the
+# artifact supplies only the patch, which is allowlist-validated below and
+# only ever lands on the fork's own branch.
+
+on:
+  workflow_run:
+    workflows: ["PR Check"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read # required to download an artifact from another workflow run
+
+concurrency:
+  group: pr-apply-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      # Resolves which PR this run belongs to using ONLY trusted inputs:
+      # workflow_run.head_sha (set by GitHub, not forgeable by the PR author)
+      # and the REST API. workflow_run.pull_requests is empty for fork PRs,
+      # hence the commit -> PR association lookup.
+      - name: Resolve and validate PR (trusted sources only)
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          skip() { echo "$1"; echo "proceed=0" >> "$GITHUB_OUTPUT"; exit 0; }
+
+          [[ "$RUN_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "Unexpected workflow_run head sha shape; refusing." >&2
+            exit 1
+          }
+
+          gh api "repos/${REPO}/commits/${RUN_HEAD_SHA}/pulls" > pulls.json
+          [ "$(jq 'length' pulls.json)" = "1" ] \
+            || skip "Not exactly one PR associated with ${RUN_HEAD_SHA}; skipping."
+
+          PR_NUMBER="$(jq -r '.[0].number' pulls.json)"
+          [[ "$PR_NUMBER" =~ ^[0-9]+$ ]] || skip "Bad PR number; skipping."
+
+          gh pr view "$PR_NUMBER" --repo "$REPO" \
+            --json state,baseRefName,headRefName,headRefOid,maintainerCanModify,headRepository,headRepositoryOwner \
+            > pr.json
+
+          STATE="$(jq -r .state pr.json)"
+          BASE_REF="$(jq -r .baseRefName pr.json)"
+          HEAD_REF="$(jq -r .headRefName pr.json)"
+          HEAD_SHA="$(jq -r .headRefOid pr.json)"
+          CAN_MODIFY="$(jq -r .maintainerCanModify pr.json)"
+          FORK="$(jq -r '.headRepositoryOwner.login + "/" + .headRepository.name' pr.json)"
+
+          # Branch/repo names are attacker-chosen strings, and git happily
+          # accepts refnames containing ` $( ) ; | ' " - so anything outside
+          # this conservative set is refused rather than carried forward.
+          # Bash =~ anchors to the whole string, so embedded newlines (which
+          # would otherwise inject extra $GITHUB_OUTPUT keys) are rejected too.
+          [[ "$HEAD_REF" =~ ^[A-Za-z0-9._/-]{1,255}$ ]] || skip "Unsafe branch name; skipping."
+          [[ "$FORK" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]] || skip "Unsafe repo name; skipping."
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || skip "Unsafe head sha; skipping."
+
+          [ "$STATE" = "OPEN" ] || skip "PR not open; skipping."
+          [ "$BASE_REF" = "main" ] || skip "PR not targeting main; skipping."
+          [ "$HEAD_SHA" = "$RUN_HEAD_SHA" ] || skip "PR head moved since PR Check ran; skipping."
+
+          # maintainerCanModify only has meaning for cross-fork PRs; GitHub
+          # reports false for a PR opened from a branch in this same repo,
+          # where we can always push because we own the branch.
+          if [ "$FORK" != "$REPO" ] && [ "$CAN_MODIFY" != "true" ]; then
+            echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "needs_comment=1" >> "$GITHUB_OUTPUT"
+            skip "Maintainer edits disabled; cannot push."
+          fi
+
+          {
+            echo "pr_number=$PR_NUMBER"
+            echo "head_ref=$HEAD_REF"
+            echo "head_sha=$HEAD_SHA"
+            echo "fork=$FORK"
+            echo "proceed=1"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment if maintainer edits are disabled (actionable, not self-resolving)
+        if: steps.pr.outputs.needs_comment == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          gh pr comment "$PR_NUMBER" --repo "$REPO" \
+            --body "I can't push the automatic formatting/metadata commits to this PR because \"Allow edits from maintainers\" is disabled. Please enable it, or apply \`autopep8\` and \`test/auto_apply_*_metadata.py\` locally."
+
+      - name: Download PR fixups artifact (untrusted data)
+        if: steps.pr.outputs.proceed == '1'
+        uses: actions/download-artifact@v8
+        with:
+          name: pr-fixups
+          path: pr-data
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      # Checking out fork PR content is what actions/checkout >=v6 refuses by
+      # default; the opt-in is reviewed and intentional here because nothing
+      # below ever EXECUTES this checkout - only git plumbing touches it.
+      # persist-credentials:false keeps the write token out of the untrusted
+      # working tree's .git/config; the push below authenticates explicitly.
+      - name: Checkout PR branch (fork) - allow-unsafe-pr-checkout is reviewed & intentional
+        if: steps.pr.outputs.proceed == '1'
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.pr.outputs.fork }}
+          ref: ${{ steps.pr.outputs.head_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
+          path: pr
+
+      - name: Checkout TRUSTED scripts from our own main branch
+        if: steps.pr.outputs.proceed == '1'
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          sparse-checkout: |
+            test/auto_apply_version_metadata.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+          path: trusted
+
+      - name: Re-verify checked-out head matches the resolved head
+        if: steps.pr.outputs.proceed == '1'
+        working-directory: pr
+        env:
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+
+      - name: Validate patch (allowlisted paths only, no symlinks/binaries)
+        if: steps.pr.outputs.proceed == '1'
+        working-directory: pr
+        run: |
+          set -euo pipefail
+          PATCH="${GITHUB_WORKSPACE}/pr-data/fixups.patch"
+          if [ ! -s "$PATCH" ]; then
+            echo "Empty patch, nothing to validate"
+            exit 0
+          fi
+          if grep -qE '^(deleted file mode 120000|new mode 120000|new file mode 120000|Binary files)' "$PATCH"; then
+            echo "Patch contains symlinks or binary content - refusing" >&2
+            exit 1
+          fi
+          # Deliberately excludes .github/** and test/** - a "[ci]"-authored
+          # commit touching CI config or the test suite is exactly what a
+          # reviewer would wave through, so those fail closed and are left to
+          # the contributor to format locally.
+          ALLOW='^(plugins/(minigames|utilities|maps)/[^/]+\.py|plugin_manager\.py|index\.json|plugins/(minigames|utilities|maps)\.json|CHANGELOG\.md)$'
+          # Redirect from a file rather than piping into `while`: a pipeline
+          # would run the loop in a subshell, where `exit 1` would not reliably
+          # fail the step.
+          git apply --numstat "$PATCH" | cut -f3 > "${RUNNER_TEMP}/patch_paths.txt"
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            if [[ ! "$f" =~ $ALLOW ]]; then
+              echo "Patch touches disallowed path: $f" >&2
+              exit 1
+            fi
+          done < "${RUNNER_TEMP}/patch_paths.txt"
+          git apply --check "$PATCH"
+
+      - name: Apply fixups patch and commit
+        if: steps.pr.outputs.proceed == '1'
+        working-directory: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+          FORK: ${{ steps.pr.outputs.fork }}
+        run: |
+          set -euo pipefail
+          PATCH="${GITHUB_WORKSPACE}/pr-data/fixups.patch"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ ! -s "$PATCH" ]; then
+            echo "Empty patch, nothing to apply"
+            exit 0
+          fi
+          git apply "$PATCH"
+          # Stage exactly the paths the validation step allow-listed, so the
+          # commit scope can never exceed the scope that was validated. A
+          # broader pathspec (e.g. all of plugins/) would silently widen the
+          # blast radius if the allowlist ever regressed.
+          PATHS="${RUNNER_TEMP}/patch_paths.txt"
+          test -s "$PATHS" || {
+            echo "Validated path list missing or empty - refusing to stage" >&2
+            exit 1
+          }
+          git add -A --pathspec-from-file="$PATHS"
+          if ! git diff --cached --quiet; then
+            git commit -m "[ci] apply-plugin-metadata-and-formatting"
+            git push "https://x-access-token:${GH_TOKEN}@github.com/${FORK}.git" "HEAD:${HEAD_REF}"
+          fi
+
+      - name: Apply Version Metadata using the TRUSTED script only (never the fork's copy)
+        if: steps.pr.outputs.proceed == '1'
+        working-directory: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+          FORK: ${{ steps.pr.outputs.fork }}
+        run: |
+          set -euo pipefail
+          python "${GITHUB_WORKSPACE}/trusted/test/auto_apply_version_metadata.py" "$(git rev-parse HEAD)"
+          # That script only ever writes index.json and the category manifests
+          # (it opens every .py read-only), so stage precisely those rather
+          # than the whole plugins/ tree.
+          git add -A -- index.json \
+            plugins/minigames.json plugins/utilities.json plugins/maps.json
+          if ! git diff --cached --quiet; then
+            git commit -m "[ci] apply-version-metadata"
+            git push "https://x-access-token:${GH_TOKEN}@github.com/${FORK}.git" "HEAD:${HEAD_REF}"
+          fi
+
+      - name: On mechanical failure, notify the contributor
+        if: failure() && steps.pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          gh pr comment "$PR_NUMBER" --repo "$REPO" \
+            --body "Automatic formatting/metadata could not be applied to this PR (patch touched a disallowed path, or a conflict occurred). A maintainer will need to look at this manually."
