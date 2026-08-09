@@ -1,6 +1,6 @@
 ## Plugin Manager (dd-mm-yyyy)
 
-### 1.1.10 (12-06-2026)
+### 1.1.11 (09-08-2026)
 
 - Switched to babase.app.asyncio_loop and babase.app.threadpool
   for concurrent execution
