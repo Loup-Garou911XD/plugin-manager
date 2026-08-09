@@ -11,6 +11,31 @@ from packaging.version import Version
 
 import unittest
 
+# Raised by Repo.commit() when a sha cannot be resolved: a well-formed but
+# absent 40-hex sha raises plain ValueError, while a malformed name raises
+# gitdb's BadName/BadObject (which are NOT ValueError subclasses). Kept
+# narrow so lenient mode can't mask unrelated repository errors.
+UNRESOLVED_COMMIT_ERRORS = (ValueError, git.exc.BadName, git.exc.BadObject)
+
+
+def is_unpublished_version(repository, version_metadata):
+    """True if this version entry is being introduced by the PR under test.
+
+    Such an entry can't satisfy the history checks yet: its metadata is either
+    still an unstamped ``null`` placeholder, or was stamped against the current
+    HEAD by ci-check.yml's preview - describing the reformatted working tree
+    rather than anything committed. Published entries always point at an
+    earlier commit whose tree really does contain the described file, so they
+    are unaffected. Only consulted in lenient mode (ci-check.yml); the
+    authoritative strict run on push-to-main still validates these.
+    """
+    if not version_metadata or not version_metadata.get("commit_sha"):
+        return True
+    try:
+        return repository.commit(version_metadata["commit_sha"]) == repository.head.commit
+    except UNRESOLVED_COMMIT_ERRORS:
+        return False  # unresolvable: let the caller's handler report it
+
 
 class TestPluginManagerMetadata(unittest.TestCase):
     def setUp(self):
@@ -40,8 +65,19 @@ class TestPluginManagerMetadata(unittest.TestCase):
         assert sorted_versions == versions
 
     def test_versions(self):
+        lenient = os.environ.get("PLUGMAN_CI_LENIENT_HISTORY") == "1"
         for version_name, version_metadata in self.content["versions"].items():
-            commit = self.repository.commit(version_metadata["commit_sha"])
+            if lenient and is_unpublished_version(self.repository, version_metadata):
+                print(f"[lenient] skipping {version_name}: not committed yet")
+                continue
+            try:
+                commit = self.repository.commit(version_metadata["commit_sha"])
+            except UNRESOLVED_COMMIT_ERRORS as err:
+                if lenient:
+                    print(f"[lenient] skipping {version_name}: commit "
+                          f"{version_metadata['commit_sha']} not found yet ({err})")
+                    continue
+                raise
             plugin_manager = commit.tree / self.plugin_manager
             with io.BytesIO(plugin_manager.data_stream.read()) as fin:
                 content = fin.read()
@@ -144,9 +180,21 @@ class BaseCategoryMetadataTestCases:
                 self.assertTrue(len(plugin_metadata["versions"]) > 0)
 
         def test_versions(self):
+            lenient = os.environ.get("PLUGMAN_CI_LENIENT_HISTORY") == "1"
             for plugin_name, plugin_metadata in self.content["plugins"].items():
                 for version_name, version_metadata in plugin_metadata["versions"].items():
-                    commit = self.repository.commit(version_metadata["commit_sha"])
+                    if lenient and is_unpublished_version(self.repository, version_metadata):
+                        print(f"[lenient] skipping {plugin_name} {version_name}: "
+                              "not committed yet")
+                        continue
+                    try:
+                        commit = self.repository.commit(version_metadata["commit_sha"])
+                    except UNRESOLVED_COMMIT_ERRORS as err:
+                        if lenient:
+                            print(f"[lenient] skipping {plugin_name} {version_name}: "
+                                  f"commit {version_metadata['commit_sha']} not found yet ({err})")
+                            continue
+                        raise
                     plugin = os.path.join(self.category, f"{plugin_name}.py")
                     plugin_commit_sha = commit.tree / plugin
                     with io.BytesIO(plugin_commit_sha.data_stream.read()) as fin:
