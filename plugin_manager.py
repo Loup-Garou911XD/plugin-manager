@@ -156,8 +156,6 @@ class CategoryMetadataParseError(Exception):
     pass
 
 
-
-
 def send_network_request(request):
     return urllib.request.urlopen(request, timeout=NETWORK_REQUEST_TIMEOUT)
 
