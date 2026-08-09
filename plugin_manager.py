@@ -17,7 +17,10 @@ import copy
 import asyncio
 import pathlib
 import hashlib
+import weakref
+import threading
 import contextlib
+import concurrent.futures
 
 from typing import override
 from datetime import datetime
@@ -43,9 +46,39 @@ HEADERS = {
 }
 PLUGIN_DIRECTORY = _env["python_directory_user"]
 
+NETWORK_REQUEST_TIMEOUT = 10  # seconds
 
 loop = babase.app.asyncio_loop
 pool = babase.app.threadpool
+
+# babase.app.threadpool (aka `pool`, also wired up as the asyncio loop's
+# default executor) is reserved for short parallel work and warns/starves
+# on long-running tasks. Network requests routinely run past that, so they
+# get their own small dedicated pool instead.
+_network_pool = concurrent.futures.ThreadPoolExecutor(
+    max_workers=4,
+    thread_name_prefix="PluginManagerNetwork",
+)
+
+
+async def _shutdown_network_pool() -> None:
+    """Drain _network_pool's workers so none outlive app shutdown.
+
+    ThreadPoolExecutor.shutdown(wait=True) blocks, so it's run on a
+    throwaway thread and awaited from here rather than blocking the
+    event loop (other shutdown tasks run concurrently with this one).
+    In-flight requests are bounded by NETWORK_REQUEST_TIMEOUT, so this
+    settles quickly.
+    """
+    done = asyncio.Event()
+
+    def _join() -> None:
+        _network_pool.shutdown(wait=True, cancel_futures=True)
+        loop.call_soon_threadsafe(done.set)
+
+    threading.Thread(target=_join, daemon=True).start()
+    await done.wait()
+
 
 open_popups = []
 
@@ -123,17 +156,19 @@ class CategoryMetadataParseError(Exception):
     pass
 
 
+
+
 def send_network_request(request):
-    return urllib.request.urlopen(request)
+    return urllib.request.urlopen(request, timeout=NETWORK_REQUEST_TIMEOUT)
 
 
 async def async_send_network_request(request):
-    response = await loop.run_in_executor(pool, send_network_request, request)
+    response = await loop.run_in_executor(_network_pool, send_network_request, request)
     return response
 
 
 def stream_network_response_to_file(request, file, md5sum=None, retries=3):
-    response = urllib.request.urlopen(request)
+    response = urllib.request.urlopen(request, timeout=NETWORK_REQUEST_TIMEOUT)
     chunk_size = 16 * 1024
     content = b""
     with open(file, "wb") as fout:
@@ -158,7 +193,7 @@ def stream_network_response_to_file(request, file, md5sum=None, retries=3):
 async def async_stream_network_response_to_file(request, file, md5sum=None, retries=3):
 
     content = await loop.run_in_executor(
-        pool,
+        _network_pool,
         stream_network_response_to_file,
         request,
         file,
@@ -209,7 +244,10 @@ class DNSBlockWorkaround:
 
     @classmethod
     def _resolve_using_google_dns(cls, hostname):
-        response = urllib.request.urlopen(f"https://dns.google/resolve?name={hostname}")
+        response = urllib.request.urlopen(
+            f"https://dns.google/resolve?name={hostname}",
+            timeout=NETWORK_REQUEST_TIMEOUT,
+        )
         response = response.read()
         response = json.loads(response)
         resolved_host = response["Answer"][0]["data"]
@@ -708,14 +746,23 @@ class PluginLocal:
 class PluginVersion:
     def __init__(self, plugin, version, tag=CURRENT_TAG):
         self.number, info = version
-        self.plugin = plugin
+        # Plugin already owns its PluginVersions (via `versions`,
+        # `latest_version`, `latest_compatible_version`); holding a strong
+        # back-reference here would form a Plugin<->PluginVersion cycle
+        # that only the cyclic GC can free. A weakref avoids that so
+        # they're freed by refcounting alone.
+        self._plugin_ref = weakref.ref(plugin)
         self.api_version = info["api_version"]
         self.released_on = info["released_on"]
         self.commit_sha = info["commit_sha"]
         self.md5sum = info["md5sum"]
 
-        self.download_url = self.plugin.url.format(content_type="raw", tag=tag)
-        self.view_url = self.plugin.url.format(content_type="blob", tag=tag)
+        self.download_url = plugin.url.format(content_type="raw", tag=tag)
+        self.view_url = plugin.url.format(content_type="blob", tag=tag)
+
+    @property
+    def plugin(self):
+        return self._plugin_ref()
 
     def __eq__(self, plugin_version):
         return (self.number, self.plugin.name) == (plugin_version.number,
@@ -3424,6 +3471,7 @@ class EntryPoint(babase.Plugin):
         from bauiv1lib.settings import allsettings
         allsettings.AllSettingsWindow = NewAllSettingsWindow
         DNSBlockWorkaround.apply()
+        babase.app.add_shutdown_task(_shutdown_network_pool())
         startup_tasks = StartupTasks()
 
         loop.create_task(startup_tasks.execute())

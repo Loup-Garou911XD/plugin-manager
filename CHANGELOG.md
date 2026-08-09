@@ -2,6 +2,14 @@
 
 ### 1.1.10 (12-06-2026)
 
+- Switched to babase.app.asyncio_loop and babase.app.threadpool
+  for concurrent execution
+- A new threadpool to avoid blocking the babase.app.threadpool
+  which is for short parallel tasks
+- Added a shutdown task to shutdown our threadpool
+
+### 1.1.10 (12-06-2026)
+
 - Fix for older bs versions using `EXPORT_CLASS_NAME_SHORTCUTS` import
 
 ### 1.1.9 (11-06-2026)
