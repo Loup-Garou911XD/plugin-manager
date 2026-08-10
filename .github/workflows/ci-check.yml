@@ -79,7 +79,14 @@ jobs:
               < "${RUNNER_TEMP}/changed_py.z"
           fi
 
+      # PLUGMAN_BASE_REF tells the script which tree counts as "already
+      # published". Without it the script compares against the PR's own
+      # manifest, which ci-apply.yml has already written the new version into -
+      # so every re-run of this workflow (including the one ci-apply.yml's push
+      # triggers) would fail with "Version cant be lower or equal".
       - name: Apply Plugin Metadata (writes null version placeholders)
+        env:
+          PLUGMAN_BASE_REF: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
           python test/auto_apply_plugin_metadata.py "$(cat "${RUNNER_TEMP}/changed_files.txt")"
