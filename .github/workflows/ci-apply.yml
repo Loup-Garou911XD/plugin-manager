@@ -18,6 +18,14 @@ name: PR Apply
 #    branch named `a";id;"` becomes live shell. Pass values via `env:` and
 #    reference them as "$VAR", which the shell treats as data.
 #
+# 3. NEVER identify the target PR by commit sha alone. A sha is a value, not an
+#    identity: forks share object storage, so anyone can push ANOTHER PR's head
+#    commit onto a branch of their own, open a PR at it, and then close that PR
+#    mid-run so the commit -> PR lookup below resolves to the victim's PR - at
+#    which point this job would push the attacker's artifact to the victim's
+#    branch. The resolved PR must be pinned to workflow_run.head_repository AND
+#    head_branch AND head_sha, so a run can only ever write to its own branch.
+#
 # On trust: a fork PR fully controls ci-check.yml itself (GitHub runs the
 # workflow file from the PR's own merge ref for `pull_request` events - that
 # is why that job gets a read-only, secret-less token). So EVERYTHING in the
@@ -47,16 +55,21 @@ jobs:
       github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      # Resolves which PR this run belongs to using ONLY trusted inputs:
-      # workflow_run.head_sha (set by GitHub, not forgeable by the PR author)
+      # Resolves which PR this run belongs to using ONLY trusted inputs: the
+      # workflow_run payload (set by GitHub, not forgeable by the PR author)
       # and the REST API. workflow_run.pull_requests is empty for fork PRs,
-      # hence the commit -> PR association lookup.
+      # hence the commit -> PR association lookup. That lookup ANSWERS with a
+      # PR but does not PROVE it is this run's PR - a sha can be adopted by any
+      # fork even though it cannot be forged - so the result is pinned to the
+      # payload's head repo/branch/sha below. See HARD RULE 3 in the header.
       - name: Resolve and validate PR (trusted sources only)
         id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
+          RUN_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           set -euo pipefail
 
@@ -96,7 +109,20 @@ jobs:
 
           [ "$STATE" = "OPEN" ] || skip "PR not open; skipping."
           [ "$BASE_REF" = "main" ] || skip "PR not targeting main; skipping."
-          [ "$HEAD_SHA" = "$RUN_HEAD_SHA" ] || skip "PR head moved since PR Check ran; skipping."
+
+          # HARD RULE 3: pin the resolved PR to the run that produced the
+          # artifact. The sha check alone is not enough - a sha is adoptable by
+          # any fork, so on its own it would let a run push to somebody else's
+          # PR branch. These are compared only against FORK/HEAD_REF, which the
+          # regexes above already validated, so no shape check is needed here:
+          # a null head_repository yields "" and simply fails to match, which is
+          # the fail-closed direction. Do not "simplify" these away.
+          [ "$FORK" = "$RUN_HEAD_REPO" ] \
+            || skip "Resolved PR head repo != the run's head repo; skipping."
+          [ "$HEAD_REF" = "$RUN_HEAD_BRANCH" ] \
+            || skip "Resolved PR head branch != the run's head branch; skipping."
+          [ "$HEAD_SHA" = "$RUN_HEAD_SHA" ] \
+            || skip "PR head moved since PR Check ran; skipping."
 
           # maintainerCanModify only has meaning for cross-fork PRs; GitHub
           # reports false for a PR opened from a branch in this same repo,
