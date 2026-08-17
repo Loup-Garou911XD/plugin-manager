@@ -1,4 +1,4 @@
-# Copyright 2025 - Solely by BrotherBoard
+# Copyright 2026 - Solely by BrotherBoard
 # Intended for personal use only
 # Bug? Feedback? Telegram >> @BroBordd
 
