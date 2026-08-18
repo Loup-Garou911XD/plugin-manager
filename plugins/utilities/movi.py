@@ -1738,7 +1738,7 @@ class Editor:
                 )
                 existed = False
                 if nam in mem['keys']:
-                    s.widgets.pop(mem['keys'][nam]['widget']).delete()
+                    (wid := s.widgets.pop(mem['keys'][nam].get('widget'), None)) and wid.delete()
                     existed = True
                 mem['keys'][nam] = {
                     'time':actual_time,
@@ -1781,7 +1781,7 @@ class Editor:
                     s.toast(Format.NOT_FOUND(n))
                     Eval.SOUND(Const.BAD_SOUND).play()
                     return
-                s.widgets[mem['keys'].pop(n)['widget']].delete()
+                (wid := s.widgets.pop(mem['keys'].pop(n).get('widget', object()), None)) and wid.delete()
                 s.toast(Strings.INFO_POPPED(n))
                 Eval.SOUND(Const.OK_SOUND).play()
                 s.fresh_current_key_texts()
@@ -1936,7 +1936,7 @@ class Editor:
                 )
                 existed = False
                 if n in mem['keys']:
-                    s.widgets.pop(mem['keys'][n]['widget']).delete()
+                    (wid := s.widgets.pop(mem['keys'][n].get('widget'), None)) and wid.delete()
                     existed = True
                 mem['keys'][n] = {
                     'time':actual_time,
@@ -1979,7 +1979,7 @@ class Editor:
                     s.toast(Format.NOT_FOUND(n))
                     Eval.SOUND(Const.BAD_SOUND).play()
                     return
-                s.widgets[mem['keys'].pop(n)['widget']].delete()
+                (wid := s.widgets.pop(mem['keys'].pop(n).get('widget', object()), None)) and wid.delete()
                 s.toast(Strings.INFO_POPPED(n))
                 Eval.SOUND(Const.OK_SOUND).play()
                 s.fresh_current_key_texts()
@@ -2143,7 +2143,7 @@ class Editor:
                 existed = False
                 if nam in mem['keys']:
                     existed = True
-                    s.widgets.pop(mem['keys'][nam]['widget']).delete()
+                    (wid := s.widgets.pop(mem['keys'][nam].get('widget'), None)) and wid.delete()
                 mem['keys'][nam] = {
                     'time':actual_time,
                     'action':i,
@@ -2185,7 +2185,7 @@ class Editor:
                     s.toast(Format.NOT_FOUND(t))
                     Eval.SOUND(Const.BAD_SOUND).play()
                     return
-                s.widgets.pop(mem['keys'].pop(t)['widget']).delete()
+                (wid := s.widgets.pop(mem['keys'].pop(t).get('widget', object()), None)) and wid.delete()
                 s.toast(Strings.INFO_POPPED(t))
                 Eval.SOUND(Const.OK_SOUND).play()
                 s.fresh_current_key_texts()
@@ -2409,7 +2409,7 @@ class Editor:
                 )
                 existed = False
                 if nam in mem['keys']:
-                    s.widgets.pop(mem['keys'][nam]['widget']).delete()
+                    (wid := s.widgets.pop(mem['keys'][nam].get('widget'), None)) and wid.delete()
                     existed = True
                 mem['keys'][nam] = {
                     'time':actual_time,
@@ -2454,7 +2454,7 @@ class Editor:
                     s.toast(Format.NOT_FOUND(n))
                     Eval.SOUND(Const.BAD_SOUND).play()
                     return
-                s.widgets[mem['keys'].pop(n)['widget']].delete()
+                (wid := s.widgets.pop(mem['keys'].pop(n).get('widget', object()), None)) and wid.delete()
                 s.toast(Strings.INFO_POPPED(n))
                 Eval.SOUND(Const.OK_SOUND).play()
                 s.fresh_current_key_texts()
@@ -8640,9 +8640,10 @@ class Editor:
             restamp()
 
             for key_data in mem.get('keys', {}).values():
-                if 'widget' in key_data:
-                    key_offset = key_data['time'] - mem['start']
-                    if key_offset <= mem['duration'] and not s.widgets[key_data['widget']].exists():
+                key_offset = key_data['time'] - mem['start']
+                if key_offset <= mem['duration']:
+                    existing = key_data.get('widget')
+                    if existing is None or existing not in s.widgets or not s.widgets[existing].exists():
                         key_x = s.magic_x + s.entry_xs_real * (mem['start'] + key_offset) * s.entries_per_sec - s.entry_ys_real/4
                         key_y = s.entry_ys_real * (len(s.memory) - mem['order'] - 1)
 
@@ -8713,8 +8714,10 @@ class Editor:
             for key_data in mem.get('keys', {}).values():
                 key_time = key_data['time'] - mem['start']
                 if key_time > mem['duration']:
-                    if 'widget' in key_data and s.widgets[key_data['widget']].exists():
-                        s.widgets.pop(key_data['widget']).delete()
+                    if 'widget' in key_data:
+                        wid = s.widgets.pop(key_data['widget'], None)
+                        wid and wid.exists() and wid.delete()
+                        del key_data['widget']
 
             if mem.get('prev_off') is not None and s.window_on and s.window_on[1] == s.key_window:
                 old_duration = mem['duration'] + 1/s.entries_per_sec
