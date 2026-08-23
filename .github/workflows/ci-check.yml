@@ -1,0 +1,119 @@
+name: PR Check
+
+# Runs entirely inside GitHub's hardcoded read-only, no-secrets sandbox for
+# `pull_request` events from forks. Fully executes fork-supplied code
+# (autopep8, metadata scripts, unittest discover) - that's safe here ONLY
+# because this token can't push anywhere and has no secrets.
+#
+# This workflow NEVER pushes anywhere. It only uploads a plain-text patch as
+# a build artifact for ci-apply.yml (a separate, trusted workflow) to apply.
+#
+# Note that a fork PR can modify THIS FILE and have its version run (GitHub
+# uses the workflow from the PR's own merge ref for `pull_request`). So
+# nothing produced here is trustworthy, and ci-apply.yml is written on that
+# assumption: it resolves PR identity from the workflow_run payload and the
+# API, and treats the uploaded patch as untrusted input to be validated.
+#
+# DO NOT switch this to `pull_request_target` and do not add `permissions:
+# contents: write` here "to save a round trip" - that reintroduces the
+# pwn-request hole this split exists to close.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Credentials are deliberately persisted here (unlike ci-apply.yml): the
+      # `git fetch` below needs them on a private repo, and the workflow-level
+      # `permissions: contents: read` caps this token to read-only in every
+      # case - fork PRs get a read-only token from GitHub regardless.
+      - name: Checkout PR head
+        uses: actions/checkout@v7
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          fetch-depth: 0
+
+      - name: Fetch PR base commit (for diffing)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git fetch --no-tags --depth=1 origin "$BASE_SHA"
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install -U pip
+          python -m pip install -U pycodestyle==2.12.1 autopep8
+          python -m pip install -U -r test/pip_reqs.txt
+
+      # Filenames are attacker-controlled, so they are kept in files and
+      # passed as shell variables - never interpolated into a script or into
+      # $GITHUB_OUTPUT (where a file named after the heredoc delimiter, or one
+      # containing a newline, could inject extra output keys).
+      - name: Compute changed files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" HEAD > "${RUNNER_TEMP}/changed_files.txt"
+          git diff --name-only -z "$BASE_SHA" HEAD -- '*.py' > "${RUNNER_TEMP}/changed_py.z"
+          cat "${RUNNER_TEMP}/changed_files.txt"
+
+      - name: Apply AutoPEP8 (changed .py files only)
+        run: |
+          set -euo pipefail
+          if [ -s "${RUNNER_TEMP}/changed_py.z" ]; then
+            xargs -0 -r autopep8 --in-place --max-line-length=100 \
+              < "${RUNNER_TEMP}/changed_py.z"
+          fi
+
+      # PLUGMAN_BASE_REF tells the script which tree counts as "already
+      # published". Without it the script compares against the PR's own
+      # manifest, which ci-apply.yml has already written the new version into -
+      # so every re-run of this workflow (including the one ci-apply.yml's push
+      # triggers) would fail with "Version cant be lower or equal".
+      - name: Apply Plugin Metadata (writes null version placeholders)
+        env:
+          PLUGMAN_BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          python test/auto_apply_plugin_metadata.py "$(cat "${RUNNER_TEMP}/changed_files.txt")"
+
+      # IMPORTANT: capture the patch BEFORE the version-metadata preview step
+      # below. commit_sha values computed there are fictitious (no real
+      # commit exists yet) and must never be part of what ci-apply.yml applies.
+      - name: Snapshot fixups patch
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/pr-data"
+          git diff > "${RUNNER_TEMP}/pr-data/fixups.patch"
+          wc -l "${RUNNER_TEMP}/pr-data/fixups.patch"
+
+      - name: Apply Version Metadata (local preview only - not uploaded)
+        run: |
+          python test/auto_apply_version_metadata.py "$(git rev-parse HEAD)"
+
+      - name: "Execute Tests (lenient: new-entry history checks deferred to ci-apply/push-to-main)"
+        env:
+          PLUGMAN_CI_LENIENT_HISTORY: "1"
+        run: |
+          python -m unittest discover -v
+
+      - name: Upload patch for ci-apply.yml
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-fixups
+          path: ${{ runner.temp }}/pr-data
+          retention-days: 5

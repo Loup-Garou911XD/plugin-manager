@@ -1,20 +1,20 @@
 name: CI
 
-# WORD OF CAUTION:
-#   TO anyone modifying this
-#     Things will break if you modify this
-#     without understanding how it works
-
-# A simple flow of this file:
-#   Apply AutoPEP8 → Apply Plugin Metadata → CRITICAL COMMIT (format + plugin meta)
-#   ←              ←              ←              ←              ←              ↵
-#   ↪ Apply Version Metadata → Commit (version meta) → Tests
+# Runs only on pushes to main - i.e. after a PR has been merged, or on a
+# direct maintainer push. This is fully trusted, same-repo content, so it's
+# safe for it to execute the tree and push directly. This is also the
+# AUTHORITATIVE integrity check: test/test_checks.py's test_versions runs
+# here unmodified/strict against real, permanent git history (unlike
+# ci-check.yml, which can't yet resolve a commit sha for a brand-new plugin
+# version and runs leniently instead).
 
 on:
   push:
     branches:
       - main
-  pull_request_target:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -22,9 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Set up Python
@@ -42,21 +39,10 @@ jobs:
         run: |
           autopep8 --in-place --recursive --max-line-length=100 .
 
-      - name: Apply Plugin Metadata
-        if: github.event_name == 'pull_request_target'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          CHANGED_FILES=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename')
-          python test/auto_apply_plugin_metadata.py "$CHANGED_FILES"
-
-      # This is a CRITICAL COMMIT for the next step
-      # which bases this as the commit to get the sha to store in index.json or plugin.json
-      - name: Commit Plugin Metadata and AutoPEP8
+      - name: Commit AutoPEP8 formatting
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "[ci] apply-plugin-metadata-and-formatting"
-          branch: ${{ github.head_ref }}
+          commit_message: "[ci] apply-formatting"
 
       - name: Apply Version Metadata
         run: |
@@ -66,7 +52,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "[ci] apply-version-metadata"
-          branch: ${{ github.head_ref }}
 
       - name: Execute Tests
         run: |
