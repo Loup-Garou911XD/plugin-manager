@@ -1,6 +1,12 @@
 {
   "plugin_manager_url": "https://github.com/bombsquad-community/plugin-manager/{content_type}/{tag}/plugin_manager.py",
   "versions": {
+    "1.1.11": {
+      "api_version": 9,
+      "commit_sha": "a74246d",
+      "released_on": "09-08-2026",
+      "md5sum": "1dbf57b11602a22196711bdd3ad18fdc"
+    },
     "1.1.10": {
       "api_version": 9,
       "commit_sha": "a1baa5f",
