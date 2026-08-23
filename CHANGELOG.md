@@ -1,5 +1,33 @@
 ## Plugin Manager (dd-mm-yyyy)
 
+### 1.1.13 (23-08-2026)
+
+- Changelog window hard-wraps its bullets across several source lines
+
+### 1.1.12 (23-08-2026)
+
+- Fixed request timeouts being reported as an unhandled error instead of
+  a connection problem, which left the plugin manager stuck on a spinner
+- Response bodies are now read on the network threadpool rather than on
+  the main thread, so a slow server no longer freezes the game
+- Index and changelog setup no longer deadlock after a failed fetch
+- Fixed the plugin manager failing to load or refresh on networks where
+  one of GitHub's edge servers is unreachable; all of the published
+  addresses are now tried instead of a single one
+- The DNS block workaround now corrects name resolution rather than
+  replacing the HTTP and TLS stack, so ordinary requests take the
+  standard code path
+- Fixed the changelog window erroring out after the settings window had
+  been opened
+
+### 1.1.11 (09-08-2026)
+
+- Switched to babase.app.asyncio_loop and babase.app.threadpool
+  for concurrent execution
+- A new threadpool to avoid blocking the babase.app.threadpool
+  which is for short parallel tasks
+- Added a shutdown task to shutdown our threadpool
+
 ### 1.1.10 (12-06-2026)
 
 - Fix for older bs versions using `EXPORT_CLASS_NAME_SHORTCUTS` import

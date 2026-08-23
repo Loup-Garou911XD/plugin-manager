@@ -4,20 +4,22 @@ import bauiv1 as bui
 from bauiv1lib import popup, confirm
 from bauiv1lib.settings.allsettings import AllSettingsWindow
 
+import urllib.error
 import urllib.request
 import http.client
 import socket
 import json
-import ssl
 
 import re
 import os
-import sys
 import copy
 import asyncio
 import pathlib
 import hashlib
+import weakref
+import threading
 import contextlib
+import concurrent.futures
 
 from typing import override
 from datetime import datetime
@@ -25,7 +27,7 @@ from datetime import datetime
 # Modules used for overriding AllSettingsWindow
 import logging
 
-PLUGIN_MANAGER_VERSION = "1.1.10"
+PLUGIN_MANAGER_VERSION = "1.1.13"
 REPOSITORY_URL = "https://github.com/bombsquad-community/plugin-manager"
 # Current tag can be changed to "staging" or any other branch in
 # plugin manager repo for testing purpose.
@@ -43,11 +45,39 @@ HEADERS = {
 }
 PLUGIN_DIRECTORY = _env["python_directory_user"]
 
-# compatibility for older API versions.
-if _env.get("build_number", 0) < 22714:
-    babase._asyncio._g_asyncio_event_loop = babase._asyncio._asyncio_event_loop
+NETWORK_REQUEST_TIMEOUT = 10  # seconds
 
-loop = babase._asyncio._g_asyncio_event_loop
+loop = babase.app.asyncio_loop
+pool = babase.app.threadpool
+
+# babase.app.threadpool (aka `pool`, also wired up as the asyncio loop's
+# default executor) is reserved for short parallel work and warns/starves
+# on long-running tasks. Network requests routinely run past that, so they
+# get their own small dedicated pool instead.
+_network_pool = concurrent.futures.ThreadPoolExecutor(
+    max_workers=4,
+    thread_name_prefix="PluginManagerNetwork",
+)
+
+
+async def _shutdown_network_pool() -> None:
+    """Drain _network_pool's workers so none outlive app shutdown.
+
+    ThreadPoolExecutor.shutdown(wait=True) blocks, so it's run on a
+    throwaway thread and awaited from here rather than blocking the
+    event loop (other shutdown tasks run concurrently with this one).
+    In-flight requests are bounded by NETWORK_REQUEST_TIMEOUT, so this
+    settles quickly.
+    """
+    done = asyncio.Event()
+
+    def _join() -> None:
+        _network_pool.shutdown(wait=True, cancel_futures=True)
+        loop.call_soon_threadsafe(done.set)
+
+    threading.Thread(target=_join, daemon=True).start()
+    await done.wait()
+
 
 open_popups = []
 
@@ -74,6 +104,42 @@ def _by_scale(a, b, c):
         b if u is babase.UIScale.MEDIUM else
         c
     )
+
+
+def _wrap_markdown_bullets(source_lines, max_width, scale):
+    """Reflow markdown bullets so every rendered line fits `max_width`.
+
+    CHANGELOG.md hard-wraps its bullets across several source lines, so the
+    lines are first stitched back into whole bullets and then re-wrapped to
+    the width we actually have. Drawing the source lines as-is left each one
+    a different length, and since a text widget shrinks itself to its own
+    maxwidth, long lines rendered visibly smaller than short ones.
+    """
+    bullets = []
+    for line in source_lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith(("-", "*")) or not bullets:
+            bullets.append(stripped.lstrip("-*").strip())
+        else:
+            # A continuation of the bullet above it.
+            bullets[-1] += " " + stripped
+
+    lines = []
+    for bullet in bullets:
+        prefix, current = "- ", ""
+        for word in bullet.split():
+            candidate = f"{current} {word}" if current else word
+            width = bui.get_string_width(prefix + candidate, suppress_warning=True)
+            if current and width * scale > max_width:
+                lines.append(prefix + current)
+                # Indent wrapped remainders under the bullet's text.
+                prefix, current = "   ", word
+            else:
+                current = candidate
+        lines.append(prefix + current)
+    return lines
 
 
 REGEXP = {
@@ -125,26 +191,57 @@ class CategoryMetadataParseError(Exception):
     pass
 
 
+@contextlib.contextmanager
+def network_errors_as_urlerror():
+    """Normalize network failures into urllib.error.URLError.
+
+    Every caller in here reports connectivity problems by catching
+    URLError, but urllib only guarantees that shape while it is building
+    the request. Once urlopen() has returned, a socket timeout surfaces
+    as a bare TimeoutError and a truncated/dropped response as an
+    http.client.HTTPException, both of which sail past those handlers.
+    Since NETWORK_REQUEST_TIMEOUT made timeouts reachable at all, wrap
+    the whole fetch so callers only ever have one exception to catch.
+    """
+    try:
+        yield
+    except urllib.error.URLError:
+        # Includes HTTPError; already the shape callers expect.
+        raise
+    except (TimeoutError, http.client.HTTPException) as e:
+        raise urllib.error.URLError(e) from e
+
+
 def send_network_request(request):
-    return urllib.request.urlopen(request)
+    """Fetch `request` and return its full body as bytes.
+
+    The body is read here rather than handed back unread, because reading
+    it is itself a blocking call that can time out, and callers await this
+    from the event loop thread, where doing so would both stall the game
+    and raise outside network_errors_as_urlerror()'s reach.
+    """
+    with network_errors_as_urlerror():
+        with urllib.request.urlopen(request, timeout=NETWORK_REQUEST_TIMEOUT) as response:
+            return response.read()
 
 
 async def async_send_network_request(request):
-    response = await loop.run_in_executor(None, send_network_request, request)
-    return response
+    content = await loop.run_in_executor(_network_pool, send_network_request, request)
+    return content
 
 
 def stream_network_response_to_file(request, file, md5sum=None, retries=3):
-    response = urllib.request.urlopen(request)
     chunk_size = 16 * 1024
     content = b""
-    with open(file, "wb") as fout:
-        while True:
-            chunk = response.read(chunk_size)
-            if not chunk:
-                break
-            fout.write(chunk)
-            content += chunk
+    with network_errors_as_urlerror():
+        with urllib.request.urlopen(request, timeout=NETWORK_REQUEST_TIMEOUT) as response:
+            with open(file, "wb") as fout:
+                while True:
+                    chunk = response.read(chunk_size)
+                    if not chunk:
+                        break
+                    fout.write(chunk)
+                    content += chunk
     if md5sum and hashlib.md5(content).hexdigest() != md5sum:
         if retries <= 0:
             raise MD5CheckSumFailed("MD5 checksum match failed.")
@@ -160,7 +257,7 @@ def stream_network_response_to_file(request, file, md5sum=None, retries=3):
 async def async_stream_network_response_to_file(request, file, md5sum=None, retries=3):
 
     content = await loop.run_in_executor(
-        None,
+        _network_pool,
         stream_network_response_to_file,
         request,
         file,
@@ -191,86 +288,114 @@ class DNSBlockWorkaround:
     Usage:
     -----
     >>> import urllib.request
-    >>> import http.client
     >>> import socket
-    >>> import ssl
     >>> import json
     >>> DNSBlockWorkaround.apply()
     >>> response = urllib.request.urlopen("https://dnsblockeddomain.com/path/to/resource/")
     """
 
-    _google_dns_cache = {}
+    # Hostnames worth second-guessing the system resolver on. Keeping this
+    # explicit is what lets apply() patch a process-global function safely:
+    # every other name the game looks up takes a set membership test and is
+    # then handed straight to the original resolver.
+    _blockable_hosts = frozenset(("raw.githubusercontent.com",))
 
-    def apply():
-        opener = urllib.request.build_opener(
-            DNSBlockWorkaround._HTTPHandler,
-            DNSBlockWorkaround._HTTPSHandler,
+    # Maps a hostname to the addresses to dial for it, or to None when the
+    # host resolves normally and needs no workaround at all. Only populated
+    # for hosts we've already checked, so the check happens once per session.
+    _resolution_cache = {}
+
+    _original_getaddrinfo = None
+
+    @classmethod
+    def apply(cls):
+        """Correct socket.getaddrinfo() instead of rebuilding the HTTP stack.
+
+        The block only ever corrupts one thing, the answer the resolver
+        hands back, so that is the only thing worth replacing. Fixing it
+        here leaves urllib, http.client and ssl completely stock:
+        socket.create_connection() still does its own address walking,
+        IPv6 handling and error aggregation, and TLS still verifies
+        against the hostname rather than whatever address we dialed.
+        """
+        if cls._original_getaddrinfo is not None:
+            # Already applied. Patching again would nest the wrapper.
+            return
+        cls._original_getaddrinfo = staticmethod(socket.getaddrinfo)
+        socket.getaddrinfo = cls._getaddrinfo
+
+    @classmethod
+    def _getaddrinfo(cls, host, port, family=0, type=0, proto=0, flags=0):
+        # Signature and argument names mirror socket.getaddrinfo(), which
+        # callers pass both positionally and by keyword.
+        if host in cls._blockable_hosts:
+            addresses = cls._addresses_to_dial(host)
+            if addresses is not None:
+                # Re-resolving each literal address is just parsing; it
+                # builds the 5-tuples callers expect without a lookup.
+                return [
+                    addrinfo
+                    for address in addresses
+                    for addrinfo in cls._original_getaddrinfo(
+                        address, port, family, type, proto, flags)
+                ]
+        return cls._original_getaddrinfo(host, port, family, type, proto, flags)
+
+    @classmethod
+    def _resolve_using_google_dns(cls, hostname):
+        response = urllib.request.urlopen(
+            f"https://dns.google/resolve?name={hostname}",
+            timeout=NETWORK_REQUEST_TIMEOUT,
         )
-        urllib.request.install_opener(opener)
-
-    def _resolve_using_google_dns(hostname):
-        response = urllib.request.urlopen(f"https://dns.google/resolve?name={hostname}")
         response = response.read()
         response = json.loads(response)
-        resolved_host = response["Answer"][0]["data"]
-        return resolved_host
+        # Answers can include CNAME records (type 5) alongside the A (1) and
+        # AAAA (28) records; only the latter are dialable.
+        return [answer["data"] for answer in response.get("Answer", ())
+                if answer.get("type") in (1, 28)]
 
-    def _resolve_using_system_dns(hostname):
+    @classmethod
+    def _resolve_using_system_dns(cls, hostname):
         resolved_host = socket.gethostbyname(hostname)
         return resolved_host
 
-    def _resolve_with_workaround(hostname):
-        resolved_host_from_cache = DNSBlockWorkaround._google_dns_cache.get(hostname)
-        if resolved_host_from_cache:
-            return resolved_host_from_cache
+    @classmethod
+    def _addresses_to_dial(cls, hostname):
+        """Addresses to substitute for `hostname`, or None to leave it alone.
 
-        resolved_host_by_system_dns = DNSBlockWorkaround._resolve_using_system_dns(hostname)
+        Returning None is the common case and means the system resolver's
+        answer stands. Note that both branches yield *every* usable address
+        rather than one: socket.create_connection() walks the list until
+        something answers, and raw.githubusercontent.com publishes four A
+        records whose edge nodes are not all reachable from every network,
+        so collapsing to a single address would fail a share of requests
+        outright.
+        """
+        if hostname in cls._resolution_cache:
+            return cls._resolution_cache[hostname]
 
-        if DNSBlockWorkaround._is_blocked(hostname, resolved_host_by_system_dns):
-            resolved_host = DNSBlockWorkaround._resolve_using_google_dns(hostname)
-            DNSBlockWorkaround._google_dns_cache[hostname] = resolved_host
+        try:
+            resolved_host_by_system_dns = cls._resolve_using_system_dns(hostname)
+        except socket.gaierror:
+            # A block that answers with NXDOMAIN rather than a bogus address.
+            addresses = cls._resolve_using_google_dns(hostname) or None
         else:
-            resolved_host = resolved_host_by_system_dns
+            if cls._is_blocked(hostname, resolved_host_by_system_dns):
+                addresses = cls._resolve_using_google_dns(hostname) or None
+            else:
+                addresses = None
 
-        return resolved_host
+        cls._resolution_cache[hostname] = addresses
+        return addresses
 
-    def _is_blocked(hostname, address):
+    @classmethod
+    def _is_blocked(cls, hostname, address):
         is_blocked = False
         if hostname == "raw.githubusercontent.com":
             # Jio's DNS server may be blocking it.
             is_blocked = address.startswith("49.44.")
 
         return is_blocked
-
-    class _HTTPConnection(http.client.HTTPConnection):
-        def connect(self):
-            host = DNSBlockWorkaround._resolve_with_workaround(self.host)
-            self.sock = socket.create_connection(
-                (host, self.port),
-                self.timeout,
-            )
-
-    class _HTTPSConnection(http.client.HTTPSConnection):
-        def connect(self):
-            host = DNSBlockWorkaround._resolve_with_workaround(self.host)
-            sock = socket.create_connection(
-                (host, self.port),
-                self.timeout,
-            )
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-            context.verify_mode = ssl.CERT_REQUIRED
-            context.check_hostname = True
-            context.load_default_certs()
-            sock = context.wrap_socket(sock, server_hostname=self.host)
-            self.sock = sock
-
-    class _HTTPHandler(urllib.request.HTTPHandler):
-        def http_open(self, req):
-            return self.do_open(DNSBlockWorkaround._HTTPConnection, req)
-
-    class _HTTPSHandler(urllib.request.HTTPSHandler):
-        def https_open(self, req):
-            return self.do_open(DNSBlockWorkaround._HTTPSConnection, req)
 
 
 class StartupTasks:
@@ -418,8 +543,8 @@ class Category:
                 self.meta_url.format(content_type="raw", tag=self.tag),
                 headers=self.request_headers,
             )
-            response = await async_send_network_request(request)
-            self._metadata = json.loads(response.read())
+            content = await async_send_network_request(request)
+            self._metadata = json.loads(content)
             self.set_category_global_cache("metadata", self._metadata)
         return self
 
@@ -578,7 +703,7 @@ class PluginLocal:
             if not self.is_installed:
                 raise PluginNotInstalled("Plugin is not available locally.")
 
-            self._content = await loop.run_in_executor(None, self._get_content)
+            self._content = await loop.run_in_executor(pool, self._get_content)
         return self._content
 
     async def get_api_version(self):
@@ -659,7 +784,7 @@ class PluginLocal:
         self.save()
 
     def load_plugin(self, entry_point):
-        plugin_class = babase._general.getclass(entry_point, babase.Plugin)
+        plugin_class = babase.getclass(entry_point, babase.Plugin)
         loaded_plugin_instance = plugin_class()
         loaded_plugin_instance.on_app_running()
 
@@ -683,7 +808,7 @@ class PluginLocal:
     async def set_content(self, content):
         if not self._content:
 
-            await loop.run_in_executor(None, self._set_content, content)
+            await loop.run_in_executor(pool, self._set_content, content)
             self._content = content
         return self
 
@@ -705,14 +830,23 @@ class PluginLocal:
 class PluginVersion:
     def __init__(self, plugin, version, tag=CURRENT_TAG):
         self.number, info = version
-        self.plugin = plugin
+        # Plugin already owns its PluginVersions (via `versions`,
+        # `latest_version`, `latest_compatible_version`); holding a strong
+        # back-reference here would form a Plugin<->PluginVersion cycle
+        # that only the cyclic GC can free. A weakref avoids that so
+        # they're freed by refcounting alone.
+        self._plugin_ref = weakref.ref(plugin)
         self.api_version = info["api_version"]
         self.released_on = info["released_on"]
         self.commit_sha = info["commit_sha"]
         self.md5sum = info["md5sum"]
 
-        self.download_url = self.plugin.url.format(content_type="raw", tag=tag)
-        self.view_url = self.plugin.url.format(content_type="blob", tag=tag)
+        self.download_url = plugin.url.format(content_type="raw", tag=tag)
+        self.view_url = plugin.url.format(content_type="blob", tag=tag)
+
+    @property
+    def plugin(self):
+        return self._plugin_ref()
 
     def __eq__(self, plugin_version):
         return (self.number, self.plugin.name) == (plugin_version.number,
@@ -867,9 +1001,11 @@ class PluginManager:
     def __init__(self):
         self.request_headers = HEADERS
         self._index = _CACHE.get("index", {})
-        self._changelog = _CACHE.get("changelog", {})
+        # The raw changelog text, kept separate from the parsed entry in
+        # _CACHE["changelog"]; see setup_changelog().
+        self._changelog = _CACHE.get("changelog_source")
         self.categories = {}
-        self.module_path = sys.modules[__name__].__file__
+        self.module_path = __file__
         self._index_setup_in_progress = False
         self._changelog_setup_in_progress = False
 
@@ -883,8 +1019,8 @@ class PluginManager:
                 ),
                 headers=self.request_headers,
             )
-            response = await async_send_network_request(request)
-            index = json.loads(response.read())
+            content = await async_send_network_request(request)
+            index = json.loads(content)
             self.set_index_global_cache(index)
             self._index = index
         return self._index
@@ -895,12 +1031,17 @@ class PluginManager:
             # Rather wait for the previous network call to complete.
             await asyncio.sleep(0.1)
         self._index_setup_in_progress = not bool(self._index)
-        index = await self.get_index()
-        await self.setup_plugin_categories(index)
-        self._index_setup_in_progress = False
+        try:
+            index = await self.get_index()
+            await self.setup_plugin_categories(index)
+        finally:
+            # Must clear even when the setup raised, or every later call
+            # spins in the loop above forever waiting on a call that has
+            # already given up.
+            self._index_setup_in_progress = False
 
-    async def get_changelog(self) -> list[str, bool]:
-        requested = False
+    async def get_changelog(self) -> str:
+        """The full CHANGELOG.md text, fetched once per session."""
         if not self._changelog:
             request = urllib.request.Request(CHANGELOG_META.format(
                 repository_url=REPOSITORY_URL,
@@ -908,10 +1049,10 @@ class PluginManager:
                 tag=CURRENT_TAG
             ),
                 headers=self.request_headers)
-            response = await async_send_network_request(request)
-            self._changelog = response.read().decode()
-            requested = True
-        return [self._changelog, requested]
+            content = await async_send_network_request(request)
+            self._changelog = content.decode()
+            self.set_changelog_source_global_cache(self._changelog)
+        return self._changelog
 
     async def setup_changelog(self, version=None) -> None:
         if version is None:
@@ -922,14 +1063,18 @@ class PluginManager:
             await asyncio.sleep(0.1)
         self._changelog_setup_in_progress = not bool(self._changelog)
         try:
-            full_changelog = await self.get_changelog()
-            # check if the changelog was requested
-            if full_changelog[1]:
+            try:
+                # Parsing is pure string work on text we already hold, so it
+                # runs every time rather than only on the call that fetched.
+                # Skipping it was what let the raw text reach the cache in
+                # place of the parsed entry ChangelogWindow reads.
+                full_changelog = await self.get_changelog()
                 pattern = rf"### {version} \(\d\d-\d\d-\d{{4}}\)\n(.*?)(?=### \d+\.\d+\.\d+|\Z)"
-                if (len(full_changelog[0].split(version)) > 1):
-                    released_on = full_changelog[0].split(version)[1].split('\n')[0]
-                    matches = re.findall(pattern, full_changelog[0], re.DOTALL)
+                if (len(full_changelog.split(version)) > 1):
+                    released_on = full_changelog.split(version)[1].split('\n')[0]
+                    matches = re.findall(pattern, full_changelog, re.DOTALL)
                 else:
+                    released_on = ' (Not Provided)'
                     matches = None
 
                 if matches:
@@ -938,15 +1083,17 @@ class PluginManager:
                         'info': matches[0].strip()
                     }
                 else:
-                    changelog = {'released_on': ' (Not Provided)',
+                    changelog = {'released_on': released_on,
                                  'info': f"Changelog entry for version {version} not found."}
-            else:
-                changelog = full_changelog[0]
-        except urllib.error.URLError:
-            changelog = {'released_on': ' (Not Provided)',
-                         'info': 'Could not get ChangeLog due to Internet Issues.'}
-        self.set_changelog_global_cache(changelog)
-        self._changelog_setup_in_progress = False
+            except urllib.error.URLError:
+                changelog = {'released_on': ' (Not Provided)',
+                             'info': 'Could not get ChangeLog due to Internet Issues.'}
+            self.set_changelog_global_cache(changelog)
+        finally:
+            # Must clear even when the setup raised, or every later call
+            # spins in the loop above forever waiting on a call that has
+            # already given up.
+            self._changelog_setup_in_progress = False
 
     async def setup_plugin_categories(self, plugin_index):
         # A hack to have the "All" category show at the top.
@@ -998,12 +1145,12 @@ class PluginManager:
     def set_changelog_global_cache(self, changelog):
         _CACHE["changelog"] = changelog
 
+    def set_changelog_source_global_cache(self, changelog_source):
+        _CACHE["changelog_source"] = changelog_source
+
     def unset_index_global_cache(self):
-        try:
-            del _CACHE["index"]
-            del _CACHE["changelog"]
-        except KeyError:
-            pass
+        for key in ("index", "changelog", "changelog_source"):
+            _CACHE.pop(key, None)
 
     async def get_update_details(self):
         index = await self.get_index()
@@ -1033,8 +1180,7 @@ class PluginManager:
             content_type="raw",
             tag=tag,
         )
-        response = await async_send_network_request(download_url)
-        content = response.read()
+        content = await async_send_network_request(download_url)
         if hashlib.md5(content).hexdigest() != to_version_info["md5sum"]:
             raise MD5CheckSumFailed("MD5 checksum failed during plugin manager update.")
         with open(self.module_path, "wb") as fout:
@@ -1050,7 +1196,7 @@ class ChangelogWindow(popup.PopupWindow):
         self.scale_origin = origin_widget.get_screen_space_center()
         s = 1.65 if _uiscale() is babase.UIScale.SMALL else 1.39 if _uiscale() is babase.UIScale.MEDIUM else 1.67
         width = 400 * s
-        height = width * 0.5
+        height = width * 0.6
         color = (1, 1, 1)
         text_scale = 0.7 * s
         self._transition_out = 'out_scale'
@@ -1096,12 +1242,10 @@ class ChangelogWindow(popup.PopupWindow):
             released_on = _CACHE['changelog']['released_on']
             logs = _CACHE['changelog']['info'].split('\n')
             h_align = 'left'
-            extra = 0.1
         except KeyError:
             released_on = ''
             logs = ["Could not load ChangeLog"]
             h_align = 'center'
-            extra = 1
 
         bui.textwidget(
             parent=self._root_widget,
@@ -1129,20 +1273,48 @@ class ChangelogWindow(popup.PopupWindow):
             )
         )
 
-        loop_height = height * 0.62
+        # The entry can be arbitrarily long, so it scrolls rather than
+        # spilling out of the bottom of the window.
+        scroll_width = width * 0.88
+        scroll_height = height * 0.62
+        self._scrollwidget = bui.scrollwidget(
+            parent=self._root_widget,
+            size=(scroll_width, scroll_height),
+            position=(width * 0.06, height * 0.04),
+            capture_arrows=True
+        )
+
+        body_scale = text_scale * 0.7
+        line_height = 36 * body_scale
+        text_width = scroll_width - 30
+        if h_align == 'left':
+            # Leave headroom below `maxwidth` so no line ends up shrunk
+            # (and thus smaller than its neighbours) by a rounding hair.
+            logs = _wrap_markdown_bullets(logs, text_width * 0.95, body_scale)
+
+        content_height = max(scroll_height, line_height * len(logs) + 20)
+        content = bui.containerwidget(
+            parent=self._scrollwidget,
+            size=(text_width, content_height),
+            background=False,
+            claims_left_right=False
+        )
+
+        loop_height = content_height - line_height * 0.5 - 10
         for log in logs:
             bui.textwidget(
-                parent=self._root_widget,
-                position=(width * 0.5 * extra, loop_height),
+                parent=content,
+                position=(text_width * 0.5 if h_align == 'center' else 0,
+                          loop_height),
                 size=(0, 0),
                 h_align=h_align,
                 v_align='center',
                 text=log,
-                scale=text_scale,
+                scale=body_scale,
                 color=color,
-                maxwidth=width * 0.9
+                maxwidth=text_width
             )
-            loop_height -= 30
+            loop_height -= line_height
 
     def _back(self) -> None:
         bui.getsound('swish').play()
@@ -1735,6 +1907,7 @@ class PluginWindow(popup.PopupWindow):
         _remove_popup(self)
         bui.containerwidget(edit=self._root_widget, transition='out_scale')
 
+    @staticmethod
     def button(fn):
         async def asyncio_handler(fn, self, *args, **kwargs):
             await fn(self, *args, **kwargs)
@@ -2260,8 +2433,8 @@ class PluginManagerWindow(bui.MainWindow):
 
     def __init__(
         self,
-        transition: str = "in_right",
-        origin_widget: bui.Widget = None
+        transition: str | None = "in_right",
+        origin_widget: bui.Widget | None = None
     ):
         self.plugin_manager = PluginManager()
         self.category_selection_button = None
@@ -3419,7 +3592,7 @@ class EntryPoint(babase.Plugin):
         from bauiv1lib.settings import allsettings
         allsettings.AllSettingsWindow = NewAllSettingsWindow
         DNSBlockWorkaround.apply()
-        asyncio.set_event_loop(babase._asyncio._g_asyncio_event_loop)
+        babase.app.add_shutdown_task(_shutdown_network_pool())
         startup_tasks = StartupTasks()
 
         loop.create_task(startup_tasks.execute())
