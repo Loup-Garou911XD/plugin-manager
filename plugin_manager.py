@@ -27,7 +27,7 @@ from datetime import datetime
 # Modules used for overriding AllSettingsWindow
 import logging
 
-PLUGIN_MANAGER_VERSION = "1.1.12"
+PLUGIN_MANAGER_VERSION = "1.1.13"
 REPOSITORY_URL = "https://github.com/bombsquad-community/plugin-manager"
 # Current tag can be changed to "staging" or any other branch in
 # plugin manager repo for testing purpose.
@@ -104,6 +104,42 @@ def _by_scale(a, b, c):
         b if u is babase.UIScale.MEDIUM else
         c
     )
+
+
+def _wrap_markdown_bullets(source_lines, max_width, scale):
+    """Reflow markdown bullets so every rendered line fits `max_width`.
+
+    CHANGELOG.md hard-wraps its bullets across several source lines, so the
+    lines are first stitched back into whole bullets and then re-wrapped to
+    the width we actually have. Drawing the source lines as-is left each one
+    a different length, and since a text widget shrinks itself to its own
+    maxwidth, long lines rendered visibly smaller than short ones.
+    """
+    bullets = []
+    for line in source_lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith(("-", "*")) or not bullets:
+            bullets.append(stripped.lstrip("-*").strip())
+        else:
+            # A continuation of the bullet above it.
+            bullets[-1] += " " + stripped
+
+    lines = []
+    for bullet in bullets:
+        prefix, current = "- ", ""
+        for word in bullet.split():
+            candidate = f"{current} {word}" if current else word
+            width = bui.get_string_width(prefix + candidate, suppress_warning=True)
+            if current and width * scale > max_width:
+                lines.append(prefix + current)
+                # Indent wrapped remainders under the bullet's text.
+                prefix, current = "   ", word
+            else:
+                current = candidate
+        lines.append(prefix + current)
+    return lines
 
 
 REGEXP = {
@@ -1160,7 +1196,7 @@ class ChangelogWindow(popup.PopupWindow):
         self.scale_origin = origin_widget.get_screen_space_center()
         s = 1.65 if _uiscale() is babase.UIScale.SMALL else 1.39 if _uiscale() is babase.UIScale.MEDIUM else 1.67
         width = 400 * s
-        height = width * 0.5
+        height = width * 0.6
         color = (1, 1, 1)
         text_scale = 0.7 * s
         self._transition_out = 'out_scale'
@@ -1206,12 +1242,10 @@ class ChangelogWindow(popup.PopupWindow):
             released_on = _CACHE['changelog']['released_on']
             logs = _CACHE['changelog']['info'].split('\n')
             h_align = 'left'
-            extra = 0.1
         except KeyError:
             released_on = ''
             logs = ["Could not load ChangeLog"]
             h_align = 'center'
-            extra = 1
 
         bui.textwidget(
             parent=self._root_widget,
@@ -1239,20 +1273,48 @@ class ChangelogWindow(popup.PopupWindow):
             )
         )
 
-        loop_height = height * 0.62
+        # The entry can be arbitrarily long, so it scrolls rather than
+        # spilling out of the bottom of the window.
+        scroll_width = width * 0.88
+        scroll_height = height * 0.62
+        self._scrollwidget = bui.scrollwidget(
+            parent=self._root_widget,
+            size=(scroll_width, scroll_height),
+            position=(width * 0.06, height * 0.04),
+            capture_arrows=True
+        )
+
+        body_scale = text_scale * 0.7
+        line_height = 36 * body_scale
+        text_width = scroll_width - 30
+        if h_align == 'left':
+            # Leave headroom below `maxwidth` so no line ends up shrunk
+            # (and thus smaller than its neighbours) by a rounding hair.
+            logs = _wrap_markdown_bullets(logs, text_width * 0.95, body_scale)
+
+        content_height = max(scroll_height, line_height * len(logs) + 20)
+        content = bui.containerwidget(
+            parent=self._scrollwidget,
+            size=(text_width, content_height),
+            background=False,
+            claims_left_right=False
+        )
+
+        loop_height = content_height - line_height * 0.5 - 10
         for log in logs:
             bui.textwidget(
-                parent=self._root_widget,
-                position=(width * 0.5 * extra, loop_height),
+                parent=content,
+                position=(text_width * 0.5 if h_align == 'center' else 0,
+                          loop_height),
                 size=(0, 0),
                 h_align=h_align,
                 v_align='center',
                 text=log,
-                scale=text_scale,
+                scale=body_scale,
                 color=color,
-                maxwidth=width * 0.9
+                maxwidth=text_width
             )
-            loop_height -= 30
+            loop_height -= line_height
 
     def _back(self) -> None:
         bui.getsound('swish').play()

@@ -1,5 +1,9 @@
 ## Plugin Manager (dd-mm-yyyy)
 
+### 1.1.13 (23-08-2026)
+
+- Changelog window hard-wraps its bullets across several source lines
+
 ### 1.1.12 (23-08-2026)
 
 - Fixed request timeouts being reported as an unhandled error instead of
