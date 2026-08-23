@@ -9,7 +9,6 @@ import urllib.request
 import http.client
 import socket
 import json
-import ssl
 
 import re
 import os
@@ -28,7 +27,7 @@ from datetime import datetime
 # Modules used for overriding AllSettingsWindow
 import logging
 
-PLUGIN_MANAGER_VERSION = "1.1.11"
+PLUGIN_MANAGER_VERSION = "1.1.12"
 REPOSITORY_URL = "https://github.com/bombsquad-community/plugin-manager"
 # Current tag can be changed to "staging" or any other branch in
 # plugin manager repo for testing purpose.
@@ -156,26 +155,57 @@ class CategoryMetadataParseError(Exception):
     pass
 
 
+@contextlib.contextmanager
+def network_errors_as_urlerror():
+    """Normalize network failures into urllib.error.URLError.
+
+    Every caller in here reports connectivity problems by catching
+    URLError, but urllib only guarantees that shape while it is building
+    the request. Once urlopen() has returned, a socket timeout surfaces
+    as a bare TimeoutError and a truncated/dropped response as an
+    http.client.HTTPException, both of which sail past those handlers.
+    Since NETWORK_REQUEST_TIMEOUT made timeouts reachable at all, wrap
+    the whole fetch so callers only ever have one exception to catch.
+    """
+    try:
+        yield
+    except urllib.error.URLError:
+        # Includes HTTPError; already the shape callers expect.
+        raise
+    except (TimeoutError, http.client.HTTPException) as e:
+        raise urllib.error.URLError(e) from e
+
+
 def send_network_request(request):
-    return urllib.request.urlopen(request, timeout=NETWORK_REQUEST_TIMEOUT)
+    """Fetch `request` and return its full body as bytes.
+
+    The body is read here rather than handed back unread, because reading
+    it is itself a blocking call that can time out, and callers await this
+    from the event loop thread, where doing so would both stall the game
+    and raise outside network_errors_as_urlerror()'s reach.
+    """
+    with network_errors_as_urlerror():
+        with urllib.request.urlopen(request, timeout=NETWORK_REQUEST_TIMEOUT) as response:
+            return response.read()
 
 
 async def async_send_network_request(request):
-    response = await loop.run_in_executor(_network_pool, send_network_request, request)
-    return response
+    content = await loop.run_in_executor(_network_pool, send_network_request, request)
+    return content
 
 
 def stream_network_response_to_file(request, file, md5sum=None, retries=3):
-    response = urllib.request.urlopen(request, timeout=NETWORK_REQUEST_TIMEOUT)
     chunk_size = 16 * 1024
     content = b""
-    with open(file, "wb") as fout:
-        while True:
-            chunk = response.read(chunk_size)
-            if not chunk:
-                break
-            fout.write(chunk)
-            content += chunk
+    with network_errors_as_urlerror():
+        with urllib.request.urlopen(request, timeout=NETWORK_REQUEST_TIMEOUT) as response:
+            with open(file, "wb") as fout:
+                while True:
+                    chunk = response.read(chunk_size)
+                    if not chunk:
+                        break
+                    fout.write(chunk)
+                    content += chunk
     if md5sum and hashlib.md5(content).hexdigest() != md5sum:
         if retries <= 0:
             raise MD5CheckSumFailed("MD5 checksum match failed.")
@@ -222,23 +252,58 @@ class DNSBlockWorkaround:
     Usage:
     -----
     >>> import urllib.request
-    >>> import http.client
     >>> import socket
-    >>> import ssl
     >>> import json
     >>> DNSBlockWorkaround.apply()
     >>> response = urllib.request.urlopen("https://dnsblockeddomain.com/path/to/resource/")
     """
 
-    _google_dns_cache = {}
+    # Hostnames worth second-guessing the system resolver on. Keeping this
+    # explicit is what lets apply() patch a process-global function safely:
+    # every other name the game looks up takes a set membership test and is
+    # then handed straight to the original resolver.
+    _blockable_hosts = frozenset(("raw.githubusercontent.com",))
+
+    # Maps a hostname to the addresses to dial for it, or to None when the
+    # host resolves normally and needs no workaround at all. Only populated
+    # for hosts we've already checked, so the check happens once per session.
+    _resolution_cache = {}
+
+    _original_getaddrinfo = None
 
     @classmethod
     def apply(cls):
-        opener = urllib.request.build_opener(
-            cls._HTTPHandler,
-            cls._HTTPSHandler,
-        )
-        urllib.request.install_opener(opener)
+        """Correct socket.getaddrinfo() instead of rebuilding the HTTP stack.
+
+        The block only ever corrupts one thing, the answer the resolver
+        hands back, so that is the only thing worth replacing. Fixing it
+        here leaves urllib, http.client and ssl completely stock:
+        socket.create_connection() still does its own address walking,
+        IPv6 handling and error aggregation, and TLS still verifies
+        against the hostname rather than whatever address we dialed.
+        """
+        if cls._original_getaddrinfo is not None:
+            # Already applied. Patching again would nest the wrapper.
+            return
+        cls._original_getaddrinfo = staticmethod(socket.getaddrinfo)
+        socket.getaddrinfo = cls._getaddrinfo
+
+    @classmethod
+    def _getaddrinfo(cls, host, port, family=0, type=0, proto=0, flags=0):
+        # Signature and argument names mirror socket.getaddrinfo(), which
+        # callers pass both positionally and by keyword.
+        if host in cls._blockable_hosts:
+            addresses = cls._addresses_to_dial(host)
+            if addresses is not None:
+                # Re-resolving each literal address is just parsing; it
+                # builds the 5-tuples callers expect without a lookup.
+                return [
+                    addrinfo
+                    for address in addresses
+                    for addrinfo in cls._original_getaddrinfo(
+                        address, port, family, type, proto, flags)
+                ]
+        return cls._original_getaddrinfo(host, port, family, type, proto, flags)
 
     @classmethod
     def _resolve_using_google_dns(cls, hostname):
@@ -248,8 +313,10 @@ class DNSBlockWorkaround:
         )
         response = response.read()
         response = json.loads(response)
-        resolved_host = response["Answer"][0]["data"]
-        return resolved_host
+        # Answers can include CNAME records (type 5) alongside the A (1) and
+        # AAAA (28) records; only the latter are dialable.
+        return [answer["data"] for answer in response.get("Answer", ())
+                if answer.get("type") in (1, 28)]
 
     @classmethod
     def _resolve_using_system_dns(cls, hostname):
@@ -257,20 +324,33 @@ class DNSBlockWorkaround:
         return resolved_host
 
     @classmethod
-    def _resolve_with_workaround(cls, hostname):
-        resolved_host_from_cache = cls._google_dns_cache.get(hostname)
-        if resolved_host_from_cache:
-            return resolved_host_from_cache
+    def _addresses_to_dial(cls, hostname):
+        """Addresses to substitute for `hostname`, or None to leave it alone.
 
-        resolved_host_by_system_dns = cls._resolve_using_system_dns(hostname)
+        Returning None is the common case and means the system resolver's
+        answer stands. Note that both branches yield *every* usable address
+        rather than one: socket.create_connection() walks the list until
+        something answers, and raw.githubusercontent.com publishes four A
+        records whose edge nodes are not all reachable from every network,
+        so collapsing to a single address would fail a share of requests
+        outright.
+        """
+        if hostname in cls._resolution_cache:
+            return cls._resolution_cache[hostname]
 
-        if cls._is_blocked(hostname, resolved_host_by_system_dns):
-            resolved_host = cls._resolve_using_google_dns(hostname)
-            cls._google_dns_cache[hostname] = resolved_host
+        try:
+            resolved_host_by_system_dns = cls._resolve_using_system_dns(hostname)
+        except socket.gaierror:
+            # A block that answers with NXDOMAIN rather than a bogus address.
+            addresses = cls._resolve_using_google_dns(hostname) or None
         else:
-            resolved_host = resolved_host_by_system_dns
+            if cls._is_blocked(hostname, resolved_host_by_system_dns):
+                addresses = cls._resolve_using_google_dns(hostname) or None
+            else:
+                addresses = None
 
-        return resolved_host
+        cls._resolution_cache[hostname] = addresses
+        return addresses
 
     @classmethod
     def _is_blocked(cls, hostname, address):
@@ -280,36 +360,6 @@ class DNSBlockWorkaround:
             is_blocked = address.startswith("49.44.")
 
         return is_blocked
-
-    class _HTTPConnection(http.client.HTTPConnection):
-        def connect(self):
-            host = DNSBlockWorkaround._resolve_with_workaround(self.host)
-            self.sock = socket.create_connection(
-                (host, self.port),
-                self.timeout,
-            )
-
-    class _HTTPSConnection(http.client.HTTPSConnection):
-        def connect(self):
-            host = DNSBlockWorkaround._resolve_with_workaround(self.host)
-            sock = socket.create_connection(
-                (host, self.port),
-                self.timeout,
-            )
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-            context.verify_mode = ssl.CERT_REQUIRED
-            context.check_hostname = True
-            context.load_default_certs()
-            sock = context.wrap_socket(sock, server_hostname=self.host)
-            self.sock = sock
-
-    class _HTTPHandler(urllib.request.HTTPHandler):
-        def http_open(self, req):
-            return self.do_open(DNSBlockWorkaround._HTTPConnection, req)
-
-    class _HTTPSHandler(urllib.request.HTTPSHandler):
-        def https_open(self, req):
-            return self.do_open(DNSBlockWorkaround._HTTPSConnection, req)
 
 
 class StartupTasks:
@@ -457,8 +507,8 @@ class Category:
                 self.meta_url.format(content_type="raw", tag=self.tag),
                 headers=self.request_headers,
             )
-            response = await async_send_network_request(request)
-            self._metadata = json.loads(response.read())
+            content = await async_send_network_request(request)
+            self._metadata = json.loads(content)
             self.set_category_global_cache("metadata", self._metadata)
         return self
 
@@ -915,7 +965,9 @@ class PluginManager:
     def __init__(self):
         self.request_headers = HEADERS
         self._index = _CACHE.get("index", {})
-        self._changelog = _CACHE.get("changelog", {})
+        # The raw changelog text, kept separate from the parsed entry in
+        # _CACHE["changelog"]; see setup_changelog().
+        self._changelog = _CACHE.get("changelog_source")
         self.categories = {}
         self.module_path = __file__
         self._index_setup_in_progress = False
@@ -931,8 +983,8 @@ class PluginManager:
                 ),
                 headers=self.request_headers,
             )
-            response = await async_send_network_request(request)
-            index = json.loads(response.read())
+            content = await async_send_network_request(request)
+            index = json.loads(content)
             self.set_index_global_cache(index)
             self._index = index
         return self._index
@@ -943,12 +995,17 @@ class PluginManager:
             # Rather wait for the previous network call to complete.
             await asyncio.sleep(0.1)
         self._index_setup_in_progress = not bool(self._index)
-        index = await self.get_index()
-        await self.setup_plugin_categories(index)
-        self._index_setup_in_progress = False
+        try:
+            index = await self.get_index()
+            await self.setup_plugin_categories(index)
+        finally:
+            # Must clear even when the setup raised, or every later call
+            # spins in the loop above forever waiting on a call that has
+            # already given up.
+            self._index_setup_in_progress = False
 
-    async def get_changelog(self) -> tuple[str, bool]:
-        requested = False
+    async def get_changelog(self) -> str:
+        """The full CHANGELOG.md text, fetched once per session."""
         if not self._changelog:
             request = urllib.request.Request(CHANGELOG_META.format(
                 repository_url=REPOSITORY_URL,
@@ -956,10 +1013,10 @@ class PluginManager:
                 tag=CURRENT_TAG
             ),
                 headers=self.request_headers)
-            response = await async_send_network_request(request)
-            self._changelog = response.read().decode()
-            requested = True
-        return self._changelog, requested
+            content = await async_send_network_request(request)
+            self._changelog = content.decode()
+            self.set_changelog_source_global_cache(self._changelog)
+        return self._changelog
 
     async def setup_changelog(self, version=None) -> None:
         if version is None:
@@ -970,13 +1027,16 @@ class PluginManager:
             await asyncio.sleep(0.1)
         self._changelog_setup_in_progress = not bool(self._changelog)
         try:
-            full_changelog = await self.get_changelog()
-            # check if the changelog was requested
-            if full_changelog[1]:
+            try:
+                # Parsing is pure string work on text we already hold, so it
+                # runs every time rather than only on the call that fetched.
+                # Skipping it was what let the raw text reach the cache in
+                # place of the parsed entry ChangelogWindow reads.
+                full_changelog = await self.get_changelog()
                 pattern = rf"### {version} \(\d\d-\d\d-\d{{4}}\)\n(.*?)(?=### \d+\.\d+\.\d+|\Z)"
-                if (len(full_changelog[0].split(version)) > 1):
-                    released_on = full_changelog[0].split(version)[1].split('\n')[0]
-                    matches = re.findall(pattern, full_changelog[0], re.DOTALL)
+                if (len(full_changelog.split(version)) > 1):
+                    released_on = full_changelog.split(version)[1].split('\n')[0]
+                    matches = re.findall(pattern, full_changelog, re.DOTALL)
                 else:
                     released_on = ' (Not Provided)'
                     matches = None
@@ -989,13 +1049,15 @@ class PluginManager:
                 else:
                     changelog = {'released_on': released_on,
                                  'info': f"Changelog entry for version {version} not found."}
-            else:
-                changelog = full_changelog[0]
-        except urllib.error.URLError:
-            changelog = {'released_on': ' (Not Provided)',
-                         'info': 'Could not get ChangeLog due to Internet Issues.'}
-        self.set_changelog_global_cache(changelog)
-        self._changelog_setup_in_progress = False
+            except urllib.error.URLError:
+                changelog = {'released_on': ' (Not Provided)',
+                             'info': 'Could not get ChangeLog due to Internet Issues.'}
+            self.set_changelog_global_cache(changelog)
+        finally:
+            # Must clear even when the setup raised, or every later call
+            # spins in the loop above forever waiting on a call that has
+            # already given up.
+            self._changelog_setup_in_progress = False
 
     async def setup_plugin_categories(self, plugin_index):
         # A hack to have the "All" category show at the top.
@@ -1047,12 +1109,12 @@ class PluginManager:
     def set_changelog_global_cache(self, changelog):
         _CACHE["changelog"] = changelog
 
+    def set_changelog_source_global_cache(self, changelog_source):
+        _CACHE["changelog_source"] = changelog_source
+
     def unset_index_global_cache(self):
-        try:
-            del _CACHE["index"]
-            del _CACHE["changelog"]
-        except KeyError:
-            pass
+        for key in ("index", "changelog", "changelog_source"):
+            _CACHE.pop(key, None)
 
     async def get_update_details(self):
         index = await self.get_index()
@@ -1082,8 +1144,7 @@ class PluginManager:
             content_type="raw",
             tag=tag,
         )
-        response = await async_send_network_request(download_url)
-        content = response.read()
+        content = await async_send_network_request(download_url)
         if hashlib.md5(content).hexdigest() != to_version_info["md5sum"]:
             raise MD5CheckSumFailed("MD5 checksum failed during plugin manager update.")
         with open(self.module_path, "wb") as fout:
