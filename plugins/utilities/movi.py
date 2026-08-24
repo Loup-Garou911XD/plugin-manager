@@ -53,7 +53,7 @@ plugman = dict(
             "discord": "BrotherBoard"
         },
     ],
-    version=__version__,
+    version='1.0',
 )
 
 
