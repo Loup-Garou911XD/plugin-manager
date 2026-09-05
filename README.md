@@ -87,7 +87,14 @@ There are three different ways the plugin manager can be installed:
   the category directory you feel is the most relevant to the type of plugin you're submitting, [here](plugins).
 - You also need a `plugman` dict with the plugin metadata in the plugin (see the [example](https://github.com/bombsquad-community/plugin-manager?tab=readme-ov-file#example) below).
    - The name of the plugin must be in snake_case and matching the file name.
-   - Must have the plugin_name, description, external_url, authors and version keys.
+   - Must have the description, external_url, authors and version keys.
+   - `plugin_name` is optional and defaults to the file name without `.py`. Spell it out only if you
+     want it documented in the source; it still has to match the file name.
+   - Values may be module-level constants defined *above* the dict, so a plugin that already keeps
+     a `__version__` or `__author__` around does not have to repeat itself:
+     `version=__version__` and `authors=[{"name": __author__[0], ...}]` both work. The plugin is
+     parsed, never imported, so only plain literals and indexing into them are understood;
+     expressions like `__file__.split("/")[-1]` are rejected.
 - Plugin manager will also show and execute the settings icon if your `ba.Plugin` class has methods `has_settings_ui` and `show_settings_ui`; check out the [colorscheme](https://github.com/bombsquad-community/plugin-manager/blob/eb163cf86014b2a057c4a048dcfa3d5b540b7fe1/plugins/utilities/colorscheme.py#L448-L452) plugin for an example.
 
 #### Example:
@@ -97,15 +104,18 @@ Let's say you wanna submit this new utility-type plugin named as `sample_plugin.
 # ba_meta require api 9
 import babase
 
+__version__ = "1.0.0"
+__author__ = ["Loup", "brostos"]
+
 plugman = dict(
-    plugin_name="sample_plugin",
+    plugin_name="sample_plugin",  # optional, defaults to the file name
     description="A test plugin for demonstration purposes blah blah.",
     external_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     authors=[
-        {"name": "Loup", "email": "loupg450@gmail.com", "discord": "loupgarou_"},
-        {"name": "brostos", "email": "", "discord": "brostos"}
+        {"name": __author__[0], "email": "loupg450@gmail.com", "discord": "loupgarou_"},
+        {"name": __author__[1], "email": "", "discord": "brostos"}
     ],
-    version="1.0.0",
+    version=__version__,
 )
 
 # ba_meta export babase.Plugin
@@ -127,7 +137,7 @@ guide) once you open a pull request.
 ### Updating a Plugin
 
 - Make a [pull request](../../compare) with whatever changes you'd like to make to an existing plugin, and add a new
-  version number in your plugin in the plugman dict.
+  version number in your plugin in the plugman dict, or in the `__version__` it reads from.
 
 #### Example
 
@@ -138,16 +148,26 @@ diff --git a/plugins/utilities/sample_plugin.py b/plugins/utilities/sample_plugi
 index ebb7dcc..da2b312 100644
 --- a/plugins/utilities/sample_plugin.py
 +++ b/plugins/utilities/sample_plugin.py
-@@ -9,7 +9,7 @@
-         {"name": "Loup", "email": "loupg450@gmail.com", "discord": "loupgarou_"},
-         {"name": "brostos", "email": "", "discord": "brostos"}
-     ],
--    version="1.0.0",
-+    version="1.1.0",
- )
+@@ -1,16 +1,16 @@
+ # ba_meta require api 9
+ import babase
  
- # ba_meta export babase.Plugin
-@@ -21,4 +21,4 @@
+-__version__ = "1.0.0"
++__version__ = "1.1.0"
+ __author__ = ["Loup", "brostos"]
+ 
+ plugman = dict(
+     plugin_name="sample_plugin",  # optional, defaults to the file name
+     description="A test plugin for demonstration purposes blah blah.",
+     external_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+     authors=[
+         {"name": __author__[0], "email": "loupg450@gmail.com", "discord": "loupgarou_"},
+         {"name": __author__[1], "email": "", "discord": "brostos"}
+     ],
+     version=__version__,
+ )
+@@ -23,5 +23,5 @@
+     def has_settings_ui(self):
          return True
  
      def show_settings_ui(self, source_widget):

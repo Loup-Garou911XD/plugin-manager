@@ -1,22 +1,22 @@
 import sys
 import json
 import ast
+import copy
 import os
 import hashlib
 import subprocess
-import get_latest
 from auto_apply_version_metadata import get_comparable_version_tuple_from_string
 
 DEBUG = True
 
+# index.json is deliberately absent: plugin manager releases add their own
+# "x.y.z": null entry by hand (see CLAUDE.md), this script only ever touches the
+# category manifests.
 MANIFEST_PATHS = {
     "minigames": "plugins/minigames.json",
     "utilities": "plugins/utilities.json",
     "maps": "plugins/maps.json",
-    "plugman": "index.json",
 }
-
-print("DOES THIS RUN AUTO APPLY PLUGIN METADATA?")
 
 
 def debug_print(*args, **kwargs):
@@ -35,16 +35,6 @@ def version_key(version):
 def md5sum_of(path):
     with open(path, "rb") as fin:
         return hashlib.md5(fin.read()).hexdigest()
-
-
-def get_latest_version(plugin_name, category) -> str:
-    try:
-        if category != "plugman":
-            return get_latest.get_latest_plugin_version(plugin_name, MANIFEST_PATHS[category])
-        return get_latest.get_latest_plugman_version()
-
-    except Exception as e:
-        raise e
 
 
 def read_manifest_at(path, ref):
@@ -85,19 +75,6 @@ def get_published_versions(plugin_name, category):
         with open(path, "r") as file:
             manifest = json.load(file)
     return manifest["plugins"].get(plugin_name, {}).get("versions", {})
-
-
-def update_plugman_json(version):
-    with open("index.json", "r+") as file:
-        data = json.load(file)
-        plugman_version = int(get_latest_version("plugin_manager", "plugman").replace(".", ""))
-        current_version = int(version["version"].replace(".", ""))
-
-        if current_version > plugman_version:
-            with open("index.json", "r+") as file:
-                data = json.load(file)
-                data[current_version] = None
-                data["versions"] = dict(sorted(data["versions"].items(), reverse=True))
 
 
 def update_plugin_json(plugin_info, category, plugin_path):
@@ -158,6 +135,125 @@ def update_plugin_json(plugin_info, category, plugin_path):
         file.truncate()
 
 
+def resolve_literal(node, constants, where):
+    """ast.literal_eval, widened to module-level constants and indexing into them.
+
+    Plugins commonly keep a `__version__` / `__author__` dunder next to the code
+    that uses them and want the plugman dict to reference those rather than
+    repeat the values. Nothing here imports or executes the plugin, so only
+    names this module already resolved to a literal are available, and only
+    indexing (not attribute access or calls) is applied to them.
+    """
+    if isinstance(node, ast.Name):
+        if node.id not in constants:
+            raise ValueError(
+                f"{where}: {node.id} is not a module-level constant defined above "
+                "plugman. Only names assigned a literal earlier in the file can be "
+                "referenced, because the plugin is parsed, never imported."
+            )
+        # Copied so an entry like authors=__author__ cannot be mutated later
+        # through the constants table.
+        return copy.deepcopy(constants[node.id])
+
+    if isinstance(node, ast.Subscript):
+        container = resolve_literal(node.value, constants, where)
+        index = resolve_literal(node.slice, constants, where)
+        try:
+            return container[index]
+        except (TypeError, KeyError, IndexError) as err:
+            raise ValueError(
+                f"{where}: cannot index {container!r} with {index!r}: {err}"
+            ) from None
+
+    if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
+        items = [resolve_literal(item, constants, where) for item in node.elts]
+        if isinstance(node, ast.Tuple):
+            return tuple(items)
+        if isinstance(node, ast.Set):
+            return set(items)
+        return items
+
+    if isinstance(node, ast.Dict):
+        if any(key is None for key in node.keys):
+            raise ValueError(f"{where}: ** unpacking inside plugman is not supported.")
+        return {
+            resolve_literal(key, constants, where): resolve_literal(value, constants, where)
+            for key, value in zip(node.keys, node.values)
+        }
+
+    try:
+        return ast.literal_eval(node)
+    except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+        raise ValueError(
+            f"{where}: unsupported expression `{ast.unparse(node)}`. plugman values must "
+            "be literals, or module-level constants (optionally indexed, e.g. "
+            "__author__[0]). Method calls such as __file__.split('/') are not evaluated."
+        ) from None
+
+
+def collect_module_constants(tree, stop_at):
+    """Module-level names bound to a literal, in the statements before `stop_at`.
+
+    Order matters: a name assigned *after* plugman would raise NameError when the
+    game imports the plugin, so it must not resolve here either.
+    """
+    constants = {}
+    for node in tree.body:
+        if node is stop_at:
+            break
+        if isinstance(node, ast.Assign):
+            targets = node.targets
+        elif isinstance(node, ast.AnnAssign) and node.value is not None:
+            targets = [node.target]
+        else:
+            continue
+        try:
+            value = ast.literal_eval(node.value)
+        except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+            continue
+        for target in targets:
+            if isinstance(target, ast.Name):
+                constants[target.id] = value
+    return constants
+
+
+def build_plugman_info(node, tree, plugin, file_name_no_extension):
+    """Turn a `plugman = dict(...)` call node into the dict the manifest needs."""
+    where = f"{plugin}: plugman"
+    constants = collect_module_constants(tree, stop_at=node)
+
+    result = {}
+    for keyword in node.value.keywords:
+        if keyword.arg is None:
+            raise ValueError(f"{where}: ** unpacking inside plugman is not supported.")
+        result[keyword.arg] = resolve_literal(keyword.value, constants, where)
+
+    # plugin_name is optional: the only value the check below would ever accept
+    # is the file's own stem, so a plugin that omits it simply gets that.
+    if "plugin_name" in result:
+        plugin_name = result["plugin_name"]
+        # some basic validation specific to plugin manager
+        if not isinstance(plugin_name, str):
+            raise ValueError(f"{where}: plugin_name must be a string.")
+        if plugin_name != plugin_name.lower():
+            raise ValueError("Plugin name in plugman must be in snakecase.")
+        if plugin_name != file_name_no_extension:
+            raise ValueError("Plugin name in plugman does not match the file name.")
+    else:
+        result["plugin_name"] = file_name_no_extension
+
+    missing = [key for key in ("description", "external_url", "authors", "version")
+               if key not in result]
+    if missing:
+        raise ValueError(f"{where}: missing required key(s) {', '.join(missing)}.")
+    if not isinstance(result["version"], str):
+        raise ValueError(
+            f"{where}: version must be a string in x.y.z form, got "
+            f"{result['version']!r}. Quote it (version=\"1.0.0\")."
+        )
+    return result
+
+
 def extract_plugman(plugins):
     for plugin in plugins:
         if "plugins" + os.sep in plugin and plugin.endswith(".py"):
@@ -175,41 +271,50 @@ def extract_plugman(plugins):
             with open(plugin, "r") as f:
                 tree = ast.parse(f.read())
 
-            for node in ast.walk(tree):
+            # A changed file that reaches the end of this loop without stamping
+            # the manifest ships against the PREVIOUS version's md5sum. That
+            # used to pass here silently and only surface much later as an
+            # opaque "checksum changed" failure in test_latest_version, so
+            # every path below either updates a manifest or raises.
+            handled = False
+
+            # Module level statements in source order, so collect_module_constants()
+            # can tell what is defined ABOVE plugman. Every plugin in the catalog
+            # assigns plugman at column 0; one hidden inside a function or an if
+            # was never picked up meaningfully anyway and now raises below.
+            for node in tree.body:
                 if isinstance(node, ast.Assign) and len(node.targets) == 1:
                     target = node.targets[0]
                     if isinstance(target, ast.Name) and target.id == "plugman":
-                        if isinstance(node.value, ast.Dict):
-                            # i dont want to support multiple formats for now
-                            # because its harder to parse and maintain
-                            # ill leave this here for now, though not supported
-                            # Standard dictionary format {key: value}
-                            return ast.literal_eval(node.value)
-                        elif (
+                        if (
                             isinstance(node.value, ast.Call)
                             and isinstance(node.value.func, ast.Name)
                             and node.value.func.id == "dict"
                         ):
                             # dict() constructor format
-                            result = {}
-                            for kw in node.value.keywords:
-                                if kw.arg == "plugin_name":
-                                    plugin_name = ast.literal_eval(kw.value)
-                                    # some basic validation specific to plugin manager
-                                    if plugin_name != plugin_name.lower():
-                                        raise ValueError(
-                                            "Plugin name in plugman must be in snakecase."
-                                        )
-                                    if plugin_name != file_name_no_extension:
-                                        raise ValueError(
-                                            "Plugin name in plugman does not match the file name."
-                                        )
-                                result[kw.arg] = ast.literal_eval(kw.value)
-                            if category:
-                                update_plugin_json(result, category=category, plugin_path=plugin)
-                            else:
-                                update_plugman_json(result)
-            # raise ValueError("Variable plugman not found in the file or has unsupported format.")
+                            result = build_plugman_info(
+                                node, tree, plugin, file_name_no_extension
+                            )
+                            update_plugin_json(result, category=category, plugin_path=plugin)
+                            handled = True
+                        else:
+                            # Only the dict() constructor form is parsed. A literal
+                            # {key: value} was previously returned from here, which
+                            # silently abandoned every remaining changed file too.
+                            raise ValueError(
+                                f"{plugin}: plugman must be assigned with the dict() "
+                                "constructor, e.g. plugman = dict(plugin_name=..., "
+                                "version=...). A literal { } dict is not supported."
+                            )
+
+            if not handled:
+                raise ValueError(
+                    f"{plugin}: no plugman dict found. Every plugin under plugins/ "
+                    "needs one so its catalog entry and version can be generated, see\n"
+                    "https://github.com/bombsquad-community/plugin-manager#submitting-a-plugin\n"
+                    f'plugin_name defaults to "{file_name_no_extension}" (the file stem). '
+                    "Bump version on every edit; the manifest entry is derived from it."
+                )
 
 
 if __name__ == "__main__":

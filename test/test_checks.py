@@ -135,19 +135,77 @@ class TestPluginManagerMetadata(unittest.TestCase):
 
 class TestPluginMetadata(unittest.TestCase):
     def setUp(self):
+        # os.path.isdir() must be given the joined path. Testing the bare name
+        # resolves it against the repo root, where no such directory exists, so
+        # this tuple came out empty and every test below passed vacuously.
         self.category_directories = tuple(
-            f'{os.path.join("plugins", path)}'
-            for path in os.listdir("plugins") if os.path.isdir(path)
+            os.path.join("plugins", path)
+            for path in sorted(os.listdir("plugins"))
+            if os.path.isdir(os.path.join("plugins", path))
         )
+        # Fail loudly if discovery ever goes empty again, rather than reporting
+        # a pass for a comparison of nothing against nothing.
+        self.assertTrue(self.category_directories,
+                        "no category directories discovered under plugins/")
+        self.api_version_regexp = re.compile(b"(?<=ba_meta require api )(.*)")
+        self.entry_point_regexp = re.compile(b"ba_meta export ")
+
+    def plugin_files(self, category):
+        return sorted(name for name in os.listdir(category) if name.endswith(".py"))
 
     def test_no_duplicates(self):
         unique_plugins = set()
         total_plugin_count = 0
         for category in self.category_directories:
-            plugins = os.listdir(category)
+            plugins = self.plugin_files(category)
             total_plugin_count += len(plugins)
             unique_plugins.update(plugins)
         self.assertEqual(len(unique_plugins), total_plugin_count)
+
+    def test_plugin_files_and_manifest_entries_agree(self):
+        """Catches a plugin whose metadata step produced nothing at all.
+
+        auto_apply_plugin_metadata.py now raises rather than skipping a file it
+        cannot read a plugman dict out of, but this is the independent check on
+        the result: a .py with no entry would be invisible in-game, and an entry
+        with no .py makes the manager offer a download that cannot exist.
+        """
+        for category in self.category_directories:
+            manifest_file = f"{category}.json"
+            with self.subTest(category=category):
+                self.assertTrue(os.path.isfile(manifest_file),
+                                f"{category} has no matching {manifest_file}")
+                with open(manifest_file, "rb") as fin:
+                    entries = set(json.load(fin)["plugins"])
+                files = {name[:-len(".py")] for name in self.plugin_files(category)}
+                self.assertEqual(
+                    sorted(files - entries), [],
+                    f"plugin file(s) under {category} with no entry in {manifest_file}; "
+                    "bump the version in the plugman dict so CI can generate one"
+                )
+                self.assertEqual(
+                    sorted(entries - files), [],
+                    f"entries in {manifest_file} with no matching .py under {category}"
+                )
+
+    def test_plugins_declare_their_ba_meta_directives(self):
+        for category in self.category_directories:
+            for name in self.plugin_files(category):
+                plugin = os.path.join(category, name)
+                with open(plugin, "rb") as fin:
+                    content = fin.read()
+                with self.subTest(plugin=plugin):
+                    self.assertIsNotNone(
+                        self.api_version_regexp.search(content),
+                        f"{plugin} declares no '# ba_meta require api <n>'. The version "
+                        "tests read that straight out of the source, so without it they "
+                        "fail with an unhelpful AttributeError instead."
+                    )
+                    self.assertIsNotNone(
+                        self.entry_point_regexp.search(content),
+                        f"{plugin} declares no '# ba_meta export', so the game would "
+                        "load nothing from it."
+                    )
 
 
 class BaseCategoryMetadataTestCases:
