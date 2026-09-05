@@ -7,6 +7,26 @@ name: CI
 # here unmodified/strict against real, permanent git history (unlike
 # ci-check.yml, which can't yet resolve a commit sha for a brand-new plugin
 # version and runs leniently instead).
+#
+# It must run the SAME metadata pipeline as the PR path (ci-check.yml ->
+# ci-apply.yml): autopep8, then auto_apply_plugin_metadata.py, then
+# auto_apply_version_metadata.py. Content can reach main without ever going
+# through the PR workflows - a direct maintainer push, or a merge of a PR
+# whose checks failed - so a gap here is not covered anywhere else.
+#
+# Concretely, without the plugin-metadata step a push that bumps a plugin's
+# `plugman` version lands the new bytes with no matching manifest entry. The
+# manifest goes on advertising the OLD version's md5sum, so the in-game
+# manager's checksum check rejects every download of that plugin, and
+# test_latest_version fails on this and every later run. That is what 8628c97
+# (finder 1.0 -> 4.1) did to main; it stayed broken until PR #485 reverted the
+# whole change, which restored the old bytes rather than recording the new
+# ones.
+#
+# The auto-commit steps below push with the default GITHUB_TOKEN, and GitHub
+# does not start a workflow run for those pushes (there is no ci.yml run for
+# b1be5d5, the "[ci] apply-formatting" commit). So this job sees each push
+# exactly once and does not re-enter itself.
 
 on:
   push:
@@ -43,6 +63,61 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "[ci] apply-formatting"
+
+      # Resolved BEFORE any of the auto-commit steps below rewrite HEAD, so it
+      # stays the tip main had when this push arrived. github.event.before is
+      # absent/zeroed on a branch's first push and dangling after a force
+      # push, hence the fallbacks; HEAD^ is the pushed head's first parent,
+      # which for a merge commit is the previous main tip.
+      - name: Resolve push base
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          BASE="$BEFORE_SHA"
+          if [ -z "$BASE" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            # 4b825dc.. is git's empty tree - diffs as "everything is new" and
+            # simply fails to resolve as a manifest ref, which the metadata
+            # script handles by falling back to origin/main.
+            BASE="$(git rev-parse HEAD^ 2>/dev/null || echo 4b825dc642cb6eb9a060e54bf8d69288fbee4904)"
+          fi
+          echo "$BASE" > "${RUNNER_TEMP}/base_sha.txt"
+          echo "Push base: $BASE"
+
+      # The counterpart of ci-check.yml's plugin-metadata step. Diffed against
+      # HEAD (not the push head) so plugin files that only the autopep8 commit
+      # above touched are included - their bytes changed, so their checksums
+      # must be recomputed too.
+      #
+      # PLUGMAN_BASE_REF is REQUIRED here, for the same reason ci-check.yml
+      # sets it. It makes "already published" mean the manifest as of the push
+      # base, rather than the working tree. On the ordinary path - merging a
+      # PR - the merge brings the version bump AND the manifest entry that
+      # ci-apply.yml already stamped onto the PR branch, so the working tree
+      # here ALREADY lists the version being pushed. Comparing against that
+      # would make the script raise "Version cant be lower or equal" on every
+      # single merge. Compared against the base, the version is correctly seen
+      # as new, the entry is found already stamped with a matching md5sum, and
+      # the step is a no-op.
+      #
+      # This step FAILING is a feature: it means a plugin's bytes changed with
+      # no version bump, which would leave every existing install unable to
+      # verify its download.
+      - name: Apply Plugin Metadata (writes null version placeholders)
+        run: |
+          set -euo pipefail
+          BASE="$(cat "${RUNNER_TEMP}/base_sha.txt")"
+          # --diff-filter=d drops deletions; the script opens each path it is
+          # handed, so a removed plugin would crash it.
+          git diff --name-only --diff-filter=d "$BASE" HEAD > "${RUNNER_TEMP}/changed_files.txt"
+          cat "${RUNNER_TEMP}/changed_files.txt"
+          PLUGMAN_BASE_REF="$BASE" \
+            python test/auto_apply_plugin_metadata.py "$(cat "${RUNNER_TEMP}/changed_files.txt")"
+
+      - name: Commit Plugin Metadata
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "[ci] apply-plugin-metadata"
 
       - name: Apply Version Metadata
         run: |
