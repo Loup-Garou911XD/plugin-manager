@@ -80,9 +80,40 @@ jobs:
             exit 1
           }
 
-          gh api "repos/${REPO}/commits/${RUN_HEAD_SHA}/pulls" > pulls.json
-          [ "$(jq 'length' pulls.json)" = "1" ] \
-            || skip "Not exactly one PR associated with ${RUN_HEAD_SHA}; skipping."
+          # The sha -> PR association is eventually consistent: a run that
+          # starts seconds after the contributor's push can legitimately see
+          # an empty list. Poll before giving up.
+          #
+          # Both terminal outcomes below FAIL rather than `skip`. `skip` exits
+          # 0, which paints the whole job green - and a green PR Apply that
+          # pushed nothing is exactly how an unstamped branch merged to main
+          # and broke it (PR #479, reverted in #485). `skip` is reserved for
+          # states that self-heal (head moved -> a new run follows) or are
+          # none of our business (PR closed, not targeting main). "I could not
+          # identify the PR" is neither: it means the fixups were dropped on
+          # the floor, and that must be visible.
+          for attempt in 1 2 3 4 5; do
+            gh api "repos/${REPO}/commits/${RUN_HEAD_SHA}/pulls" > pulls.json
+            N_PULLS="$(jq 'length' pulls.json)"
+            [ "$N_PULLS" = "0" ] || break
+            echo "No PR associated with ${RUN_HEAD_SHA} yet (attempt ${attempt}/5); retrying in 10s."
+            sleep 10
+          done
+
+          if [ "$N_PULLS" = "0" ]; then
+            echo "No PR associated with ${RUN_HEAD_SHA} after 5 attempts." >&2
+            echo "Formatting/metadata fixups were NOT applied to the branch." >&2
+            exit 1
+          fi
+
+          # More than one PR sharing a head sha is the ambiguity HARD RULE 3
+          # exists for: pushing would risk writing to the wrong branch. Fail
+          # closed, but fail loudly - silence here is what bit us before.
+          if [ "$N_PULLS" != "1" ]; then
+            echo "${N_PULLS} PRs share head ${RUN_HEAD_SHA}; cannot resolve which one this run belongs to." >&2
+            echo "Failing closed: nothing was applied. A maintainer must apply the fixups manually." >&2
+            exit 1
+          fi
 
           PR_NUMBER="$(jq -r '.[0].number' pulls.json)"
           [[ "$PR_NUMBER" =~ ^[0-9]+$ ]] || skip "Bad PR number; skipping."
@@ -231,6 +262,7 @@ jobs:
           git apply --check "$PATCH"
 
       - name: Apply fixups patch and commit
+        id: fixups
         if: steps.pr.outputs.proceed == '1'
         working-directory: pr
         env:
@@ -260,9 +292,11 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "[ci] apply-plugin-metadata-and-formatting"
             git push "https://x-access-token:${GH_TOKEN}@github.com/${FORK}.git" "HEAD:${HEAD_REF}"
+            echo "pushed=1" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Apply Version Metadata using the TRUSTED script only (never the fork's copy)
+        id: vermeta
         if: steps.pr.outputs.proceed == '1'
         working-directory: pr
         env:
@@ -280,7 +314,52 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "[ci] apply-version-metadata"
             git push "https://x-access-token:${GH_TOKEN}@github.com/${FORK}.git" "HEAD:${HEAD_REF}"
+            echo "pushed=1" >> "$GITHUB_OUTPUT"
           fi
+
+      # THE MERGE GATE. PR Check is not one: it GENERATES the metadata into its
+      # own workspace and then tests that generated tree, so it goes green on a
+      # branch whose committed manifests are still empty. That is precisely how
+      # #479 merged and broke main - Check was green, Apply had silently
+      # skipped, and nothing anywhere asserted the branch was actually stamped.
+      #
+      # The invariant that does hold: a correctly-applied PR is a FIXPOINT -
+      # re-running the pipeline over it produces no changes. So this reports
+      # success only when both steps above found nothing left to push. When
+      # they did push, the new head sha retriggers Check -> Apply, and that run
+      # sets success on the sha a maintainer would actually merge.
+      #
+      # Make `metadata-fixpoint` a required status check on main. Then every
+      # path that leaves fixups unapplied - a skip, a hard failure, a crash -
+      # leaves the status unset and the PR unmergeable, instead of green.
+      - name: Report metadata fixpoint status
+        if: always() && steps.pr.outputs.proceed == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          FIXUPS_PUSHED: ${{ steps.fixups.outputs.pushed }}
+          VERMETA_PUSHED: ${{ steps.vermeta.outputs.pushed }}
+          FIXUPS_RESULT: ${{ steps.fixups.outcome }}
+          VERMETA_RESULT: ${{ steps.vermeta.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          if [ "$FIXUPS_RESULT" != "success" ] || [ "$VERMETA_RESULT" != "success" ]; then
+            STATE="failure"
+            DESC="Formatting/metadata could not be applied; see the PR Apply run."
+          elif [ -n "$FIXUPS_PUSHED" ] || [ -n "$VERMETA_PUSHED" ]; then
+            STATE="failure"
+            DESC="Formatting/metadata was just applied; waiting for the re-run on the new commit."
+          else
+            STATE="success"
+            DESC="Formatting and generated metadata are up to date on this commit."
+          fi
+          gh api --method POST "repos/${REPO}/statuses/${HEAD_SHA}" \
+            -f state="$STATE" \
+            -f context="metadata-fixpoint" \
+            -f description="$DESC" \
+            -f target_url="$RUN_URL"
 
       - name: On mechanical failure, notify the contributor
         if: failure() && steps.pr.outputs.pr_number != ''

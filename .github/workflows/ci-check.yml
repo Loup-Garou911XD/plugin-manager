@@ -17,6 +17,15 @@ name: PR Check
 # DO NOT switch this to `pull_request_target` and do not add `permissions:
 # contents: write` here "to save a round trip" - that reintroduces the
 # pwn-request hole this split exists to close.
+#
+# THIS JOB IS NOT A MERGE GATE. It GENERATES the formatting and metadata into
+# its own workspace and then tests THAT tree, so it goes green on a branch
+# whose committed manifests are still empty - which is exactly how #479 merged
+# and broke main. Do not add a "patch must be empty" check here either: the
+# first run on any real PR legitimately produces a patch, and failing would
+# stop ci-apply.yml (`conclusion == 'success'`) from ever applying it. The gate
+# is the `metadata-fixpoint` commit status that ci-apply.yml sets; make that
+# the required check on main.
 
 on:
   pull_request:
