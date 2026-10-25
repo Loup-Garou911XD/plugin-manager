@@ -1,7 +1,7 @@
 # Porting made easier by baport.(https://github.com/bombsquad-community/baport)
+# Adapted/ported from https://github.com/Mrmaxmeier/BombSquad-Community-Mod-Manager/blob/master/mods/smash.py
 # To learn more, see https://ballistica.net/wiki/meta-tag-system
 # ba_meta require api 9
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
