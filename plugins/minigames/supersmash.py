@@ -213,6 +213,11 @@ class SSPlayerSpaz(PlayerSpaz):
                              shield_leftover_ratio)
             else:
                 # Hit it with an impulse and get the resulting damage.
+                if self.multiplyer > 3.0:
+                    # At about 8.0 the physics glitch out
+                    velocity_mag *= min((3.0 + (self.multiplyer - 3.0) / 4), 7.5) ** 1.9
+                else:
+                    velocity_mag *= self.multiplyer ** 1.9
                 assert msg.force_direction is not None
                 self.node.handlemessage(
                     'impulse', msg.pos[0], msg.pos[1], msg.pos[2],
