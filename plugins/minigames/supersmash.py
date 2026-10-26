@@ -353,7 +353,7 @@ class SSPlayerSpaz(PlayerSpaz):
                 self.last_attacked_time = bs.time()
                 self.last_attacked_type = (msg.hit_type, msg.hit_subtype)
             Spaz.handlemessage(self, bs.HitMessage)  # Augment standard behavior.
-            activity = self._activity()
+            activity = self.getactivity(doraise=False)
             if activity is not None and self._player.exists():
                 activity.handlemessage(PlayerSpazHurtMessage(self))
 
